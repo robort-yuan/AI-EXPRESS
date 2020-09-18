@@ -14,11 +14,7 @@ AIoT 基础库repo：源码依赖
   * macOS
    参见 [Installing Bazel on macOS](https://docs.bazel.build/versions/master/install-os-x.html)
 **更多Bazel帮助信息请参见[Bazel Documentation](https://docs.bazel.build/)**
- * Artifactory 环境配置
-  因部分依赖Artifactory, 如unit test。 需要配置Artifactory 环境如下
- ```
- echo "machine ci.horizon-robotics.com login deploybot password deploybot@Artifactory2016" > ~/.netrc
- ```
+
 ### 编译project
   * 编译 xstream-framework
 `bazel build //xstream/framework:xstream-framework`
