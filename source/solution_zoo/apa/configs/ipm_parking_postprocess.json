@@ -1,0 +1,17 @@
+{
+    "in_msg_type": "pyramid_image",
+    "post_type": "detect",
+    "net_info": {
+      "model_name": "detection",
+      "model_out_sequence": [
+        {
+          "name": "parking_box",
+          "type": "apabbox"
+        }
+      ],
+      "model_input_width": 256,
+      "model_input_height": 512
+    },
+    "method_outs": ["parking_box"],
+    "model_file_path": "../../models/apa_detection.hbm"
+}

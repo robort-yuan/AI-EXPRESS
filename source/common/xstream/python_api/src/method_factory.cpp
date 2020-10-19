@@ -19,7 +19,6 @@
 #include "plate_vote_method/plate_vote_method.h"
 #include "VehiclePlateMatchMethod/VehiclePlateMatchMethod.h"
 #include "vote_method/vote_method.h"
-#include "VehicleRoadRelationshipMethod/vehicle_road_relationship_method.h"
 
 namespace xstream {
 namespace method_factory {
@@ -47,8 +46,6 @@ MethodPtr CreateMethod(const std::string &method_name) {
     return MethodPtr(new VoteMethod());
   } else if ("PlateVoteMethod" == method_name) {
     return MethodPtr(new PlateVoteMethod());
-  } else if ("VehicleRoadRelationshipMethod" == method_name) {
-    return MethodPtr(new VehicleRoadRelationshipMethod());
   } else {
     return MethodPtr();
   }

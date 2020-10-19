@@ -28,13 +28,7 @@ set(MOT_LIBRARIES
 #        multi_obj_tracking_lite
          ipc_tracking
          ${IOU2_DEP_LIB}
-#        mxnet_predictor
-#        haes.a
-#        hcrypto.a
          hobotsdk hobotthread
-#        mxnet_shared
-#        xstream_basedata_helper
-#        cudnn7
         )
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 

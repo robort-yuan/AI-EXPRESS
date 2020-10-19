@@ -24,8 +24,9 @@ namespace xproto {
 namespace vioplugin {
 
 ImageVioMessage::ImageVioMessage(
-    std::vector<std::shared_ptr<PymImageFrame>> &image_frame, uint32_t img_num,
-    bool is_valid) {
+    const std::shared_ptr<VioPipeLine> &vio_pipeline,
+    std::vector<std::shared_ptr<PymImageFrame>> &image_frame,
+    uint32_t img_num, bool is_valid) {
   type_ = TYPE_IMAGE_MESSAGE;
   num_ = img_num;
   if (image_frame.size() > 0) {
@@ -34,6 +35,7 @@ ImageVioMessage::ImageVioMessage(
     image_.resize(image_frame.size());
   }
   is_valid_uri_ = is_valid;
+  vio_pipeline_ = vio_pipeline;
   for (uint32_t i = 0; i < image_frame.size(); ++i) {
     image_[i] = image_frame[i];
   }
@@ -70,14 +72,18 @@ void ImageVioMessage::FreeImage(int tmp) {
           LOGE << "feedback_context pointer is NULL";
           return;
       }
-      if (iot_vio_free_info(IOT_VIO_FEEDBACK_SRC_INFO,
-                           &(feedback_context->src_info)) < 0) {
-        LOGE << "hb_vio_free_info failed";
+
+      auto res = vio_pipeline_->FreeInfo(IOT_VIO_FEEDBACK_SRC_INFO,
+          &(feedback_context->src_info));
+      if (res) {
+        LOGE << "vio pipeline free vio feedback src info failed";
       }
-      int ret = iot_vio_free(&(feedback_context->pym_img_info));
-      if (ret != 0) {
-        LOGE << "hb_vio_free failed";
+      res = vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO,
+          &(feedback_context->pym_img_info));
+      if (res) {
+        LOGE << "vio pipeline free vio pym info failed";
       }
+
       free(feedback_context);
       LOGD << "free feedback context success";
 #endif
@@ -102,7 +108,12 @@ void ImageVioMessage::FreeImage() {
 #elif defined(X3_IOT_VIO)
       pym_buffer_t *img_info =
           reinterpret_cast<pym_buffer_t *>(image_[0]->context);
-      iot_vio_free(img_info);
+
+      auto res = vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, img_info);
+      if (res) {
+        LOGE << "vio pipeline free vio pym info failed";
+      }
+
       free(img_info);
 #endif
       image_[0]->context = nullptr;
@@ -133,6 +144,7 @@ std::string DropVioMessage::Serialize() {
 }
 
 DropImageVioMessage::DropImageVioMessage(
+    const std::shared_ptr<VioPipeLine> &vio_pipeline,
     std::vector<std::shared_ptr<PymImageFrame>> &image_frame, uint32_t img_num,
     bool is_valid) {
   type_ = TYPE_DROP_IMAGE_MESSAGE;
@@ -143,6 +155,7 @@ DropImageVioMessage::DropImageVioMessage(
     image_.resize(image_frame.size());
   }
   is_valid_uri_ = is_valid;
+  vio_pipeline_ = vio_pipeline;
   for (uint32_t i = 0; i < image_frame.size(); ++i) {
     image_[i] = image_frame[i];
   }
@@ -164,7 +177,10 @@ void DropImageVioMessage::FreeImage() {
 #elif defined(X3_IOT_VIO)
       pym_buffer_t *img_info =
           reinterpret_cast<pym_buffer_t *>(image_[0]->context);
-      iot_vio_free(img_info);
+      auto res = vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, img_info);
+      if (res) {
+        LOGE << "vio pipeline free vio pym info failed";
+      }
       free(img_info);
 #endif
       image_[0]->context = nullptr;

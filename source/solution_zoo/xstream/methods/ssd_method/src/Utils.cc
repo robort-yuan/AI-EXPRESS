@@ -107,7 +107,6 @@ void PrintModelInfo(BPU_MODEL_S *bpu_model) {
     return ss.str();
   };
 
-  //  std::stringstream ss;
   LOGI << "Input num:" << bpu_model->input_num;
   for (int i = 0; i < bpu_model->input_num; i++) {
     auto &input_node = bpu_model->inputs[i];

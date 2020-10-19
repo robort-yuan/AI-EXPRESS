@@ -605,16 +605,6 @@ void DetectPostProcessor::ParseAPADetectionBox(
         box.rotation_angle = merge_result[j].theta;
       }
       boxes.push_back(box);
-
-      // // perception raw
-      // LOGD << "x1: " << out_2dbox[j].at<float>(0, 0)
-      //      << ", y1: " << out_2dbox[j].at<float>(0, 1)
-      //      << ", x2: " << out_2dbox[j].at<float>(1, 0)
-      //      << ", y2: " << out_2dbox[j].at<float>(1, 1)
-      //      << ", x3: " << out_2dbox[j].at<float>(2, 0)
-      //      << ", y3: " << out_2dbox[j].at<float>(2, 1)
-      //      << ", x4: " << out_2dbox[j].at<float>(3, 0)
-      //      << ", y4: " << out_2dbox[j].at<float>(3, 1);
     }
   }
 }

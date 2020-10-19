@@ -81,5 +81,7 @@ int get_cost_time_ms(struct timeval *start, struct timeval *end);
 int dumpToFile(char *filename, char *srcBuf, unsigned int size);
 int dumpToFile2plane(char *filename, char *srcBuf, char *srcBuf1,
 		     unsigned int size, unsigned int size1);
+int dumpToFile2planeStride(char *filename, char *srcBuf, char *srcBuf1,
+	unsigned int size, unsigned int size1, int width, int height, int stride);
 
 #endif //HB_X2A_VIO_HB_UTILS_H

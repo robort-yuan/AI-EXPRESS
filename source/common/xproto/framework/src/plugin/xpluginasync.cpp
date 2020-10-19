@@ -48,15 +48,29 @@ int XPluginAsync::DeInit() {
 void XPluginAsync::OnMsg(XProtoMessagePtr msg) {
   // todo
   // 实现消息队列和流量控制
+  std::lock_guard<std::mutex> lock(msg_mutex_);
   if (msg_handle_.GetTaskNum() >= 30) {
       LOGW << "Task Size: " << msg_handle_.GetTaskNum();
   }
-
-  // if (msg_handle_.GetTaskNum() < 30) {
   msg_handle_.PostTask(std::bind(&XPluginAsync::OnMsgDown, this, msg));
-  //  } else {
-  //    LOGI << "Task Max Size = 30";
-  //  }
+}
+
+int XPluginAsync::GetPluginMsgCount() {
+  std::lock_guard<std::mutex> lock(msg_mutex_);
+  return msg_handle_.GetTaskNum();
+}
+
+int XPluginAsync::GetPluginMsgLimit() {
+  std::lock_guard<std::mutex> lock(msg_limit_mutex_);
+  return msg_limit_count_;
+}
+
+void XPluginAsync::SetPluginMsgLimit(int msg_limit_count) {
+  if (msg_limit_count <= 0) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(msg_limit_mutex_);
+  msg_limit_count_ = msg_limit_count;
 }
 
 void XPluginAsync::OnMsgDown(XProtoMessagePtr msg) {

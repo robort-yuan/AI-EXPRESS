@@ -26,6 +26,7 @@
 #include "vioplugin/viomessage.h"
 #include "vioplugin/vioprocess.h"
 #include "vioplugin/vioproduce.h"
+#include "iotviomanager/viopipemanager.h"
 
 namespace horizon {
 namespace vision {
@@ -39,10 +40,22 @@ CachedImageList::CachedImageList(const char *vio_cfg_file) : VioProduce() {
   ret = hb_vio_start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #elif defined(X3_IOT_VIO)
-  auto ret = iot_vio_init(vio_cfg_file);
-  HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_vio_start();
-  HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "CachedImageList: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+      << "CachedImageList: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
+  HOBOT_CHECK(ret == 0) << "vio pipeline init failed!";
+  ret = vio_pipeline_->Start();
+  HOBOT_CHECK(ret == 0) << "vio pipeline start failed!";
 #endif
 }
 
@@ -51,20 +64,12 @@ CachedImageList::~CachedImageList() {
   hb_vio_stop();
   hb_vio_deinit();
 #elif defined(X3_IOT_VIO)
-  iot_vio_stop();
-  iot_vio_deinit();
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
-
-#if defined(X3_X2_VIO)
-extern bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len);
-extern bool GetPyramidInfo(VioFeedbackContext *feed_back_context,
-        char *data, int len);
-#elif defined(X3_IOT_VIO)
-extern bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len);
-extern bool GetPyramidInfo(VioFeedbackContext *feed_back_context,
-        char *data, int len);
-#endif
 
 int CachedImageList::Run() {
   static uint64_t frame_id = 0;
@@ -140,7 +145,7 @@ int CachedImageList::Run() {
                 reinterpret_cast<char *>(yuv420_data_cache[sid]->data);
             int yuv_width = yuv420_data_cache[sid]->width;
             int yuv_height = yuv420_data_cache[sid]->height;
-            bool ret = GetPyramidInfo(feedback_context, yuv_data,
+            bool ret = GetPyramidInfo(vio_pipeline_, feedback_context, yuv_data,
                                       yuv_width * yuv_height * 3 / 2);
 #endif
 
@@ -157,10 +162,12 @@ int CachedImageList::Run() {
               pym_images.push_back(pym_image_frame_ptr);
             } else {
               std::free(feedback_context);
-              LOGF << "GetPyramidInfo failed" << std::endl;
+              LOGF << "GetPyramidInfo failed, ret: " << ret;
+              HOBOT_CHECK(ret == true);
             }
             std::shared_ptr<VioMessage> input(
-                new ImageVioMessage(pym_images, 1), [&](ImageVioMessage *p) {
+                new ImageVioMessage(vio_pipeline_, pym_images, 1),
+                [&](ImageVioMessage *p) {
                   if (p) {
 #if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
                     p->FreeImage(1);

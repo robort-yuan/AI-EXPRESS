@@ -10,7 +10,6 @@ RenderFrame2.prototype.changeImgShow = function (canvasObj, width, height) {
   window.onresize = function() {return;}
   const video = document.querySelector('.video');
   const cam = document.querySelector('.cam');
-  // const canvas = document.querySelector('#canvas-1');
 
   let videoWidth = video.offsetWidth;
   let videoHeight = video.offsetHeight;

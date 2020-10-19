@@ -1,0 +1,5 @@
+{
+    "predict_type": "detect",
+    "pyramid_layer": 0,
+    "model_file_path": "../../models/detection.hbm"
+}

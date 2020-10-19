@@ -18,14 +18,19 @@
 #include "./hb_vio_interface.h"
 #include "./vio_debug.h"
 #include "opencv2/opencv.hpp"
+#include "horizon/vision_type/vision_type.hpp"
 #ifdef X3_X2_VIO
 #include "./x3_vio_patch.h"
-#include "horizon/vision_type/vision_type.hpp"
+#include "./hb_cam_interface.h"
 #endif
 #ifdef X3_IOT_VIO
-// todo, add iot vio header
+#include "iotviomanager/vio_data_type.h"
+#include "iotviomanager/viopipeline.h"
+#include "iotviomanager/viopipemanager.h"
 #endif
 using hobot::vision::PymImageFrame;
+using horizon::vision::xproto::vioplugin::VioPipeLine;
+using horizon::vision::xproto::vioplugin::VioPipeManager;
 
 class HbVioFbWrapperGlobal {
  public:
@@ -36,6 +41,8 @@ class HbVioFbWrapperGlobal {
   int Init();
 
   int DeInit();
+
+  int Reset();
 
   std::shared_ptr<PymImageFrame> GetImgInfo(std::string rgb_file,
                                             uint32_t *effective_w,
@@ -56,6 +63,8 @@ class HbVioFbWrapperGlobal {
 #endif
 #ifdef X3_IOT_VIO
   hb_vio_buffer_t process_info_;
+  int pipe_id_ = -1;
+  std::shared_ptr<VioPipeLine> vio_pipeline_ = nullptr;
 #endif
 };
 
@@ -70,6 +79,8 @@ class HbVioMonoCameraGlobal {
 
   int DeInit();
 
+  int Reset();
+
   std::shared_ptr<PymImageFrame> GetImage();
 
   int Free(std::shared_ptr<PymImageFrame> pym_image);
@@ -80,13 +91,14 @@ class HbVioMonoCameraGlobal {
   std::string camera_cfg_;
   int camera_idx_ = 0;
 #ifdef X3_IOT_VIO
-// todo, need add extra field?
+  int pipe_id_ = -1;
+  std::shared_ptr<VioPipeLine> vio_pipeline_ = nullptr;
 #endif
 };
 
 class HbVioDualCameraGlobal {
  public:
-  explicit HbVioDualCameraGlobal(std::string hb_vio_cfg,
+  explicit HbVioDualCameraGlobal(std::vector<std::string> vio_cfg_list,
                                  std::string camera_cfg) {}
   ~HbVioDualCameraGlobal() {}
   int Init() { return 0; }
@@ -100,5 +112,10 @@ class HbVioDualCameraGlobal {
     // todo
     return 0;
   }
+ private:
+#ifdef X3_IOT_VIO
+  int pipe_id_ = -1;
+  std::shared_ptr<VioPipeLine> vio_pipeline_ = nullptr;
+#endif
 };
 #endif  // INCLUDE_VIO_WRAPPER_GLOBAL_H_

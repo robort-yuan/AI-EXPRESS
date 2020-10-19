@@ -75,8 +75,6 @@ void ClassifyPostProcessor::RunSingleFrame(
     RUN_FPS_PROFILER("DetectRunModel");
 
     HB_BPU_waitModelDone(task_handle_.get());
-    // release input
-    // ReleaseTensor(input_tensors_);
     // release BPU_TASK_HANDLE
     HB_BPU_releaseTask(task_handle_.get());
   }

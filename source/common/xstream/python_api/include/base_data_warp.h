@@ -17,9 +17,7 @@ namespace xstream {
 class BaseDataWrapper : public std::enable_shared_from_this<BaseDataWrapper> {
  public:
   explicit BaseDataWrapper(BaseDataPtr data) : base_data_(data) {}
-  ~BaseDataWrapper() {
-    // std::cout << "BaseDataWapper Destoryed!" << std::endl;
-  }
+  ~BaseDataWrapper() {}
 
   // 获得当前basedata的状态
   DataState get_state(void) {

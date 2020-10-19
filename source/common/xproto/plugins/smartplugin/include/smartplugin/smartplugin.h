@@ -96,6 +96,7 @@ class SmartPlugin : public XPluginAsync {
   void ParseConfig();
 
   std::shared_ptr<XStreamSDK> sdk_;
+  int sdk_monitor_interval_;
   std::string config_file_;
   std::shared_ptr<RuntimeMonitor> monitor_;
   std::shared_ptr<JsonConfigWrapper> config_;

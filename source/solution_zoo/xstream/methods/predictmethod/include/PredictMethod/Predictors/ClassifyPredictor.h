@@ -28,8 +28,6 @@ class ClassifyPredictor : public Predictors {
   ClassifyPredictor() {}
   virtual ~ClassifyPredictor() {}
 
-  // virtual int Init(const std::string &cfg_path);
-
   std::vector<std::vector<BaseDataPtr>> Do(
       const std::vector<std::vector<BaseDataPtr>> &input,
       const std::vector<xstream::InputParamPtr> &param) override;

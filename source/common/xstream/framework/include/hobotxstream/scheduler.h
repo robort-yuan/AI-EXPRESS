@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+#include <utility>
 #include "hobotxsdk/xstream_data.h"
 #include "hobotxsdk/xstream_error.h"
 #include "hobotxstream/framework_data.h"
@@ -51,6 +51,8 @@ class Scheduler {  // 调度模块
   int SetCallback(XStreamCallback callback, const std::string &name);
 
   int SetFreeMemery(bool is_enable);
+
+  int SetTimeMonitor(int interval);
 
   int64_t Input(InputDataPtr data, void *sync_context);
 
@@ -96,6 +98,8 @@ class Scheduler {  // 调度模块
 
   std::vector<int> CreateSlot(const std::vector<std::string> &datas);
 
+  // 监测数据处理是否超出预期耗时
+  void Monitor(FrameworkDataPtr framework_data, int start, int interval);
   std::shared_ptr<ThreadManager> engine_{nullptr};
 
   std::unordered_map<std::string, NodePtr> name2ptr_;
@@ -111,6 +115,7 @@ class Scheduler {  // 调度模块
 
   // 是否需要释放帧内无用数据
   bool is_need_free_data_ = false;
+  std::pair<bool, int> monitor_time_{false, 0};
   NodePtr input_node_;
   NodePtr output_node_;
   XStreamCallback callback_;
@@ -119,6 +124,7 @@ class Scheduler {  // 调度模块
 
   std::shared_ptr<XThread> comm_node_daemon_;
   std::shared_ptr<XThread> thread_;
+  std::shared_ptr<XThread> monitor_;
 
   std::vector<std::shared_ptr<std::atomic_ullong>> sequence_id_list_;
   std::atomic_ullong global_sequence_id_;

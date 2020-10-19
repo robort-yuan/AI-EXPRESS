@@ -1,5 +1,5 @@
-#ifndef __HB_ISP_H__
-#define __HB_ISP_H__
+#ifndef __HB_ISP_API_H__
+#define __HB_ISP_API_H__
 
 #include <stdint.h>
 #include "hb_isp_algo.h"
@@ -217,6 +217,11 @@ extern int HB_ISP_AFLibUnRegCallback(uint8_t pipeId);
 
 /* AE */ //cmd
 typedef struct HB_ISP_AE_ATTR_S {
+	uint32_t u32MaxExposureRatio;
+	uint32_t u32MaxIntegrationTime;
+	uint32_t u32MaxSensorAnalogGain;
+	uint32_t u32MaxSensorDigitalGain;
+	uint32_t u32MaxIspDigitalGain;
 	uint32_t u32Exposure;
 	uint32_t u32ExposureRatio;
 	uint32_t u32IntegrationTime;
@@ -225,11 +230,6 @@ typedef struct HB_ISP_AE_ATTR_S {
 	uint32_t u32SensorAnalogGain;
 	uint32_t u32SensorDigitalGain;
 	uint32_t u32IspDigitalGain;
-	uint32_t u32MaxExposureRatio;
-	uint32_t u32MaxIntegrationTime;
-	uint32_t u32MaxSensorAnalogGain;
-	uint32_t u32MaxSensorDigitalGain;
-	uint32_t u32MaxIspDigitalGain;
 	ISP_OP_TYPE_E enOpType;
 } ISP_AE_ATTR_S;
 
@@ -248,7 +248,11 @@ typedef struct HB_ISP_AWB_ATTR_S {
 
 /* Black Level */
 typedef struct HB_ISP_BLACK_LEVEL_ATTR_S {
-	//reserved struct
+	uint32_t u32OffsetR;
+	uint32_t u32OffsetGr;
+	uint32_t u32OffsetGb;
+	uint32_t u32OffsetB;
+	ISP_OP_TYPE_E enOpType;
 } ISP_BLACK_LEVEL_ATTR_S;
 
 /* Demosaic */ //reg + lut
@@ -272,12 +276,27 @@ typedef struct HB_ISP_GAMMA_ATTR_S {
 	uint16_t au16Gamma[129];
 } ISP_GAMMA_ATTR_S;
 
-/* Iridix */ //lut
-typedef struct HB_ISP_IRIDIX_ATTR_S {
+/* Iridix */ //lut + reg
+typedef struct HB_ISP_IRIDIX_AUTO_ATTR_S {
 	uint8_t u8AvgCoef;
 	uint32_t au32EvLimNoStr[2];
 	uint32_t u32EvLimFullStr;
 	uint32_t au32StrengthDkEnhControl[15];
+} ISP_IRIDIX_AUTO_ATTR_S;
+
+typedef struct HB_ISP_IRIDIX_MANUAL_ATTR_S {
+	uint32_t u32RoiHorStart;
+	uint32_t u32RoiHorEnd;
+	uint32_t u32RoiVerStart;
+	uint32_t u32RoiVerEnd;
+	uint32_t u32StrengthInRoi;
+	uint32_t u32StrengthOutRoi;
+} ISP_IRIDIX_MANUAL_ATTR_S;
+
+typedef struct HB_ISP_IRIDIX_ATTR_S {
+	ISP_OP_TYPE_E enOpType;
+	ISP_IRIDIX_AUTO_ATTR_S stAuto;
+	ISP_IRIDIX_MANUAL_ATTR_S stManual;
 } ISP_IRIDIX_ATTR_S;
 
 /* CNR */ //lut
@@ -308,6 +327,59 @@ typedef struct HB_ISP_SCENE_MODES_ATTR_S {
 	uint32_t u32SharpeningStrength;
 } ISP_SCENE_MODES_ATTR_S;
 
+/* Mesh Shading */ //reg
+typedef struct HB_MESH_SHADING_ATTR_S {
+	uint32_t u32Enable;
+	uint32_t u32MeshScale;
+	uint32_t u32MeshAlphaMode;
+	uint32_t u32MeshWidth;
+	uint32_t u32MeshHeight;
+	uint32_t u32ShadingStrength;
+} MESH_SHADING_ATTR_S;
+
+/* Mesh Shading LUT */ //reg
+typedef struct HB_MESH_SHADING_LUT_S {
+	uint32_t au32RGain[1024];
+	uint32_t au32GGain[1024];
+	uint32_t au32BGain[1024];
+} MESH_SHADING_LUT_S;
+
+/* Radial Shading */ //reg
+typedef struct HB_RADIAL_SHADING_ATTR_S {
+	uint32_t u32Enable;
+	uint32_t u32CenterRX;
+	uint32_t u32CenterRY;
+	uint32_t u32CenterGX;
+	uint32_t u32CenterGY;
+	uint32_t u32CenterBX;
+	uint32_t u32CenterBY;
+	uint32_t u32OffCenterMultRX;
+	uint32_t u32OffCenterMultRY;
+	uint32_t u32OffCenterMultGX;
+	uint32_t u32OffCenterMultGY;
+	uint32_t u32OffCenterMultBX;
+	uint32_t u32OffCenterMultBY;
+} RADIAL_SHADING_ATTR_S;
+
+/* Radial Shading LUT */ //reg
+typedef struct HB_RADIAL_SHADING_LUT_S {
+	uint32_t au32RGain[129];
+	uint32_t au32GGain[129];
+	uint32_t au32BGain[129];
+} RADIAL_SHADING_LUT_S;
+
+/* CSC */ //lut + reg
+typedef struct HB_ISP_CSC_ATTR_S {
+	uint32_t u32ClipMinY;
+	uint32_t u32ClipMaxY;
+	uint32_t u32ClipMinUV;
+	uint32_t u32ClipMaxUV;
+	uint32_t u32MaskRY;
+	uint32_t u32MaskGU;
+	uint32_t u32MaskBV;
+	uint16_t aau16Coefft[12];
+} ISP_CSC_ATTR_S;
+
 /* AE */
 extern int HB_ISP_SetAeAttr(uint8_t pipeId, const ISP_AE_ATTR_S *pstAeAttr);
 extern int HB_ISP_GetAeAttr(uint8_t pipeId, ISP_AE_ATTR_S *pstAeAttr);
@@ -335,6 +407,8 @@ extern int HB_ISP_GetGammaAttr(uint8_t pipeId, ISP_GAMMA_ATTR_S *pstGammaAttr);
 /* Iridix */
 extern int HB_ISP_SetIridixAttr(uint8_t pipeId, const ISP_IRIDIX_ATTR_S *pstIridixAttr);
 extern int HB_ISP_GetIridixAttr(uint8_t pipeId, ISP_IRIDIX_ATTR_S *pstIridixAttr);
+extern int HB_ISP_SetIridixStrengthLevel(uint8_t pipeId, uint16_t level);
+extern int HB_ISP_GetIridixStrengthLevel(uint8_t pipeId, uint16_t *level);
 
 /* CNR */
 extern int HB_ISP_SetCnrAttr(uint8_t pipeId, const ISP_CNR_ATTR_S *pstCnrAttr);
@@ -347,6 +421,22 @@ extern int HB_ISP_GetSinterAttr(uint8_t pipeId, ISP_SINTER_ATTR_S *pstSinterAttr
 /* Temper */
 extern int HB_ISP_SetTemperAttr(uint8_t pipeId, const ISP_TEMPER_ATTR_S *pstTemperAttr);
 extern int HB_ISP_GetTemperAttr(uint8_t pipeId, ISP_TEMPER_ATTR_S *pstTemperAttr);
+
+/* Mesh Shading */
+extern int HB_ISP_SetMeshShadingAttr(uint8_t pipeId, const MESH_SHADING_ATTR_S *pstMeshShadingAttr);
+extern int HB_ISP_GetMeshShadingAttr(uint8_t pipeId, MESH_SHADING_ATTR_S *pstMeshShadingAttr);
+extern int HB_ISP_SetMeshShadingLUT(uint8_t pipeId, const MESH_SHADING_LUT_S *pstMeshShadingLUT);
+extern int HB_ISP_GetMeshShadingLUT(uint8_t pipeId, MESH_SHADING_LUT_S *pstMeshShadingLUT);
+
+/* Radial Shading */
+extern int HB_ISP_SetRadialShadingAttr(uint8_t pipeId, const RADIAL_SHADING_ATTR_S *pstRadialShadingAttr);
+extern int HB_ISP_GetRadialShadingAttr(uint8_t pipeId, RADIAL_SHADING_ATTR_S *pstRadialShadingAttr);
+extern int HB_ISP_SetRadialShadingLUT(uint8_t pipeId, const RADIAL_SHADING_LUT_S *pstRadialShadingLUT);
+extern int HB_ISP_GetRadialShadingLUT(uint8_t pipeId, RADIAL_SHADING_LUT_S *pstRadialShadingLUT);
+
+/* CSC */
+extern int HB_ISP_SetCSCAttr(uint8_t pipeId, const ISP_CSC_ATTR_S *pstCSCAttr);
+extern int HB_ISP_GetCSCAttr(uint8_t pipeId, ISP_CSC_ATTR_S *pstCSCAttr);
 
 /* Scene Mode */
 extern int HB_ISP_SetSceneModesAttr(uint8_t pipeId, const ISP_SCENE_MODES_ATTR_S *pstSceneModesAttr);
@@ -365,5 +455,7 @@ typedef struct HB_ISP_STATISTICS_AWB_ZONE_ATTR_S {
 
 extern int HB_ISP_GetAeFullHist(uint8_t pipeId, uint32_t *pu32AeFullHist);
 extern int HB_ISP_GetAwbZone(uint8_t pipeId, ISP_STATISTICS_AWB_ZONE_ATTR_S *pstAwbZonesAttr);
+
+extern int HB_ISP_ApiCtrl(uint8_t pipeId, uint8_t direction, int type, int cmd, uint32_t *val);
 
 #endif

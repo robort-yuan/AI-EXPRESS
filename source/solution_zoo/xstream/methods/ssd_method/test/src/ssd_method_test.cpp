@@ -67,7 +67,6 @@ TEST(SSD_TEST, BoxDetect) {
   std::string vio_file =
       "./config/vio_config/vio/x3dev/iot_vio_x3_1080_fb.json";
 #endif
-  // SetLogLevel(HOBOT_LOG_DEBUG);
   int ret = ssd_method.Init(config_file);
   std::ifstream ifs(img_list);
   ASSERT_TRUE(ifs.is_open());

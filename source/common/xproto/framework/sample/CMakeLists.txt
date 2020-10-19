@@ -1,16 +1,25 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 2.8)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
 )
 
+# x86 architecture
 if (${X86_ARCH})
-  link_directories(
-    ${PROJECT_SOURCE_DIR}/third_party/hobotlog/lib
-  )
+  # centos release
+  if(${X86_CENTOS})
+    link_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/centos/hobotlog/lib
+    )
+  else()
+    link_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/ubuntu/hobotlog/lib
+    )
+  endif()
+# arm architecture
 else ()
   link_directories(
-    ../../../../../deps/hobotlog/lib
+    ${RELEASE_ROOT_DIR}/deps/hobotlog/lib
   )
 endif()
 

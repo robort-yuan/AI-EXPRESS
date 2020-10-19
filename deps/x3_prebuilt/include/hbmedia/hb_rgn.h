@@ -318,6 +318,9 @@ int32_t HB_RGN_SetPymSta(const RGN_CHN_S *pstChn, uint8_t astStaLevel[3],
 
 int32_t HB_RGN_GetPymSta(const RGN_CHN_S *pstChn, uint16_t astStaValue[8][4]);
 
+int32_t HB_RGN_AddToYUV(RGN_HANDLE Handle, hb_vio_buffer_t *vio_buffer,
+                            const RGN_CHN_ATTR_S *pstChnAttr);
+
 #ifdef __cplusplus
 }
 #endif

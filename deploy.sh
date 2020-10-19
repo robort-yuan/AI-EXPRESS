@@ -24,6 +24,7 @@ then
   cp ${ALL_PROJECT_DIR}/build/lib/libdisplayplugin*.so ${RELEASE_DIR}/lib/ -rf
 	cp ${ALL_PROJECT_DIR}/source/solution_zoo/apa/displayplugin/deps/lib/*.so ${RELEASE_DIR}/lib/ -rf
   cp ${ALL_PROJECT_DIR}/build/lib/libcanplugin.so ${RELEASE_DIR}/lib/ -rf
+  cp ${ALL_PROJECT_DIR}/build/lib/libanalysisplugin.so ${RELEASE_DIR}/lib/ -rf
 fi
 cp ${ALL_PROJECT_DIR}/deps/bpu_predict/${ARCHITECTURE}/lib/* ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/deps/${ARCHITECTURE}_prebuilt/lib/libhbrt_bernoulli_aarch64.so ${RELEASE_DIR}/lib/ -rf
@@ -35,8 +36,9 @@ cp ${ALL_PROJECT_DIR}/deps/live555/lib/libliveMedia.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/deps/live555/lib/libUsageEnvironment.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/deps/uWS/lib64/libuWS.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/deps/xwarehouse/lib/libxwarehouse.so ${RELEASE_DIR}/lib/ -rf
-cp ${ALL_PROJECT_DIR}/python_api/xstream/lib/* ${RELEASE_DIR}/lib/ -rf
-cp ${ALL_PROJECT_DIR}/python_api/xproto/lib/* ${RELEASE_DIR}/lib/ -rf
+cp ${ALL_PROJECT_DIR}/deps/zeroMQ/lib/libzmq.* ${RELEASE_DIR}/lib/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xstream/python_api/package/lib/* ${RELEASE_DIR}/lib/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xproto/python_api/package/lib/* ${RELEASE_DIR}/lib/ -rf
 
 # vehicle deps
 cp ${ALL_PROJECT_DIR}/deps/libyuv/lib/libyuv.so ${RELEASE_DIR}/lib/ -rf
@@ -95,10 +97,12 @@ cp -r ${ALL_PROJECT_DIR}/source/solution_zoo/xstream/methods/ssd_method/test/dat
 ## python api
 mkdir -p ${RELEASE_DIR}/python_api
 mkdir -p ${RELEASE_DIR}/python_api/tests
-cp ${ALL_PROJECT_DIR}/python_api/xstream/xstream ${RELEASE_DIR}/python_api/ -rf
-cp ${ALL_PROJECT_DIR}/python_api/xproto/xproto ${RELEASE_DIR}/python_api/ -rf
-cp ${ALL_PROJECT_DIR}/python_api/xstream/tests/* ${RELEASE_DIR}/python_api/tests/ -rf
-cp ${ALL_PROJECT_DIR}/python_api/xproto/tests/* ${RELEASE_DIR}/python_api/tests/ -rf
+mkdir -p ${RELEASE_DIR}/configs/pytest_configs
+cp ${ALL_PROJECT_DIR}/source/common/xstream/python_api/package/xstream ${RELEASE_DIR}/python_api/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xproto/python_api/package/xproto ${RELEASE_DIR}/python_api/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xstream/python_api/package/tests/* ${RELEASE_DIR}/python_api/tests/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xproto/python_api/package/tests/* ${RELEASE_DIR}/python_api/tests/ -rf
+cp ${ALL_PROJECT_DIR}/source/common/xstream/python_api/package/configs/* ${RELEASE_DIR}/configs/pytest_configs/ -rf
 ## webservice
 cp ${ALL_PROJECT_DIR}/webservice ${RELEASE_DIR}/ -rf
 

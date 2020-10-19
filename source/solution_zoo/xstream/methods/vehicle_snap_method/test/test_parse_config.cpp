@@ -15,7 +15,6 @@
 VEHICLE_SNAP_STRATEGY_NAMESPACE
 
 TEST(ConfigParseModule, ParseJsonSnap) {
-  // SetLogLevel(HOBOT_LOG_DEBUG);
   std::string config_file_name("./config/data/config_snap_for_unit_test.json");
   auto parser = ParseJsonSnap(config_file_name);
 

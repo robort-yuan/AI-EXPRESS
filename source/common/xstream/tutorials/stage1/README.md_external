@@ -1,0 +1,27 @@
+# libxstream.so 样例代码使用说明
+
+## 编译
+
+样例代码自带了编译脚本，目前支持aarch64, ubuntu, centos三种平台编译
+以`ubuntu`平台为例，使用如下
+
+```bash
+cd lib_aiexpress/example/xstream
+bash build.sh ubuntu
+```
+
+## 部署和运行
+仍以以`ubuntu`平台为例,将lib_aiexpress/example/xstream/build/bin拷贝到`ubuntu`平台的设备上，并进入build/bin目录下，运行可执行文件，传入配置文件filter_workflow.json作为参数，即可。
+
+```bash
+cd lib_aiexpress/example/xstream/build/bin
+./stage1_sync_main ./filter_workflow.json
+./stage1_async_main ./filter_workflow.json
+./stage1_update_param_main ./filter_workflow.json
+```
+
+aarch64和centos平台，可直接参考`ubuntu`平台的编译和部署运行
+
+## 样例代码具体实现说明
+
+可参考 source/common/xstream/tutorials/stage1/README.md

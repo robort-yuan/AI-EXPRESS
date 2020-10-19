@@ -26,7 +26,6 @@ TEST(VehicleMatchModule, InitWithParams) {
 }
 
 TEST(VehicleMatchModule, PairMatch) {
-  // SetLogLevel(HOBOT_LOG_DEBUG);
   SetLogLevel(HOBOT_LOG_INFO);
 
   std::string config_file("./config/config_match.json");
@@ -61,8 +60,6 @@ TEST(VehicleMatchModule, PairMatch) {
     }
     LOGD << "Processing " << count << " frames";
     std::istringstream line_ss(line);
-    // bool open_status =
-    //    Json::parseFromStream(reader, line_ss, &input_line, &errs);
     Json::Value &vehicle_data = input_line["vehicle"];
     Json::Value &plate_data = input_line["plate_box"];
     VehicleListPtr vehicle_list = std::make_shared<VehicleList>();

@@ -172,19 +172,6 @@ static void Parking_NMS_local_iou(std::vector<Parking3DBBox> &candidates,
 static void Center_To_Corner_Box2d(std::vector<Parking3DBBox> result,
                                    std::vector<cv::Mat> &out_2dbox) {
   for (auto parking_box : result) {
-    // float x = parking_box.x;
-    // float y = parking_box.y;
-    // float w = parking_box.w;
-    // float l = parking_box.l;
-    // float r = -parking_box.theta;
-    // r = r * 180.0f / PI - 180.0f;
-    // if (r < -90.0f) {
-    //   r += 90.0f;
-    //   float tmp = w;
-    //   w = l;
-    //   l = tmp;
-    // }
-    // cv::RotatedRect rot_rect(cv::Point2f(x, y), cv::Size2f(w, l), r);
     cv::RotatedRect rot_rect(
         cv::Point2f(parking_box.x, parking_box.y),
         cv::Size2f(parking_box.l, parking_box.w),

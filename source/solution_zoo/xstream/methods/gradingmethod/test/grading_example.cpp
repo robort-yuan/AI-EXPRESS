@@ -92,10 +92,8 @@ int main(int argc, char const *argv[]) {
   bbox2->value.score = 0.9901622;
   box_list->datas_.push_back(bbox1);
   box_list->datas_.push_back(bbox2);
-  //  box_list->state_ = xstream::DataState::INVALID;
   inputdata->datas_.push_back(box_list);
 
-  // construct the pose_3d_list and put it into datas_[1]
   std::shared_ptr<BaseDataVector> pose_3d_list(new BaseDataVector());
   pose_3d_list->name_ = "pose_3d_list";
 
@@ -110,10 +108,8 @@ int main(int argc, char const *argv[]) {
   pose2->value.roll = -1.443367;
   pose_3d_list->datas_.push_back(pose1);
   pose_3d_list->datas_.push_back(pose2);
-  //  pose_3d_list->state_ = xstream::DataState::INVALID;
   inputdata->datas_.push_back(pose_3d_list);
 
-  // construct the land_mark_list and put it into datas_[2]
   std::shared_ptr<BaseDataVector> land_mark_list(new BaseDataVector());
   land_mark_list->name_ = "land_mark_list";
 
@@ -135,25 +131,18 @@ int main(int argc, char const *argv[]) {
 
   land_mark_list->datas_.push_back(lmk1);
   land_mark_list->datas_.push_back(lmk2);
-  //  land_mark_list->state_ = xstream::DataState::INVALID;
   inputdata->datas_.push_back(land_mark_list);
 
-  // construct the quality_list and put it into datas_[3]
   std::shared_ptr<BaseDataVector> quality_list(new BaseDataVector());
   quality_list->name_ = "quality_list";
   std::shared_ptr<XStreamQuality> quality1(new XStreamQuality());
   quality1->value.value = 0;
-  //  quality1->value.value = 75;
-  //  quality1->value.value = 0.3125f;
 
   std::shared_ptr<XStreamQuality> quality2(new XStreamQuality());
   quality2->value.value = 0;
-  //  quality2->value.value = 11;
-  //  quality2->value.value = 0.472499996f;
 
   quality_list->datas_.push_back(quality1);
   quality_list->datas_.push_back(quality2);
-  //  quality_list->state_ = xstream::DataState::INVALID;
   inputdata->datas_.push_back(quality_list);
 
   // sync GradingMethod

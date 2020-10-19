@@ -54,7 +54,6 @@ class SSDPostProcessModule {
   std::string ssd_params_file_;
   std::vector<bool> output_layer_big_endian_;
   std::vector<int> model_out_type_;
-  // PERF_MEMBER
 
  public:
   void GetFrameOutput(const std::vector<BPU_TENSOR_S> &input_buf,

@@ -38,7 +38,6 @@ int PostProcessMethod::Init(const std::string &cfg_path) {
     }
   }
 
-  // post_processor_
   std::string post_type = config_["post_type"].isString() ?
                           config_["post_type"].asString() : "";
   auto iter = g_postprocess_type_map.find(post_type);

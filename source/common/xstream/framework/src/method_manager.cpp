@@ -126,7 +126,6 @@ void MethodManager::Init(const Config &config,
   }
 
   // 在thread中绑定相应的method实例，规则见
-  // http://jira.hobot.cc/browse/XPPXSTREAM-4
   if (methodinfo.is_thread_safe_) {
     // thread safe为true，任意method实例都能在任意线程都上运行
     // methods_.size()一定大于1，在分配前因此对所有的method先做初始化处理

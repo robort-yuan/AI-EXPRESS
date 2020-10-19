@@ -1,5 +1,7 @@
 import sys
 import os
+sys.path.append("your/path/to/shared/libraries")
+sys.path.append("your/path/to/xstream/xproto/packages")
 sys.setdlopenflags(os.RTLD_LAZY)
 import xstream.xstream    # noqa
 
@@ -73,16 +75,3 @@ def my_workflow(image):
 # 将workflow序列化成json
 jsondata = xstream.serialize(my_workflow)  # 可以对其写入至文件等
 print(jsondata)
-
-# # 执行异步操作
-# def on_data(**outputs):
-#     # 回调函数
-#     print("data recieved:", outputs)
-
-# if __name__ == "__main__":
-#     with xstream.Session(all_workflow, image = Variable("image")) as sess:
-#         sess.Callback(on_data)
-#         for image in image_set():
-#             sess.Forward(image = image)  # 提供输入数据
-
-#

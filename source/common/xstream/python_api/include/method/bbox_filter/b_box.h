@@ -52,6 +52,7 @@ struct BBox_ {
   Dtype y2 = 0;
   float score = 0.0;
   int32_t id = 0;
+  float rotation_angle = 0.0;
   std::string category_name = "";
 };
 typedef BBox_<float> BBox;

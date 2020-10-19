@@ -15,9 +15,14 @@
 #include <thread>
 #include <vector>
 
+#include "./smart_manager.h"
 #include "json/json.h"
 #include "xproto/message/pluginflow/flowmsg.h"
 #include "xproto/plugin/xpluginasync.h"
+#include "xproto_msgtype/smartplugin_data.h"
+
+using horizon::vision::xproto::basic_msgtype::SmartMessage;
+using SmartMessagePtr = std::shared_ptr<SmartMessage>;
 
 namespace horizon {
 namespace vision {
@@ -25,19 +30,25 @@ namespace xproto {
 namespace Uvcplugin {
 using horizon::vision::xproto::XProtoMessagePtr;
 
-class HidManager {
+class HidManager : public SmartManager {
  public:
   HidManager() = delete;
   explicit HidManager(std::string config_path);
   ~HidManager();
-  int Init();
-  int Start();
-  int Stop();
+  virtual int Init();
+  virtual int Start();
+  virtual int Stop();
 
-  int FeedSmart(XProtoMessagePtr msg, int ori_image_width, int ori_image_height,
-                int dst_image_width, int dst_image_height);
+  virtual int FeedSmart(XProtoMessagePtr msg, int ori_image_width,
+                        int ori_image_height, int dst_image_width,
+                        int dst_image_height);
+
+ private:
   int Send(const std::string &proto_str);
   void SendThread();
+  int Serialize(SmartMessagePtr smart_msg, int ori_image_width,
+                int ori_image_height, int dst_image_width,
+                int dst_image_height);
 
  private:
   bool stop_flag_;
@@ -54,6 +65,9 @@ class HidManager {
   const unsigned int queue_max_size_ = 5;
   std::queue<std::string> pb_buffer_queue_;
   std::condition_variable condition_;
+
+  hobot::CThreadPool serialize_thread_;
+  bool print_timestamp_ = false;
 };
 
 }  // namespace Uvcplugin

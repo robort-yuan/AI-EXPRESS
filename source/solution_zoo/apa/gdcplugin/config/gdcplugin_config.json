@@ -1,0 +1,11 @@
+{
+  "all_in_one_vio": true,
+  "data_source_num": 4,
+  "config_files": ["apa/configs/configs/ch0.json", "apa/configs/configs/ch1.json", "apa/configs/configs/ch2.json", "apa/configs/configs/ch3.json"],
+  "channel2direction": [0, 1, 2, 3],
+  "concate": []
+}
+all_in_one_vio: 多路图像是否是在一个viomessage中
+config_files: sensor配置文件, 按通道顺序填写, 如果只写了一个则认为配置文件相同
+channel2direction: 输入通道和朝向的对应关系, Left: 0, Right: 1, Rear: 2, Front: 3
+concate: 需要拼接的通道，空：不拼接

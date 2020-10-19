@@ -959,9 +959,9 @@ int VotModule::Input(void *data, const xstream::OutputDataPtr& xstream_out) {
           uint8_t[image_data_size_ / 2 + image_data_size_ * 2];
   cv::Mat bgr(image_height_, image_width_, CV_8UC3, bgr_buf);
   if (vot_data->channel == 0) {
-    PlotSmartData(bgr, false, false, false, false, true, vot_data, xstream_out);
+    PlotSmartData(bgr, true, false, false, false, false, vot_data, xstream_out);
     bgr_540p_to_nv12(bgr, buffer_, vot_data->channel);
-
+#if 0
     for (const auto& veh : vot_data->vehicle_infos) {
       if (veh.box.score < vo_plot_cfg_.kps_thr) {
         continue;
@@ -982,14 +982,15 @@ int VotModule::Input(void *data, const xstream::OutputDataPtr& xstream_out) {
         }
       }
     }
+#endif
   } else if (vot_data->channel == 1) {
     PlotSmartData(bgr, true, false, false, false, false, vot_data, xstream_out);
     bgr_540p_to_nv12(bgr, buffer_, vot_data->channel);
   } else if (vot_data->channel == 2) {
-    PlotSmartData(bgr, false, true, true, false, false, vot_data, xstream_out);
+    PlotSmartData(bgr, true, false, false, false, false, vot_data, xstream_out);
     bgr_540p_to_nv12(bgr, buffer_, vot_data->channel);
   } else if (vot_data->channel == 3) {
-    PlotSmartData(bgr, false, false, false, true, false, vot_data, xstream_out);
+    PlotSmartData(bgr, true, false, false, false, false, vot_data, xstream_out);
     bgr_540p_to_nv12(bgr, buffer_, vot_data->channel);
   }
   delete []bgr_buf;

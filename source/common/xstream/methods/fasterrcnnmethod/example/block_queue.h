@@ -21,13 +21,17 @@ class BlockQueue {
       not_empty_(),
       queue_() { }
   void Push(const T& value) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.push_back(value);
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push_back(value);
+    }
     not_empty_.notify_one();
   }
   void Push(T &&value) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.push_back(std::move(value));
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push_back(std::move(value));
+    }
     not_empty_.notify_one();
   }
   T Take() {

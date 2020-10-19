@@ -165,7 +165,7 @@ int main() {
   for (auto& plugin : g_ctx.plugins) {
     plugin->Start();
   }
-  std::this_thread::sleep_for(seconds(40));
+  std::this_thread::sleep_for(seconds(5));
 #if 0
   while (!g_ctx.exit) {
     milliseconds(40);

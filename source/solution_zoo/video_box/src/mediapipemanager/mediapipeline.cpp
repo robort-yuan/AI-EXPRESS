@@ -4,41 +4,58 @@
  * @Author:
  * @Mail: @horizon.ai
  */
-#include "mediapipemanager/meidapipeline.h"
-
 #include "hb_comm_vdec.h"
 #include "hb_vps_api.h"
 #include "hobotlog/hobotlog.hpp"
+#include "mediapipemanager/meidapipeline.h"
 
 namespace horizon {
 namespace vision {
 MediaPipeLine::MediaPipeLine(uint32_t gp_id0, uint32_t gp_id1)
-    : vdec_group_id_(gp_id0), vps_group_id_(gp_id1) {
+    : vdec_group_id_(gp_id0), vps_group_id_(gp_id1), decode_type_(PT_H264) {
   vps_module_ = std::make_shared<VpsModule>();
   vdec_module_ = std::make_shared<VdecModule>();
   // vot_module_ = std::make_shared<VotModule>();
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  last_recv_data_time_ = (uint64_t)tv.tv_sec;
 }
 
 int MediaPipeLine::Init() {
+  if (init_) return 0;
+
   int ret = 0;
   PipeModuleInfo module_info;
-  module_info.input_height = 1088;
-  module_info.input_width = 1920;
+  // module_info.input_height = 1088;
+  // module_info.input_width = 1920;
+  // height_ = 2160;
+  // width_ = 3840;
+  module_info.input_height = height_;
+  module_info.input_width = width_;
+  LOGW << "media pipeline input video width:" << width_
+       << " height:" << height_;
   module_info.output_height = 1080;
   module_info.output_width = 1920;
-  //module_info.frame_depth = 4;
+  // module_info.frame_depth = 4;
   module_info.frame_depth = 2;
+  module_info.input_encode_type = decode_type_;
   LOGW << "vdec frame_depth:" << module_info.frame_depth;
   ret = vdec_module_->Init(vdec_group_id_, &module_info);
-  //module_info.frame_depth = 6;
+  // module_info.frame_depth = 6;
   module_info.frame_depth = 4;
   LOGW << "vps frame_depth:" << module_info.frame_depth;
   ret = vps_module_->Init(vps_group_id_, &module_info);
   // ret = vot_module_->Init(vps_group_id_, &module_info);
+
+  init_ = true;
   return ret;
 }
 
 int MediaPipeLine::Start() {
+  if (running_) return 0;
+
+  if (!init_) return -1;
+
   running_ = true;
   vdec_module_->Start();
   vps_module_->Start();
@@ -51,6 +68,7 @@ int MediaPipeLine::Start() {
 
 int MediaPipeLine::Input(void *data) {
   if (!running_) {
+    LOGI << "channel:" << vdec_group_id_ << " has not running, input error";
     return -1;
   }
 
@@ -70,7 +88,7 @@ int MediaPipeLine::Input(void *data) {
 
 int MediaPipeLine::Output(void **data) {
   if (!running_) {
-    return -1;
+    return -5;
   }
   int ret = 0;
   hb_vio_buffer_t hb_vio_buf;
@@ -125,6 +143,10 @@ int MediaPipeLine::OutputBufferFree(void *data) {
 }
 
 int MediaPipeLine::Stop() {
+  if (!running_) return 0;
+
+  LOGI << "call mediapipeline stop,"
+       << "channel:" << vdec_group_id_;
   running_ = false;
   vps_module_->Stop();
   vdec_module_->Stop();
@@ -132,14 +154,17 @@ int MediaPipeLine::Stop() {
 }
 
 int MediaPipeLine::DeInit() {
+  if (!init_) return 0;
+
+  LOGI << "call mediapipeline DeInit, "
+       << "channel:" << vdec_group_id_;
   vps_module_->DeInit();
   vdec_module_->DeInit();
+  init_ = false;
   return 0;
 }
 
-uint32_t MediaPipeLine::GetGrpId() {
-  return vdec_group_id_;
-}
+uint32_t MediaPipeLine::GetGrpId() { return vdec_group_id_; }
 
 int MediaPipeLine::CheckStat() {
   set_prom_ = true;
@@ -155,6 +180,12 @@ int MediaPipeLine::CheckStat() {
   }
 
   return 0;
+}
+
+void MediaPipeLine::UpdateTime() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  last_recv_data_time_ = (uint64_t)tv.tv_sec;
 }
 }  // namespace vision
 }  // namespace horizon

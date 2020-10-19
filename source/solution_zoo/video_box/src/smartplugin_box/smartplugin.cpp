@@ -131,12 +131,9 @@ namespace horizon
           sdk_.reset(xstream::XStreamSDK::CreateSDK());
           // todo
           // vehicle cfg should be from cfg file
-//          sdk_->SetConfig("config_file",
-// "vehicle_solution/configs/vehicle_solution_v2_workflow.json");
-
-          sdk_->SetConfig("config_file",
-             "vehicle_solution/configs/vehicle_solution_workflow.json");
-//          sdk_->SetConfig("config_file", xstream_workflow_cfg_file_);
+         // sdk_->SetConfig("config_file",
+         //    "vehicle_solution/configs/vehicle_solution_workflow.json");
+          sdk_->SetConfig("config_file", xstream_workflow_cfg_file_);
           if (sdk_->Init() != 0)
           {
             LOGE << "smart plugin init failed!!!";
@@ -275,6 +272,10 @@ namespace horizon
           auto valid_frame = std::static_pointer_cast<VioMessage>(msg);
           xstream::InputDataPtr input = Convertor::ConvertInput(valid_frame.get());
           SmartInput *input_wrapper = new SmartInput();
+          if (input_wrapper == NULL) {
+            LOGE << "new smart input ptr fail, return error!";
+            return kHorizonVisionFailure;
+          }
           input_wrapper->frame_info = valid_frame;
           input_wrapper->context = input_wrapper;
           LOGI << "smart plugin recv chn:"
@@ -354,14 +355,14 @@ namespace horizon
 
           running_ = true;
           smartframe = 0;
-          read_thread_ = std::thread(&SmartPlugin::ComputeFpsThread, this);
+          // read_thread_ = std::thread(&SmartPlugin::ComputeFpsThread, this);
           return 0;
         }
 
         int SmartPlugin::Stop()
         {
           running_ = false;
-          read_thread_.join();
+          // read_thread_.join();
 
           vot_module_->Stop();
           if (result_to_json)
@@ -394,18 +395,9 @@ namespace horizon
           }
 
           smartframe++;
-          auto vehicle_infos =
-                  horizon::iot::smartplugin_multiplebox::
-                  Convertor::ParseXstreamOutputToVehicleInfo(xstream_out);
-//          smart_msg->nomotor_infos =
-//                  horizon::iot::smartplugin_multiplebox::
-// Convertor::ParseXstreamOutputToNoMotorInfo(xstream_out);
-//          smart_msg->person_infos =
-//                  horizon::iot::smartplugin_multiplebox::
-// Convertor::ParseXstreamOutputToPersonInfo(xstream_out);
-//          smart_msg->lost_track_ids =
-//                  horizon::iot::smartplugin_multiplebox::
-// Convertor::ParseXstreamOutputToLostTrack(xstream_out);
+        //  auto vehicle_infos =
+        //          horizon::iot::smartplugin_multiplebox::
+        //          Convertor::ParseXstreamOutputToVehicleInfo(xstream_out);
 
           // Set origin input named "image" as output always.
           HOBOT_CHECK(rgb_image);
@@ -421,7 +413,7 @@ namespace horizon
                   ->down_scale[4]
                   .c_vaddr);
           vot_data.channel = 0;
-          vot_data.vehicle_infos.swap(vehicle_infos);
+        //  vot_data.vehicle_infos.swap(vehicle_infos);
 
           static std::mutex plot_mut_;
           static uint64_t last_plot_frame_id = 0;
@@ -732,6 +724,10 @@ namespace horizon
           }
 
           auto smart_msg = std::make_shared<CustomSmartMessage>(xstream_out);
+          if (smart_msg == NULL) {
+            LOGE << "new smart msg ptr fail, return error!";
+            return;
+          }
           // Set origin input named "image" as output always.
           HOBOT_CHECK(rgb_image);
           VotData vot_data;
@@ -821,6 +817,10 @@ namespace horizon
           }
 
           auto smart_msg = std::make_shared<CustomSmartMessage>(xstream_out);
+          if (smart_msg == NULL) {
+            LOGE << "new smart msg ptr fail, return error!";
+            return;
+          }
           // Set origin input named "image" as output always.
           HOBOT_CHECK(rgb_image);
           VotData vot_data;
@@ -910,6 +910,10 @@ namespace horizon
           }
 
           auto smart_msg = std::make_shared<CustomSmartMessage>(xstream_out);
+          if (smart_msg == NULL) {
+            LOGE << "new smart msg ptr fail, return error!";
+            return;
+          }
           // Set origin input named "image" as output always.
           HOBOT_CHECK(rgb_image);
           VotData vot_data;
@@ -998,6 +1002,10 @@ namespace horizon
           }
 
           auto smart_msg = std::make_shared<CustomSmartMessage>(xstream_out);
+          if (smart_msg == NULL) {
+            LOGE << "new smart msg ptr fail, return error!";
+            return;
+          }
           // Set origin input named "image" as output always.
           HOBOT_CHECK(rgb_image);
           VotData vot_data;

@@ -29,7 +29,9 @@
 #include "vioplugin/viomessage.h"
 #include "vioplugin/vioprocess.h"
 #include "vioplugin/vioproduce.h"
-#include "vioplugin/iot_vio_api.h"
+#include "iotviomanager/vio_data_type.h"
+#include "iotviomanager/viopipeline.h"
+#include "iotviomanager/viopipemanager.h"
 
 #define CHECK_NULL(p)                                                          \
   if (nullptr == p)                                                            \
@@ -43,9 +45,9 @@ namespace vioplugin {
 const std::unordered_map<std::string, VioProduce::TSTYPE>
     VioProduce::str2ts_type_ = {{"raw_ts", TSTYPE::RAW_TS},
                                 {"frame_id", TSTYPE::FRAME_ID},
-                                {"input_coded", TSTYPE::INPUT_CODED}};
+                                {"input_coded", TSTYPE::INPUT_CODED},
+                                {"inner_frame_id", TSTYPE::INNER_FRAME_ID}};
 
-VioConfig *VioConfig::config_ = nullptr;
 
 hobot::vision::BlockingQueue<std::shared_ptr<unsigned char>>
         UsbCam::nv12_queue_;
@@ -65,23 +67,43 @@ std::string VioConfig::GetValue(const std::string &key) const {
 }
 
 Json::Value VioConfig::GetJson() const { return this->json_; }
+std::vector<std::string> VioConfig::GetArrayItem(std::string key) const {
+  std::vector<std::string> result;
+  auto value_js = json_[key.c_str()];
+  if (value_js.isNull()) {
+    value_js = Json::Value("");
+  }
 
-VioConfig *VioConfig::GetConfig() {
-  if (config_ != nullptr) {
-    return config_;
-  } else {
+  if (value_js.isString()) {
+    auto item_list_obj = Json::Value();
+    item_list_obj.resize(1);
+    item_list_obj[0] = value_js.asString();
+    value_js = item_list_obj;
+  }
+  for (unsigned int i = 0; i < value_js.size(); i++) {
+    result.push_back(value_js[i].asString());
+  }
+  return result;
+}
+
+std::shared_ptr<VioConfig> VioConfig::GetSubConfig(std::string key) {
+  auto value_js = json_[key.c_str()];
+  if (value_js.isNull()) {
     return nullptr;
   }
+  return std::shared_ptr<VioConfig>(new VioConfig(value_js));
 }
 
-bool VioConfig::SetConfig(VioConfig *config) {
-  if (config != nullptr) {
-    config_ = config;
-    return true;
-  } else {
-    return false;
+std::shared_ptr<VioConfig> VioConfig::GetSubConfig(int key) {
+  auto value_js = json_[key];
+  if (value_js.isNull()) {
+    return nullptr;
   }
+  return std::shared_ptr<VioConfig>(new VioConfig(value_js));
 }
+
+bool VioConfig::HasMember(std::string key) { return json_.isMember(key); }
+int VioConfig::ItemCount(void) { return json_.size(); }
 
 int VioCamera::read_time_stamp(void *addr, uint64_t *timestamp) {
   LOGI << "read time stamp";
@@ -98,12 +120,12 @@ int VioCamera::read_time_stamp(void *addr, uint64_t *timestamp) {
   return 0;
 }
 
-std::shared_ptr<VioProduce>
-VioProduce::CreateVioProduce(const std::string &data_source) {
-  auto config = VioConfig::GetConfig();
+std::shared_ptr<VioProduce> VioProduce::CreateVioProduce(
+    const std::shared_ptr<VioConfig> config, const std::string &data_source) {
   HOBOT_CHECK(config);
   auto json = config->GetJson();
   std::shared_ptr<VioProduce> Vio_Produce;
+  std::vector<std::string> vio_cfg_files;
   if ("jpeg_image_list" == data_source) {
     Vio_Produce = std::make_shared<JpegImageList>(
         json["vio_cfg_file"]["jpeg_image_list"].asCString());
@@ -111,14 +133,18 @@ VioProduce::CreateVioProduce(const std::string &data_source) {
     Vio_Produce = std::make_shared<Nv12ImageList>(
         json["vio_cfg_file"]["nv12_image_list"].asCString());
   } else if ("panel_camera" == data_source) {
-    Vio_Produce = std::make_shared<PanelCamera>(
-        json["vio_cfg_file"]["panel_camera"].asString());
+    vio_cfg_files.push_back(json["vio_cfg_file"]["panel_camera"].asString());
+    Vio_Produce = std::make_shared<PanelCamera>(vio_cfg_files);
+  } else if ("dual_panel_camera" == data_source) {
+    vio_cfg_files =
+        config->GetSubConfig("vio_cfg_file")->GetArrayItem("dual_panel_camera");
+    Vio_Produce = std::make_shared<PanelCamera>(vio_cfg_files);
   } else if ("ipc_camera" == data_source) {
     Vio_Produce = std::make_shared<IpcCamera>(
         json["vio_cfg_file"]["ipc_camera"].asString());
   } else if ("image" == data_source) {
-    Vio_Produce = std::make_shared<PanelCamera>(
-        json["vio_cfg_file"]["image"].asCString());
+    vio_cfg_files.push_back(json["vio_cfg_file"]["image"].asCString());
+    Vio_Produce = std::make_shared<PanelCamera>(vio_cfg_files);
   } else if ("cached_image_list" == data_source) {
     Vio_Produce = std::make_shared<CachedImageList>(
         json["vio_cfg_file"]["cached_image_list"].asCString());
@@ -129,7 +155,8 @@ VioProduce::CreateVioProduce(const std::string &data_source) {
     Vio_Produce = std::make_shared<UsbCam>(
             json["vio_cfg_file"]["usb_cam"].asCString());
   } else {
-    LOGW << "data source " << data_source << " is unsupported";
+    LOGE << "data source " << data_source << " is unsupported";
+    return nullptr;
   }
   Vio_Produce->cam_type_ = json["cam_type"].asString();
   Vio_Produce->ts_type_ = str2ts_type_.find(json["ts_type"].asString())->second;
@@ -191,8 +218,10 @@ void VioProduce::FreeBuffer() {
        << consumed_vio_buffers_;
 }
 
-int VioProduce::SetConfig(VioConfig *config) {
+int VioProduce::SetConfig(std::shared_ptr<VioConfig> config) {
   config_ = config;
+  auto json = config_->GetJson();
+  max_vio_buffer_ = json["max_vio_buffer"].asUInt();
   return kHorizonVisionSuccess;
 }
 
@@ -415,8 +444,8 @@ VDEC_CHN_ATTR_S VioProduce::VdecChnAttrInit() {
 }
 
 #if defined(X3_X2_VIO)
-bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
-                    int len) {
+bool VioProduce::GetPyramidInfo(VioFeedbackContext *feed_back_context,
+                                char *data, int len) {
   src_img_info_t *src_img_info = &(feed_back_context->src_info);
   auto ret = hb_vio_get_info(HB_VIO_FEEDBACK_SRC_INFO, src_img_info);
   if (ret < 0) {
@@ -450,7 +479,7 @@ bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
   return true;
 }
 
-bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len) {
+bool VioProduce::GetPyramidInfo(img_info_t *pvio_image, char *data, int len) {
   src_img_info_t src_img_info;
   auto ret = hb_vio_get_info(HB_VIO_FEEDBACK_SRC_INFO, &src_img_info);
   if (ret < 0) {
@@ -485,7 +514,8 @@ bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len) {
 }
 
 //通过多个金字塔获取输入图像数据的输出图像数据
-bool GetPyramidInfo(mult_img_info_t *pvio_image, char *data, int len) {
+bool VioProduce::GetPyramidInfo(mult_img_info_t *pvio_image, char *data,
+                                int len) {
   mult_src_info_t mult_src_info;
   auto ret = hb_vio_get_info(HB_VIO_FEEDBACK_SRC_MULT_INFO, &mult_src_info);
   if (ret < 0) {
@@ -513,12 +543,14 @@ bool GetPyramidInfo(mult_img_info_t *pvio_image, char *data, int len) {
 #endif  // X3_X2_VIO
 
 #ifdef X3_IOT_VIO
-bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
-                    int len) {
+/* bool VioProduce::GetPyramidInfo(VioFeedbackContext *feed_back_context, */
+/*                                 char *data, int len) { */
+bool VioProduce::GetPyramidInfo(std::shared_ptr<VioPipeLine> vio_pipeline,
+    VioFeedbackContext *feed_back_context, char *data, int len) {
   hb_vio_buffer_t *src_img_info = &(feed_back_context->src_info);
-  auto ret = iot_vio_get_info(IOT_VIO_FEEDBACK_SRC_INFO, src_img_info);
+  auto ret = vio_pipeline->GetInfo(IOT_VIO_FEEDBACK_SRC_INFO, src_img_info);
   if (ret < 0) {
-    LOGE << "iot_vio_get_info failed";
+    LOGE << "vio pipeline get feedback src info failed";
     return false;
   }
 
@@ -530,21 +562,21 @@ bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
          y_img_len);
   memcpy(reinterpret_cast<uint8_t *>(src_img_info->img_addr.addr[1]),
          data + y_img_len, uv_img_len);
-  ret = iot_vio_set_info(IOT_VIO_FEEDBACK_FLUSH, src_img_info);
+
+
+  ret = vio_pipeline->SetInfo(IOT_VIO_FEEDBACK_PYM_PROCESS, src_img_info);
   if (ret < 0) {
-    LOGE << "iot_vio_feedback_flush failed";
+    LOGE << "vio pipeline set feedback pym process info failed";
     return false;
   }
-  ret = iot_vio_pym_process(src_img_info);
-  if (ret < 0) {
-    LOGE << "iot_vio_pym_process failed";
-    return false;
-  }
-  ret = iot_vio_get_info(IOT_VIO_PYM_INFO, &(feed_back_context->pym_img_info));
+
+  ret = vio_pipeline->GetInfo(IOT_VIO_PYM_INFO,
+      &(feed_back_context->pym_img_info));
   if (ret < 0) {
     LOGE << "iot_vio_pyramid_info failed";
     return false;
   }
+
   /* use src image addr instead of pym 0 addr, */
   /* because pym 0-layer not output data in pym offline mode */
   feed_back_context->pym_img_info.pym[0] = src_img_info->img_addr;
@@ -552,11 +584,11 @@ bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
   return true;
 }
 
-bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len) {
+bool VioProduce::GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len) {
   hb_vio_buffer_t src_img_info;
-  auto ret = iot_vio_get_info(IOT_VIO_FEEDBACK_SRC_INFO, &src_img_info);
+  auto ret = vio_pipeline_->GetInfo(IOT_VIO_FEEDBACK_SRC_INFO, &src_img_info);
   if (ret < 0) {
-    LOGE << "iot_vio_get_info failed";
+    LOGE << "vio pipeline get feedback src info failed";
     return false;
   }
 
@@ -568,19 +600,16 @@ bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len) {
          y_img_len);
   memcpy(reinterpret_cast<uint8_t *>(src_img_info.img_addr.addr[1]),
          data + y_img_len, uv_img_len);
-  ret = iot_vio_set_info(IOT_VIO_FEEDBACK_FLUSH, &src_img_info);
+
+  ret = vio_pipeline_->SetInfo(IOT_VIO_FEEDBACK_PYM_PROCESS, &src_img_info);
   if (ret < 0) {
-    LOGE << "iot_vio_feedback_flush failed";
+    LOGE << "vio pipeline set feedback pym process info failed";
     return false;
   }
-  ret = iot_vio_pym_process(&src_img_info);
+
+  ret = vio_pipeline_->GetInfo(IOT_VIO_PYM_INFO, pvio_image);
   if (ret < 0) {
-    LOGE << "iot_vio_pym_process failed";
-    return false;
-  }
-  ret = iot_vio_get_info(IOT_VIO_PYM_INFO, pvio_image);
-  if (ret < 0) {
-    LOGE << "iot_vio_pyramid_info failed";
+    LOGE << "vio pipeline get pym info failed";
     return false;
   }
   /* use src image addr instead of pym0 addr, */
@@ -591,11 +620,14 @@ bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len) {
 }
 
 //通过多个金字塔获取输入图像数据的输出图像数据
-bool GetPyramidInfo(iot_mult_img_info_t *pvio_image, char *data, int len) {
-  iot_mult_src_info_t mult_src_info;
-  auto ret = iot_vio_get_info(IOT_VIO_FEEDBACK_SRC_MULT_INFO, &mult_src_info);
+bool VioProduce::GetPyramidInfo(IotMultPymBuffer *pvio_image, char *data,
+                                int len) {
+  IotMultSrcBuffer mult_src_info;
+
+  auto ret = vio_pipeline_->GetMultInfo(IOT_VIO_FEEDBACK_SRC_INFO,
+      &mult_src_info);
   if (ret < 0) {
-    LOGE << "iot_vio_get_info failed";
+    LOGE << "vio pipeline get mult feedback src info failed";
     return false;
   }
   // adapter to x3 api, y and uv address is standalone
@@ -616,16 +648,19 @@ bool GetPyramidInfo(iot_mult_img_info_t *pvio_image, char *data, int len) {
       reinterpret_cast<uint8_t *>(mult_src_info.img_info[1].img_addr.addr[1]),
       data + y_img_len, uv_img_len);
 
-  ret = iot_vio_mult_pym_process(&mult_src_info);
+  ret = vio_pipeline_->SetMultInfo(IOT_VIO_FEEDBACK_PYM_PROCESS,
+      &mult_src_info);
   if (ret < 0) {
-    LOGE << "hb_vio_mult_pym_process failed";
+    LOGE << "vio pipeline get mult feedback src info failed";
     return false;
   }
-  ret = iot_vio_get_info(IOT_VIO_PYM_MULT_INFO, pvio_image);
+
+  ret = vio_pipeline_->GetMultInfo(IOT_VIO_PYM_INFO, pvio_image);
   if (ret < 0) {
-    LOGE << "iot_vio_pyramid_info failed";
+    LOGE << "vio pipeline get pym info failed";
     return false;
   }
+
   return true;
 }
 #endif  // X3_IOT_VIO
@@ -744,6 +779,8 @@ int VioCamera::Run() {
         pvio_image->timestamp = img_time;
       } else if (ts_type_ == TSTYPE::FRAME_ID) {
         pvio_image->timestamp = pvio_image->frame_id;
+      } else if (ts_type_ == TSTYPE::INNER_FRAME_ID) {
+        pvio_image->timestamp = frame_id;
       }
       if (res != 0 ||
           (check_timestamp && pvio_image->timestamp == last_timestamp)) {
@@ -783,7 +820,8 @@ int VioCamera::Run() {
         std::vector<std::shared_ptr<PymImageFrame>> pym_images;
         pym_images.push_back(pym_image_frame_ptr);
         std::shared_ptr<VioMessage> input(
-            new ImageVioMessage(pym_images, img_num), [&](ImageVioMessage *p) {
+            new ImageVioMessage(vio_pipeline_, pym_images, img_num),
+            [&](ImageVioMessage *p) {
               if (p) {
                 LOGD << "begin delete ImageVioMessage";
                 p->FreeImage();
@@ -830,6 +868,12 @@ int VioCamera::Run() {
   if (vio_profile_str && !strcmp(vio_profile_str, "ON")) {
     enable_vio_profile = true;
   }
+  bool enable_check_alloc = false;
+  auto check_alloc_str = getenv("check_alloc");
+  if (check_alloc_str && !strcmp(check_alloc_str, "ON")) {
+    enable_check_alloc = true;
+  }
+
   if (is_running_)
     return kHorizonVioErrorAlreadyStart;
   static uint64_t frame_id = 0;
@@ -844,7 +888,7 @@ int VioCamera::Run() {
         LOGF << "std::calloc failed";
         continue;
       }
-      auto res = iot_vio_get_info(IOT_VIO_PYM_INFO, pvio_image);
+      auto res = vio_pipeline_->GetInfo(IOT_VIO_PYM_INFO, pvio_image);
       if (res != 0) {
         std::free(pvio_image);
         std::lock_guard<std::mutex> lk(vio_buffer_mutex_);
@@ -870,12 +914,15 @@ int VioCamera::Run() {
         }
       } else if (ts_type_ == TSTYPE::FRAME_ID) {
         pvio_image->pym_img_info.time_stamp = pvio_image->pym_img_info.frame_id;
+      } else if (ts_type_ == TSTYPE::INNER_FRAME_ID) {
+        pvio_image->pym_img_info.time_stamp = frame_id;
       }
       if (check_timestamp &&
                        pvio_image->pym_img_info.time_stamp == last_timestamp) {
         LOGD << "iot_vio_get_info: " << res;
-        iot_vio_free(pvio_image);
+        vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, pvio_image);
         std::free(pvio_image);
+        pvio_image = nullptr;
         continue;
       }
 #ifdef DEBUG
@@ -893,10 +940,16 @@ int VioCamera::Run() {
       }
       LOGD << "Vio TimeStamp: " << pvio_image->pym_img_info.time_stamp;
       last_timestamp = pvio_image->pym_img_info.time_stamp;
+      if (enable_check_alloc) {
+        LOGW << "Vio TimeStamp: " << pvio_image->pym_img_info.time_stamp;
+      }
       if (frame_id % sample_freq_ == 0 && AllocBuffer()) {
+        if (enable_check_alloc) {
+          LOGW << "Alloc vio buffer succeed";
+        }
         if (!is_running_) {
           LOGD << "stop vio job";
-          iot_vio_free(pvio_image);
+          vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, pvio_image);
           std::free(pvio_image);
           FreeBuffer();
           break;
@@ -909,7 +962,8 @@ int VioCamera::Run() {
         std::vector<std::shared_ptr<PymImageFrame>> pym_images;
         pym_images.push_back(pym_image_frame_ptr);
         std::shared_ptr<VioMessage> input(
-            new ImageVioMessage(pym_images, img_num), [&](ImageVioMessage *p) {
+            new ImageVioMessage(vio_pipeline_, pym_images, img_num),
+            [&](ImageVioMessage *p) {
               if (p) {
                 LOGD << "begin delete ImageVioMessage";
                 p->FreeImage();
@@ -929,6 +983,9 @@ int VioCamera::Run() {
         }
       } else {
         LOGV << "NO VIO BUFFER ";
+        if (enable_check_alloc) {
+          LOGW << "NO VIO BUFFER";
+        }
         auto input = std::make_shared<DropVioMessage>(
             static_cast<uint64_t>(pvio_image->pym_img_info.time_stamp),
             frame_id);
@@ -943,7 +1000,7 @@ int VioCamera::Run() {
         std::vector<std::shared_ptr<PymImageFrame>> pym_images;
         pym_images.push_back(pym_image_frame_ptr);
         std::shared_ptr<VioMessage> drop_image_message(
-            new DropImageVioMessage(pym_images, img_num),
+            new DropImageVioMessage(vio_pipeline_, pym_images, img_num),
             [&](DropImageVioMessage *p) {
               if (p) {
                 LOGD << "begin delete DropImageVioMessage";
@@ -975,25 +1032,11 @@ int VioCamera::Run() {
 #endif  // X3_X2_VIO
 }
 
-PanelCamera::PanelCamera(const std::string &cfg_file) {
-  std::ifstream if_cfg(cfg_file);
-  HOBOT_CHECK(if_cfg.is_open()) << "config file load failed!!";
-  std::stringstream oss_config;
-  oss_config << if_cfg.rdbuf();
-  if_cfg.close();
-  Json::Value config_jv;
-  oss_config >> config_jv;
-  cam_type_ = config_jv["type"].asString();
+PanelCamera::PanelCamera(const std::vector<std::string> &vio_cfg_list) {
+  HOBOT_CHECK(vio_cfg_list.size() > 0) << "vio cfg file is null";
   std::string cam_cfg_file, vio_cfg_file;
-
-  if (cam_type_ == "mono") {
-    cam_cfg_file = config_jv["mono_cam_cfg_file"].asString();
-    vio_cfg_file = config_jv["mono_vio_cfg_file"].asString();
-  } else if (cam_type_ == "dual") {
-    cam_cfg_file = config_jv["dual_cam_cfg_file"].asString();
-    vio_cfg_file = config_jv["dual_vio_cfg_file"].asString();
-  }
-  camera_index_ = config_jv["cam_index"].asInt();
+  vio_cfg_file = vio_cfg_list[0];
+  camera_index_ = 0;
 #ifdef X3_X2_VIO
   auto ret = hb_vio_init(vio_cfg_file.c_str());
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
@@ -1005,14 +1048,21 @@ PanelCamera::PanelCamera(const std::string &cfg_file) {
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 #ifdef X3_IOT_VIO
-  auto ret = iot_vio_init(vio_cfg_file.c_str());
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "PanelCamera: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    LOGI << "PanelCameara create viopipeline pipe_id: " << pipe_id_;
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "PanelCamera: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_cam_init(camera_index_, cam_cfg_file.c_str());
-  HOBOT_CHECK_EQ(ret, 0) << "cam init failed";
-  ret = iot_vio_start();
+  ret = vio_pipeline_->Start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
-  ret = iot_cam_start(camera_index_);
-  HOBOT_CHECK_EQ(ret, 0) << "cam start failed";
 #endif
 }
 
@@ -1024,10 +1074,10 @@ PanelCamera::~PanelCamera() {
   hb_vio_deinit();
 #endif
 #ifdef X3_IOT_VIO
-  iot_vio_stop();
-  iot_cam_stop(camera_index_);
-  iot_vio_deinit();
-  iot_cam_deinit(camera_index_);
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
 
@@ -1039,9 +1089,22 @@ IpcCamera::IpcCamera(const std::string &vio_cfg_file) {
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 #ifdef X3_IOT_VIO
-  auto ret = iot_vio_init(vio_cfg_file.c_str());
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1)
+    << "IpcCamera: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "IpcCamera: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_vio_start();
+  ret = vio_pipeline_->Start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 }
@@ -1052,8 +1115,10 @@ IpcCamera::~IpcCamera() {
   hb_vio_deinit();
 #endif
 #ifdef X3_IOT_VIO
-  iot_vio_stop();
-  iot_vio_deinit();
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
 
@@ -1065,9 +1130,22 @@ ImageList::ImageList(const char *vio_cfg_file) : VioProduce() {
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 #ifdef X3_IOT_VIO
-  auto ret = iot_vio_init(vio_cfg_file);
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1)
+    << "ImageList: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "ImageList: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_vio_start();
+  ret = vio_pipeline_->Start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 }
@@ -1078,8 +1156,10 @@ ImageList::~ImageList() {
   hb_vio_deinit();
 #endif
 #ifdef X3_IOT_VIO
-  iot_vio_stop();
-  iot_vio_deinit();
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
 
@@ -1089,7 +1169,7 @@ int ImageList::Run() {
   // 每帧的时间间隔 ms
   int interval_ms = 500;
 
-  unsigned int all_img_count = 0;
+  int all_img_count = 0;
 
   if (is_running_)
     return kHorizonVioErrorAlreadyStart;
@@ -1152,6 +1232,7 @@ int ImageList::Run() {
   std::vector<unsigned int> source_img_cnt;
   source_img_cnt.resize(list_of_img_list.size());
 
+  auto all_img_count_str = all_img_count;
   while (all_img_count >= 0 && is_running_) {
     // 循环这些list, 循环读出一个 sid => source id
     for (unsigned int sid = 0; sid < list_of_img_list.size(); sid++) {
@@ -1160,6 +1241,7 @@ int ImageList::Run() {
         LOGD << "Source: " << sid << " no data left";
         if (name_list_loop == 1 && list_of_img_list.size() == 1) {
             LOGD << "only has a source, start attemp loop: " << name_list_loop;
+            all_img_count = all_img_count_str;
             source_img_cnt[sid] = 0;
         }
         continue;
@@ -1198,10 +1280,12 @@ int ImageList::Run() {
           pym_images.push_back(pym_image_frame_ptr);
         } else {
           std::free(feedback_context);
-          LOGF << "fill vio image failed";
+          LOGF << "fill vio image failed, ret: " << ret;
+          HOBOT_CHECK(ret == true);
         }
         std::shared_ptr<VioMessage> input(
-            new ImageVioMessage(pym_images, 1, ret), [&](ImageVioMessage *p) {
+            new ImageVioMessage(vio_pipeline_, pym_images, 1, ret),
+            [&](ImageVioMessage *p) {
               if (p) {
 #if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
                 p->FreeImage(1);
@@ -1237,9 +1321,21 @@ RawImage::RawImage(const char *vio_cfg_file) : VioProduce() {
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 #ifdef X3_IOT_VIO
-  auto ret = iot_vio_init(vio_cfg_file);
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "RawImage: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "RawImage: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_vio_start();
+  ret = vio_pipeline_->Start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 }
@@ -1251,8 +1347,10 @@ RawImage::~RawImage() {
   hb_vio_deinit();
 #endif
 #ifdef X3_IOT_VIO
-  iot_vio_stop();
-  iot_vio_deinit();
+if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
 
@@ -1280,8 +1378,9 @@ bool ImageList::FillVIOImageByImagePath(T *pvio_image,
     HorizonVisionImage *nv12;
     HorizonVisionAllocImage(&nv12);
     HorizonConvertImage(&image->image, nv12, kHorizonVisionPixelFormatRawNV12);
-    auto ret = GetPyramidInfo(pvio_image, reinterpret_cast<char *>(nv12->data),
-                              nv12->height * nv12->width * 3 / 2);
+    auto ret = GetPyramidInfo(vio_pipeline_, pvio_image,
+        reinterpret_cast<char *>(nv12->data),
+        nv12->height * nv12->width * 3 / 2);
     HorizonVisionFreeImage(nv12);
     HorizonVisionFreeImageFrame(image);
     return ret;
@@ -1299,7 +1398,7 @@ bool ImageList::FillVIOImageByImagePath(T *pvio_image,
     ifs.seekg(0, std::ios::beg);
     char *data = new char[len];
     ifs.read(data, len);
-    auto ret = GetPyramidInfo(pvio_image, data, len);
+    auto ret = GetPyramidInfo(vio_pipeline_, pvio_image, data, len);
     delete[] data;
     ifs.close();
     return ret;
@@ -1312,14 +1411,27 @@ bool ImageList::FillVIOImageByImagePath(T *pvio_image,
 UsbCam::UsbCam(const char *vio_cfg_file) {
 #ifdef X3_X2_VIO
   auto ret = hb_vio_init(vio_cfg_file);
-HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-ret = hb_vio_start();
-HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
+  HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
+  ret = hb_vio_start();
+  HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 #ifdef X3_IOT_VIO
-  auto ret = iot_vio_init(vio_cfg_file);
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1)
+    << "UsbCamera: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "UsbCamera: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
   HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
-  ret = iot_vio_start();
+  ret = vio_pipeline_->Start();
   HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
 #endif
 }
@@ -1332,7 +1444,7 @@ int UsbCam::Run() {
     return kHorizonVioErrorAlreadyStart;
 
   // init uvc
-  std::string dev_name = "/dev/video8";
+  std::string dev_name = "/dev/video0";
   auto json = config_->GetJson();
   auto dev_name_obj = json["usb_dev_name"];
   if (!dev_name_obj.isNull()) {
@@ -1407,7 +1519,7 @@ int UsbCam::Run() {
               reinterpret_cast<VioFeedbackContext *>(
                       std::calloc(1, sizeof(VioFeedbackContext)));
       std::vector<std::shared_ptr<PymImageFrame>> pym_images;
-      auto ret = GetPyramidInfo(feedback_context,
+      auto ret = GetPyramidInfo(vio_pipeline_, feedback_context,
                                 reinterpret_cast<char*>(nv12_img.get()), len);
 #endif
       if (ret) {
@@ -1423,11 +1535,12 @@ int UsbCam::Run() {
         pym_images.push_back(pym_image_frame_ptr);
       } else {
         std::free(feedback_context);
-        LOGF << "fill vio image failed";
+        LOGF << "fill vio image failed, ret: " << ret;
+        continue;
       }
 
       std::shared_ptr<VioMessage> input(
-              new ImageVioMessage(pym_images, 1, ret),
+              new ImageVioMessage(vio_pipeline_, pym_images, 1, ret),
               [&](ImageVioMessage *p) {
                   if (p) {
 #if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
@@ -1548,11 +1661,22 @@ int UsbCam::InitUvc(std::string dev_name) {
   HOBOT_CHECK(InitDecModule() >= 0 && StartDecModule() >= 0);
 
   format_enums fmt_enums;
-  // std::string v4l2_devname = "/dev/video8";
+  // std::string v4l2_devname = "/dev/video0";
   std::string v4l2_devname = dev_name;
   int r;
 
   cam = camera_open(v4l2_devname.data());
+  if (!cam) {
+    LOGW << "camer_open " << v4l2_devname << " failed, try to open /dev/video0";
+    v4l2_devname = "/dev/video0";
+    cam = camera_open(v4l2_devname.data());
+    if (!cam) {
+      LOGW << "camer_open " << v4l2_devname
+           << " failed, try to open /dev/video8";
+      v4l2_devname = "/dev/video8";
+      cam = camera_open(v4l2_devname.data());
+    }
+  }
   if (!cam) {
     LOGE << "camera_open failed";
     return -1;
@@ -1595,6 +1719,16 @@ int UsbCam::DeInitUvc() {
     return -1;
   }
 
+#ifdef X3_X2_VIO
+  hb_vio_stop();
+  hb_vio_deinit();
+#endif
+#ifdef X3_IOT_VIO
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
+#endif
   if (camera_stop_streaming(cam) < 0) {
     LOGE << "camera stop streaming failed";
   }

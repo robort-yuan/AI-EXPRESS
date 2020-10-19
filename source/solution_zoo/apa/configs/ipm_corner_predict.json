@@ -1,0 +1,4 @@
+{
+    "predict_type": "detect",
+    "model_file_path": "../../models/apa_multitask.hbm"
+}

@@ -33,7 +33,6 @@ class Callback {
     if (output->datas_.size() != 1) {
       std::cout << "output data size error" << std::endl;
     }
-    // assert(output->datas_.size() == 1);
     auto &data = output->datas_[0];
     if (data->error_code_ < 0) {
       std::cout << "data error: " << data->error_code_ << std::endl;

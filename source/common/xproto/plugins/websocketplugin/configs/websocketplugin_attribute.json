@@ -38,12 +38,8 @@
   },
   "gesture": {
     "0": "",
-    "1": "Left",
-    "2": "Right",
-    "3": "Up",
-    "4": "Down",
-    "5": "Finger Heart",
-    "6": "Thumb Up",
-    "7": "Victory"
+    "1": "Finger Heart",
+    "2": "Thumb Up",
+    "3": "Victory"
   }
 }

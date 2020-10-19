@@ -1,0 +1,21 @@
+{
+    "post_type": "detect",
+    "net_info": {
+      "model_out_sequence": [
+        {
+          "name": "corner_box",
+          "type": "bbox"
+        },
+        {
+          "name": "corner_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "mask",
+          "type": "mask"
+        }
+      ]
+    },
+    "method_outs": ["corner_box", "mask"],
+    "model_file_path": "../../models/apa_multitask.hbm"
+}

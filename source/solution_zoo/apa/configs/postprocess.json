@@ -1,0 +1,62 @@
+{
+    "in_msg_type": "pyramid_image",
+    "post_type": "detect",
+    "net_info": {
+      "model_name": "detection",
+      "model_out_sequence": [
+        {
+          "name": "cycle_box",
+          "type": "bbox"
+        },
+        {
+          "name": "cycle_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "person_box",
+          "type": "bbox"
+        },
+        {
+          "name": "person_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "vehicle_box",
+          "type": "bbox"
+        },
+        {
+          "name": "vehicle_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "rear_box",
+          "type": "bbox"
+        },
+        {
+          "name": "rear_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "parkinglock_box",
+          "type": "bbox"
+        },
+        {
+          "name": "parkinglock_box_anchor",
+          "type": "invalid"
+        },
+        {
+          "name": "drivingarea_mask",
+          "type": "mask"
+        },
+        {
+          "name": "laneline_mask",
+          "type": "mask"
+        }
+      ],
+      "model_input_width": 1280,
+      "model_input_height": 704,
+      "is_pyramid": 1
+    },
+    "method_outs": ["cycle_box", "person_box", "vehicle_box", "rear_box", "parkinglock_box", "drivingarea_mask", "laneline_mask"],
+    "model_file_path": "../../models/detection.hbm"
+}

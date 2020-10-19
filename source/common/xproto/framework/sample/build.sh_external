@@ -1,0 +1,57 @@
+#!/bin/bash
+function usage(){
+  echo "usage: bash build.sh [ ubuntu | centos | aarch64 ]"
+  exit 1
+}
+function init(){
+  set -eux
+  if [ $# -lt 1 ];then
+    usage
+  fi
+  rm -rf xstream_xproto_build
+  rm -rf lib_aiexpress
+}
+
+function build_ubuntu() {
+  rm -rf build
+  mkdir build
+  cd build
+  cmake -DX86_ARCH=ON -DX86_CENTOS=OFF ..
+  make
+}
+
+function build_centos() {
+  rm -rf build
+  mkdir build
+  cd build
+  cmake -DX86_ARCH=ON -DX86_CENTOS=ON ..
+  make
+}
+
+function build_aarch64() {
+  rm -rf build
+  mkdir build
+  cd build
+  cmake -DX86_ARCH=OFF -DX86_CENTOS=OFF ..
+  make
+}
+
+function build(){
+  if [ ${1} == "ubuntu" ];then
+    build_ubuntu 
+  elif [ ${1} == "centos" ];then
+    build_centos 
+  elif [ ${1} == "aarch64" ];then
+    build_aarch64
+  else
+    usage
+  fi
+}
+
+init ${1}
+build ${1}
+
+rm -rf bin
+mkdir bin
+cp sample_plugin ./bin
+cp ../../../lib/libxproto.so ./bin

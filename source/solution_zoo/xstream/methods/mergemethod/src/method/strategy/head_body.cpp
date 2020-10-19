@@ -172,22 +172,6 @@ void HeadBodyStrategy::ProduceOutput(const BaseDataPtr &faceBoxPtr,
        << " head_body_idx_pairs size: " << head_body_idx_pairs.size()
        << std::endl;
 
-  // for (auto &face : face_box_list->datas_) {
-  //   auto box = std::static_pointer_cast<XStreamBBox>(face);
-  //   LOGD << "face box x1: " << box->value.x1 << " y1: " << box->value.y1
-  //        << " x2: " << box->value.x2 << " y2: " << box->value.y2;
-  // }
-  // for (auto &head : head_box_list->datas_) {
-  //   auto box = std::static_pointer_cast<XStreamBBox>(head);
-  //   LOGD << "head box x1: " << box->value.x1 << " y1: " << box->value.y1
-  //        << " x2: " << box->value.x2 << " y2: " << box->value.y2;
-  // }
-  // for (auto &body : body_box_list->datas_) {
-  //   auto box = std::static_pointer_cast<XStreamBBox>(body);
-  //   LOGD << "body box x1: " << box->value.x1 << " y1: " << box->value.y1
-  //        << " x2: " << box->value.x2 << " y2: " << box->value.y2;
-  // }
-
   std::unordered_map<int, int> face_head_idx_map;
   std::unordered_map<int, int> body_head_idx_map;
   Pairs2Map(head_face_idx_pairs, &face_head_idx_map);

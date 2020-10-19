@@ -31,7 +31,6 @@ class CThreadPool {
   void PostTask(const TaskFunction &task);
   int GetTaskNum();
   void ClearTask();
-  // void PostPollingTask(const TaskFunction& task);
   void Stop() {}
   void Start() {}
 

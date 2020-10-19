@@ -43,6 +43,7 @@ enum HB_VPS_ERR_E {
 	HB_ERR_VPS_UN_SUPPORT_SIZE,
 	HB_ERR_VPS_FRAME_UNEXIST,
 	HB_ERR_VPS_DEV_FRAME_DROP,
+	HB_ERR_VPS_NOT_ENOUGH,
 	/* pym layer error: */
 	HB_ERR_VPS_LAYER_UNEXIST,
 	HB_ERR_VPS_LAYER_PYM_NOT_READY,
@@ -51,7 +52,9 @@ enum HB_VPS_ERR_E {
 	HB_ERR_VPS_LAYER_DISABLE,
 	HB_ERR_VPS_LAYER_GET_BIND_OTHER_DEV,
 	HB_ERR_VPS_LAYER_GET_FRM_DONE_NULL,
-	HB_ERR_VPS_LAYER_OUT_BUF_MGR_NULL
+	HB_ERR_VPS_LAYER_OUT_BUF_MGR_NULL,
+	HB_ERR_VPS_UN_SUPPORT_RATE = 64,
+	HB_ERR_VPS_FRAME_RATE
 };
 
 typedef enum HB_PYM_LAYER_ID_E
@@ -110,8 +113,8 @@ typedef struct HB_VPS_CROP_INFO_S {
 } VPS_CROP_INFO_S;
 
 typedef struct HB_FRAME_RATE_CTRL_S {
-	int		srcFrameRate;
-	int		dstFrameRate;
+	uint32_t		srcFrameRate;
+	uint32_t		dstFrameRate;
 } FRAME_RATE_CTRL_S;
 
 typedef struct HB_VPS_CHN_ATTR_S {
@@ -200,6 +203,8 @@ int HB_VPS_SetGrpGdc(int VpsGrp, char* buf_addr, uint32_t buf_len,
 								ROTATION_E enRotation);
 int HB_VPS_SetChnGdc(int VpsGrp, int VpsChn, char* buf_addr, uint32_t buf_len,
 								ROTATION_E enRotation);
+int HB_VPS_UpdateGdcSize(int VpsGrp, int VpsChn,
+				uint16_t out_width, uint16_t out_height);
 
 int HB_VPS_SetChnAttr(int VpsGrp, int VpsChn, const VPS_CHN_ATTR_S *chnAttr);
 int HB_VPS_GetChnAttr(int VpsGrp, int VpsChn, VPS_CHN_ATTR_S *chnAttr);
@@ -240,7 +245,7 @@ int HB_VPS_GetLayerFrame(int VpsGrp, PYM_LAYER_ID_E Layer,
 int HB_VPS_ReleaseLayerFrame(int VpsGrp, PYM_LAYER_ID_E Layer,
 		void *videoFrame);
 
-// int HB_VPS_TriggerSnapFrame(int VpsGrp, int VpsChn, uint32_t frameCnt);
+int HB_VPS_TriggerSnapFrame(int VpsGrp, int VpsChn, uint32_t frameCnt);
 
 // int HB_VPS_SetRoiInfo(int VpsGrp, DIS_MV_INFO_S *mv_info);
 

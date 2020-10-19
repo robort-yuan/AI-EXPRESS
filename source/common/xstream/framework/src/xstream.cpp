@@ -87,6 +87,8 @@ int XStreamFlow::SetConfig(const std::string &key, const std::string &value) {
     } else {
       scheduler_->SetFreeMemery(false);
     }
+  } else if (key.compare("time_monitor") == 0) {
+    scheduler_->SetTimeMonitor(std::stoi(value));
   } else {
     LOGD << "config " << key << " is not supported yet";
     return -1;

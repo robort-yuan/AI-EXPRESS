@@ -185,7 +185,6 @@ void PlateVoteMethod::RunSingleFrame(
   }
 
   for (const auto &data : disappeared_track_ids) {
-    // LOGD << "disappeared_track_ids loops";
     auto disappeared_track_id =
         std::static_pointer_cast<XStreamData<uint32_t>>(data)->value;
     auto iter = slide_window_map.find(disappeared_track_id);
@@ -193,8 +192,6 @@ void PlateVoteMethod::RunSingleFrame(
       slide_window_map.erase(iter);
     }
   }
-
-  // LOGD << "track_id2slide_window's size: " << slide_window_map.size();
 }
 std::vector<std::vector<int>> PlateVoteMethod::EditDistance(
     const std::string &src, const std::string &dest) {

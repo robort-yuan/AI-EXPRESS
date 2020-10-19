@@ -17,6 +17,7 @@
 #include "horizon/vision_type/vision_type.hpp"
 using hobot::vision::PymImageFrame;
 #endif
+#include "hobotlog/hobotlog.hpp"
 
 namespace vio_debug {
 inline void print_info(const img_info_t &data) {
@@ -57,8 +58,11 @@ inline int save_img(int y_len, int uv_len, uint8_t *y_vaddr, uint8_t *uv_vaddr,
     printf("open file name:%s failure!\n", name.c_str());
     return -1;
   }
-  printf("[%s] y_len:%d, uv_len:%d, y_vaddr:%p, uv_vaddr:%p\n", name.c_str(),
-         y_len, uv_len, y_vaddr, uv_vaddr);
+  LOGD << "dump: " << name.c_str()
+    << " y_len: " << y_len
+    << " uv_len: " << uv_len
+    << " y_vaddr: " << reinterpret_cast<void*>(y_vaddr)
+    << " uv_vaddr: " << reinterpret_cast<void*>(uv_vaddr);
 
   uint8_t *img_ptr = static_cast<uint8_t *>(malloc(y_len + uv_len));
   memcpy(img_ptr, y_vaddr, y_len);
@@ -78,8 +82,10 @@ inline void dump_pym_nv12(img_info_t *data, std::string yuv_prefix) {
   int src_y_width = data->src_img.width;
   int src_y_stride = data->src_img.step;  // stride
   int src_y_height = data->src_img.height;
-  printf("[%s] w:%d, stride:%d, h:%d\n", src_name.c_str(), src_y_width,
-         src_y_stride, src_y_height);
+  LOGD << "src_img_name: " << src_name.c_str()
+    << " src_y_width: " << src_y_width
+    << " src_y_stride: " << src_y_stride
+    << " src_y_height: " << src_y_height;
   int src_y_len = src_y_stride * src_y_height;
   int src_uv_len = src_y_stride * src_y_height / 2;
   uint8_t *src_y_vaddr = reinterpret_cast<uint8_t *>(data->src_img.y_vaddr);
@@ -95,8 +101,11 @@ inline void dump_pym_nv12(img_info_t *data, std::string yuv_prefix) {
     int pym_y_len = pym_y_stride * pym_y_height;
     int pym_uv_len = pym_y_stride * pym_y_height / 2;
     pym_name = pym_name + yuv_prefix + "_" + std::to_string(k) + "_nv12.yuv";
-    printf("[%s] w:%d, stride:%d, h:%d\n", pym_name.c_str(), pym_y_width,
-           pym_y_stride, pym_y_height);
+    LOGD << "dump: " << pym_name.c_str()
+      << " pym_y_width: " << pym_y_width
+      << " pym_y_stride: " << pym_y_stride
+      << " pym_y_height: " << pym_y_height;
+
     uint8_t *pym_y_vaddr =
         reinterpret_cast<uint8_t *>(data->down_scale[4 * k].y_vaddr);
     uint8_t *pym_uv_vaddr =
@@ -116,8 +125,11 @@ inline void dump_pym_nv12(std::shared_ptr<PymImageFrame> data,
     int pym_y_len = pym_y_stride * pym_y_height;
     int pym_uv_len = pym_y_stride * pym_y_height / 2;
     pym_name = pym_name + yuv_prefix + "_" + std::to_string(k) + "_nv12.yuv";
-    printf("dump_pym_nv12: [%s] w:%d, stride:%d, h:%d\n", pym_name.c_str(),
-           pym_y_width, pym_y_stride, pym_y_height);
+    LOGD << "dump: " << pym_name.c_str()
+      << " pym_y_width: " << pym_y_width
+      << " pym_y_stride: " << pym_y_stride
+      << " pym_y_height: " << pym_y_height;
+
     uint8_t *pym_y_vaddr =
         reinterpret_cast<uint8_t *>(data->down_scale[4 * k].y_vaddr);
     uint8_t *pym_uv_vaddr =

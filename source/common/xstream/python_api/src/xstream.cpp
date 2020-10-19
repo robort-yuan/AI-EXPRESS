@@ -1,6 +1,6 @@
 /**
  * @copyright Copyright (c) 2020 Horizon Robotics. All rights reserved.
- * @file      xroc.cpp
+ * @file      xstream.cpp
  * @brief     main function
  * @author    Zhuoran Rong (zhuoran.rong@horizon.ai)
  * @version   0.0.0.1
@@ -28,7 +28,7 @@ using xstream::BaseDataPtr;
 using xstream::InputData;
 using xstream::InputDataPtr;
 
-// xroc sdk
+// xstream sdk
 class XStreamSDKWrapper {
  public:
   // 构造函数

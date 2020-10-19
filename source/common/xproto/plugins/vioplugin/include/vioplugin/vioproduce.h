@@ -110,7 +110,8 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   enum class TSTYPE {
     RAW_TS,  // 读取pvio_image->timestamp
     FRAME_ID,  // 读取pvio_image->frame_id
-    INPUT_CODED  // 解析金字塔0层y图的前16个字节，其中编码了timestamp。
+    INPUT_CODED,  // 解析金字塔0层y图的前16个字节，其中编码了timestamp。
+    INNER_FRAME_ID  // 内部frame id
   };
   TSTYPE ts_type_ = TSTYPE::RAW_TS;
   static const

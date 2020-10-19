@@ -281,6 +281,8 @@ void FasterRCNNImp::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
 
   int src_img_width = 0;
   int src_img_height = 0;
+  int target_pym_layer_width = 0;
+  int target_pym_layer_height = 0;
 
   {
     RUN_PROCESS_TIME_PROFILER("FasterRCNN RunModelFromPyramid");
@@ -293,11 +295,19 @@ void FasterRCNNImp::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
   #ifdef X2
       src_img_height = pyramid_image->img.src_img.height;
       src_img_width = pyramid_image->img.src_img.width;
+      target_pym_layer_height =
+        pyramid_image->img.down_scale[pyramid_layer_].height;
+      target_pym_layer_width =
+        pyramid_image->img.down_scale[pyramid_layer_].width;
   #endif
 
   #ifdef X3
       src_img_height = pyramid_image->down_scale[0].height;
       src_img_width = pyramid_image->down_scale[0].width;
+      target_pym_layer_height =
+        pyramid_image->down_scale[pyramid_layer_].height;
+      target_pym_layer_width =
+        pyramid_image->down_scale[pyramid_layer_].width;
   #endif
 
       LOGD << "img_height: " << pyramid_image->Height()
@@ -305,13 +315,80 @@ void FasterRCNNImp::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
            << ", img_y length: " << pyramid_image->DataSize()
            << ", img_uv length: " << pyramid_image->DataUVSize();
 
-      LOGD << "Begin call RunModel";
-      RunModelFromPym(pyramid_image.get(), pyramid_layer_,
-                      BPU_TYPE_IMG_NV12_SEPARATE);
-      if (ret != 0) {
-        LOGE << "Run model failed: " << HB_BPU_getErrorName(ret);
-        // ReleaseOutputTensor();
-        return;
+      if (model_input_width_ != target_pym_layer_width ||
+          model_input_height_ != target_pym_layer_height) {
+        // get pym level 4 (960*540), then pad to 960*544
+        {
+          RUN_PROCESS_TIME_PROFILER("FasterRCNN PaddingImage");
+          uint8_t *pOutputImg = nullptr;
+          int output_img_size = 0;
+          int output_img_width = 0;
+          int output_img_height = 0;
+          int first_stride = 0;
+          int second_stride = 0;
+#ifdef X2
+          auto input_img = pyramid_image->img.down_scale[pyramid_layer_];
+          int y_size = input_img.height * input_img.step;
+          int uv_size = y_size >> 1;
+          const uint8_t *input_nv12_data[3] =
+            {reinterpret_cast<uint8_t *>(input_img.y_vaddr),
+             reinterpret_cast<uint8_t *>(input_img.c_vaddr), nullptr};
+          const int input_nv12_size[3] = {y_size, uv_size, 0};
+          ret = HobotXStreamCropYuvImageWithPaddingBlack(
+            input_nv12_data, input_nv12_size, input_img.width, input_img.height,
+            input_img.step, input_img.step, IMAGE_TOOLS_RAW_YUV_NV12,
+            0, 0, model_input_width_ - 1, model_input_height_ - 1,
+            &pOutputImg, &output_img_size,
+            &output_img_width, &output_img_height,
+            &first_stride, &second_stride);
+#endif
+
+#ifdef X3
+          auto input_img = pyramid_image->down_scale[pyramid_layer_];
+          int y_size = input_img.height * input_img.stride;
+          int uv_size = y_size >> 1;
+          const uint8_t *input_nv12_data[3] =
+            {reinterpret_cast<uint8_t *>(input_img.y_vaddr),
+             reinterpret_cast<uint8_t *>(input_img.c_vaddr), nullptr};
+          const int input_nv12_size[3] = {y_size, uv_size, 0};
+          ret = HobotXStreamCropYuvImageWithPaddingBlack(
+            input_nv12_data, input_nv12_size, input_img.width, input_img.height,
+            input_img.stride, input_img.stride, IMAGE_TOOLS_RAW_YUV_NV12,
+            0, 0, model_input_width_ - 1, model_input_height_ - 1,
+            &pOutputImg, &output_img_size,
+            &output_img_width, &output_img_height,
+            &first_stride, &second_stride);
+#endif
+          if (ret < 0) {
+            LOGE << "fail to crop image";
+            free(pOutputImg);
+            return;
+          }
+          HOBOT_CHECK(output_img_width == model_input_width_)
+            << "cropped image width "<< output_img_width
+            << " not equals to model input width " << model_input_width_;
+          HOBOT_CHECK(output_img_height == model_input_height_)
+            << "cropped image height " << output_img_height
+            << " not equals to model input height " << model_input_height_;
+          int img_len = model_input_width_ * model_input_height_ * 3 / 2;
+          LOGD << "Begin call RunModel";
+          ret = RunModel(pOutputImg, img_len, BPU_TYPE_IMG_NV12_SEPARATE);
+          if (ret != 0) {
+            LOGE << "Run model failed: " << HB_BPU_getErrorName(ret);
+            HobotXStreamFreeImage(pOutputImg);
+            return;
+          }
+          HobotXStreamFreeImage(pOutputImg);
+        }
+      } else {
+        LOGD << "Begin call RunModel";
+        ret = RunModelFromPym(pyramid_image.get(), pyramid_layer_,
+                        BPU_TYPE_IMG_NV12_SEPARATE);
+        if (ret != 0) {
+          LOGE << "Run model failed: " << HB_BPU_getErrorName(ret);
+          // ReleaseOutputTensor();
+          return;
+        }
       }
     } else if (img_type == kCVImageFrame) {
       auto cv_image =
@@ -1173,7 +1250,7 @@ int FasterRCNNImp::RunModel(uint8_t *img_data,
                             output_tensors_.data(),
                             bpu_model_->output_num,
                             &run_ctrl_s,
-                            true,
+                            false,
                             &task_handle);
 
   if (ret != 0) {
@@ -1184,6 +1261,7 @@ int FasterRCNNImp::RunModel(uint8_t *img_data,
     HB_BPU_releaseTask(&task_handle);
     return ret;
   }
+  HB_BPU_waitModelDone(&task_handle);
   // 4. release input
   ReleaseInputTensor(input_tensors_);
   // 5. release BPU_TASK_HANDLE
@@ -1305,7 +1383,7 @@ int FasterRCNNImp::RunModelFromPym(void* pyramid,
                             output_tensors_.data(),
                             bpu_model_->output_num,
                             &run_ctrl_s,
-                            true,
+                            false,
                             &task_handle);
   if (ret != 0) {
     LOGE << "bpu run model failed, " << HB_BPU_getErrorName(ret);
@@ -1316,176 +1394,10 @@ int FasterRCNNImp::RunModelFromPym(void* pyramid,
     HB_BPU_releaseTask(&task_handle);
     return ret;
   }
+  HB_BPU_waitModelDone(&task_handle);
 #ifdef X2
     ReleaseInputTensor(input_tensors_);
 #endif
-  // 5. release BPU_TASK_HANDLE
-  HB_BPU_releaseTask(&task_handle);
-  return 0;
-}
-
-int FasterRCNNImp::RunModelResize(uint8_t *img_data,
-                                  int data_length,
-                                  int img_height,
-                                  int img_width,
-                                  int img_channel,
-                                  BPU_DATA_TYPE_E pre_data_type,
-                                  BPU_DATA_TYPE_E model_data_type) {
-  // 1. prepare pre_input
-  std::vector<BPU_TENSOR_S> input_tensors(bpu_model_->input_num);
-  for (int i = 0; i < bpu_model_->input_num; i++) {
-    BPU_TENSOR_S &tensor = input_tensors[i];
-    BPU_MODEL_NODE_S &node = bpu_model_->inputs[i];
-    tensor.data_type = pre_data_type;
-    tensor.data_shape.layout = node.shape.layout;
-
-    int h_idx, w_idx, c_idx;
-    HB_BPU_getHWCIndex(tensor.data_type,
-                       &tensor.data_shape.layout,
-                       &h_idx, &w_idx, &c_idx);
-    tensor.data_shape.ndim = 4;
-    tensor.data_shape.d[0] = 1;
-    tensor.data_shape.d[h_idx] = img_height;
-    tensor.data_shape.d[w_idx] = img_width;
-    tensor.data_shape.d[c_idx] = img_channel;
-    tensor.aligned_shape = tensor.data_shape;
-    LOGD << "input_tensor.data_shape.d[0]: " << tensor.data_shape.d[0] << ", "
-         << "input_tensor.data_shape.d[1]: " << tensor.data_shape.d[1] << ", "
-         << "input_tensor.data_shape.d[2]: " << tensor.data_shape.d[2] << ", "
-         << "input_tensor.data_shape.d[3]: " << tensor.data_shape.d[3] << ", "
-         << "input_tensor.data_shape.layout: " << tensor.data_shape.layout;
-
-    LOGD << "img_height: " << img_height << ", "
-         << "img_width: " << img_width << ", "
-         << "img_channel: " << img_channel;
-
-    switch (pre_data_type) {
-      case BPU_TYPE_IMG_NV12_SEPARATE: {
-        int y_length = img_height * img_width;
-        int uv_length = img_height / 2 * img_width;
-        HB_SYS_bpuMemAlloc("in_data0", y_length, true, &tensor.data);
-        HB_SYS_bpuMemAlloc("in_data1", uv_length, true, &tensor.data_ext);
-        HOBOT_CHECK(y_length + uv_length == data_length)
-            << "Input img length error!";
-        // Copy y data to data0
-        memcpy(tensor.data.virAddr, img_data, y_length);
-        HB_SYS_flushMemCache(&tensor.data, HB_SYS_MEM_CACHE_CLEAN);
-
-        // Copy uv data to data_ext
-        memcpy(tensor.data_ext.virAddr, img_data + y_length, uv_length);
-        HB_SYS_flushMemCache(&tensor.data_ext, HB_SYS_MEM_CACHE_CLEAN);
-        break;
-      }
-      // TODO(zhe.sun) support other type
-      default:
-        HOBOT_CHECK(0) << "unsupport data_type: " << pre_data_type;
-        break;
-    }
-  }
-
-  // 2. prepare input
-  input_tensors_.resize(bpu_model_->input_num);
-  for (int i = 0; i < bpu_model_->input_num; i++) {
-    BPU_TENSOR_S &tensor = input_tensors_[i];
-    BPU_MODEL_NODE_S &node = bpu_model_->inputs[i];
-    tensor.data_type = model_data_type;
-    tensor.data_shape.layout = node.shape.layout;
-    tensor.aligned_shape.layout = node.shape.layout;
-
-    int h_idx, w_idx, c_idx;
-    HB_BPU_getHWCIndex(tensor.data_type,
-                       &tensor.data_shape.layout,
-                       &h_idx, &w_idx, &c_idx);
-
-    LOGD << "node data_type: " << node.data_type;
-    int node_h_idx, node_w_idx, node_c_idx;
-    HB_BPU_getHWCIndex(node.data_type,
-                       &node.shape.layout,
-                       &node_h_idx, &node_w_idx, &node_c_idx);
-    tensor.data_shape.ndim = 4;
-    tensor.data_shape.d[0] = 1;
-    tensor.data_shape.d[h_idx] = node.shape.d[node_h_idx];
-    tensor.data_shape.d[w_idx] = node.shape.d[node_w_idx];
-    tensor.data_shape.d[c_idx] = node.shape.d[node_c_idx];
-    tensor.aligned_shape.ndim = 4;
-    tensor.aligned_shape.d[0] = 1;
-    tensor.aligned_shape.d[h_idx] = node.aligned_shape.d[node_h_idx];
-    tensor.aligned_shape.d[w_idx] = node.aligned_shape.d[node_w_idx];
-    tensor.aligned_shape.d[c_idx] = node.aligned_shape.d[node_c_idx];
-    LOGD << "input_tensor.data_shape.d[0]: " << tensor.data_shape.d[0] << ", "
-         << "input_tensor.data_shape.d[1]: " << tensor.data_shape.d[1] << ", "
-         << "input_tensor.data_shape.d[2]: " << tensor.data_shape.d[2] << ", "
-         << "input_tensor.data_shape.d[3]: " << tensor.data_shape.d[3] << ", "
-         << "input_tensor.data_shape.layout: " << tensor.data_shape.layout;
-
-    int image_height = tensor.data_shape.d[h_idx];
-    int image_width = tensor.data_shape.d[w_idx];
-    int image_channel = tensor.data_shape.d[c_idx];
-    LOGD << "image_height: " << image_height << ", "
-         << "image_width: " << image_width << ", "
-         << "image channel: " << image_channel;
-
-    switch (model_data_type) {
-      case BPU_TYPE_IMG_NV12_SEPARATE: {
-        int stride = tensor.aligned_shape.d[w_idx];
-        int y_length = image_height * stride;
-        int uv_length = image_height / 2 * stride;
-        HB_SYS_bpuMemAlloc("in_data0", y_length, true, &tensor.data);
-        HB_SYS_bpuMemAlloc("in_data1", uv_length, true, &tensor.data_ext);
-        break;
-      }
-      default:
-        HOBOT_CHECK(0) << "unsupport data_type: " << model_data_type;
-        break;
-    }
-  }
-
-  // 3. resize
-  BPU_RESIZE_CTRL_S ctrl_param;
-  ctrl_param.resize_type = BPU_RESIZE_TYPE_BILINEAR;
-  ctrl_param.output_type = model_data_type;
-
-  int ret = 0;
-  for (int i = 0; i < bpu_model_->input_num; i++) {
-    ret = HB_BPU_resize(&input_tensors[i],
-                        &input_tensors_[i],
-                        &ctrl_param);
-    if (ret != 0) {
-      LOGE << "bpu run model failed, " << HB_BPU_getErrorName(ret);
-      // release pre_input
-      ReleaseInputTensor(input_tensors);
-      ReleaseInputTensor(input_tensors_);
-      return ret;
-    }
-  }
-  ReleaseInputTensor(input_tensors);
-
-  // 2. prepare output tensor
-  PrepareOutputTensor();
-
-  // 3. run
-  BPU_RUN_CTRL_S run_ctrl_s;
-  run_ctrl_s.core_id = core_id_;
-  BPU_TASK_HANDLE task_handle;
-  ret = HB_BPU_runModel(bpu_model_,
-                            input_tensors_.data(),
-                            bpu_model_->input_num,
-                            output_tensors_.data(),
-                            bpu_model_->output_num,
-                            &run_ctrl_s,
-                            true,
-                            &task_handle);
-
-  if (ret != 0) {
-    LOGE << "bpu run model failed, " << HB_BPU_getErrorName(ret);
-    // release input
-    ReleaseInputTensor(input_tensors_);
-    // release task_handle
-    HB_BPU_releaseTask(&task_handle);
-    return ret;
-  }
-  // 4. release input
-  ReleaseInputTensor(input_tensors_);
   // 5. release BPU_TASK_HANDLE
   HB_BPU_releaseTask(&task_handle);
   return 0;

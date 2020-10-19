@@ -122,7 +122,13 @@ int VisualPlugin::Stop() {
 
   if(worker_ && worker_->joinable()) {
     stop_flag_ = true;
-    fifo_open_flag_ = true;
+
+    if (!fifo_open_flag_) {
+      int fd = open(fifo_name, O_RDONLY);
+      if (fd != -1) {
+        LOGI << "open OK";
+      }
+    }
     worker_->join();
     worker_ = nullptr;
     LOGI << "VisualPlugin stop worker";
@@ -195,15 +201,12 @@ int VisualPlugin::EncodeThread() {
   }
 
   int pipe_fd = -1;
-  while (!fifo_open_flag_) {
-    pipe_fd = open(fifo_name, O_WRONLY | O_NONBLOCK);
-    if (pipe_fd != -1) {
-      LOGI << "open fifo success";
-      fifo_open_flag_ = true;
-    } else {
-    }
-    usleep(500);
+  pipe_fd = open(fifo_name, O_WRONLY);
+  if (pipe_fd != -1) {
+    LOGI << "open fifo success";
+    fifo_open_flag_ = true;
   }
+
 #ifdef X3_MEDIA_CODEC
   /* 1. media codec init */
   iot_venc_src_buf_t *frame_buf = nullptr;

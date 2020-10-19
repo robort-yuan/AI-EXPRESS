@@ -32,17 +32,7 @@ int PrintUsage() {
   return 0;
 }
 
-// static std::map<std::string, example_fn> examples = {
-//     {"anti_spf_calculate", TestAntiSpfCalculate}};
-
 int main(int argc, char **argv) {
-  // SetLogLevel(HOBOT_LOG_DEBUG);
-  // if (argc > 1 && examples.count(argv[1])) {
-  //   examples[argv[1]](argc - 1, argv + 1);
-  //   std::cout << "main exit!!" << std::endl;
-  // } else {
-  //   PrintUsage();
-  // }
   TestAntiSpfCalculate(argc, argv);
   return 0;
 }

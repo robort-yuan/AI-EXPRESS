@@ -6,6 +6,9 @@
  * @date      2020-02-26
  */
 
+#ifndef INCLUDE_SMART_HELPER_H_
+#define INCLUDE_SMART_HELPER_H_
+
 #include <string>
 #include <memory>
 #include "base_data_warp.h"
@@ -39,8 +42,6 @@ class SmartPlgHelper {
   SmartPlgHelper();
   py::dict ToXStreamData(py::object msg);
   XProtoMessagePtr ToNativeFlowMsg(py::args smart_rets);
-  // XProtoMessagePtr ToNativeFlowMsg(py::args smart_rets,
-  //               std::function<py::str(py::args)> serialize);
   void SetMode(bool sync_mode) { is_sync_mode_ = sync_mode; }
 
  private:
@@ -51,3 +52,5 @@ class SmartPlgHelper {
 }   // namespace xproto
 }   // namespace vision
 }   // namespace horizon
+
+#endif    // INCLUDE_SMART_HELPER_H_

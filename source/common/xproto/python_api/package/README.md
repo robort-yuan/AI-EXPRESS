@@ -18,7 +18,7 @@ import xstream
 import xproto
 
 # 创建VioPlugin, SmartPlugin
-vio = xproto.VioPlugin("96board")
+vio = xproto.VioPlugin("x3dev", "imx327")
 # workflow, callback是您定义的工作流和回调函数
 smart = xproto.SmartPlugin(workflow, callback)
 # 以同步模式启动Vioplugin
@@ -41,7 +41,7 @@ import xstream
 import xproto
 
 # 创建插件
-vio = xproto.VioPlugin("96board")
+vio = xproto.VioPlugin("x3dev", "imx327")
 smart = xproto.SmartPlugin(workflow, callback)
 # SmartPlugin监听VioPlugin产生的消息
 smart.bind(vio.get_message_type())
@@ -57,20 +57,21 @@ smart.stop()
 
 ## xproto包接口介绍
 ### VioPlugin类
-#### \_\_init__(*`platform`*, *`data_source`*=`"panel_camera"`, *`cam_type`*=`"mono"`, *`**kwargs`*)
+#### \_\_init__(*`platform`*, *`sensor`*="default", *`vio_type`*="single_cam", *`data_source`*="default", *`**kwargs`*)
 
 创建一个 VioPlugin 对象
 
 **参数**
-+ `platform` : 使用的硬件平台, 目前支持`96Board`, `2610`.
-+ `data_source` : 输入数据源, 默认为`panel_camera`. 目前支持`panel_camera`, `jpeg_image_list`, `nv12_image_list`, `cached_image_list`.
-+ `cam_type` : 使用的sensor类型, 默认为`mono`. 目前支持`mono`.
-+ `**kwargs` : 回灌模式下通过`name_list`或`image_list`关键字回灌图片列表/文件.
++ platform: 程序运行的平台，目前支持"x3dev"
++ sensor: 使用的sensor，目前支持"default"(X2平台自带的sensor)，"imx327"
++ vio_type: vio类型，仅在X3平台下使用。目前支持"single_cam"
++ data_source: 回灌模式下使用的数据源，目前支持"cache", "jpg", "nv12"
++ **kwargs: 其他参数，留用
 
 **返回值**
 + VioPlugin对象.
 
-#### start(*`sync_mode`*=`False`)
+#### start(*`sync_mode`*="False")
 
 启动VioPlugin.
 
@@ -121,6 +122,18 @@ smart.stop()
 **返回值**
 + 字典 : key: 工作流输入名字, value: 输入数据.
 
+#### get_name_list()
+
+返回回灌图像列表
+
+**参数**
+
+无
+
+**返回值**
+
+回灌图像列表
+
 
 ### SmartPlugin类
 #### \_\_init__(*`workflow`*, *`callback`*, *`serialize`*, *`push_result`*=`False`)
@@ -156,7 +169,7 @@ smart.stop()
 **返回值**
 + 无.
 
-#### bind()
+#### bind(*`msg_type`*, *`msg_cb`*)
 
 绑定需要监听的消息.
 

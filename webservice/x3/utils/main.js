@@ -14,7 +14,6 @@ protobufInit();
  */
 function transformData(buffer) {
     let startTime = new Date().valueOf();
-    //console.log(AwesomeMessage);
     let unit8Array = new Uint8Array(buffer);
     let message = AwesomeMessage.decode(unit8Array);
     let object = AwesomeMessage.toObject(message);
@@ -25,26 +24,16 @@ function transformData(buffer) {
     let imageBlob = undefined;
     let bodyAction = undefined;
     let bodyPoints = [];
-    //if(typeof image['buf_'] !== 'undefined') {
-    // let imgBufferView = image['buf_'];
-    // imageBlob = new Blob([imgBufferView], { type: 'image/jpeg' });
-    //}
 
     // 分类转换智能数据：box 为框、points 为骨骼线、info 为局部遮挡、attributes 为属性展示
-    // let smartMsgData = {}
     if (typeof smartMsg !== 'undefined') {
         let targets = smartMsg['targets_'];
-        // console.log('targets---', targets)
         if (typeof targets !== 'undefined' && targets.length > 0) {
-            //console.log(targets);
             let onetarget = targets[0]
-            //let kpsPoints = targets.filter(item => item['type_'] === 'kps');
             let kpsPoints = onetarget['points_']
             let actions = onetarget['attributes_']
             if (kpsPoints !== 'undefined' && kpsPoints.length > 0) {
                 kpsPoints = kpsPoints.map(function (item) {
-                    //人体描边数据
-                    // let segmentPoints = undefined;// item.segmentMask_.points_;
                     //关节点数据
                     let originalPoints = item['points_'];
                     let skeletonPoints = {}
@@ -57,7 +46,6 @@ function transformData(buffer) {
                         };
                     });
                     bodyPoints.push(skeletonPoints);
-                    //console.log(skeletonPoints);
                 })
             }
             if (actions !== 'undefined' && actions.length > 0) {

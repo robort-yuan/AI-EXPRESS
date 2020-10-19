@@ -42,7 +42,8 @@ const std::unordered_map<std::string, VioProduce::TSTYPE>
 VioProduce::str2ts_type_ = {
   {"raw_ts", TSTYPE::RAW_TS},
   {"frame_id", TSTYPE::FRAME_ID},
-  {"input_coded", TSTYPE::INPUT_CODED}
+  {"input_coded", TSTYPE::INPUT_CODED},
+  {"inner_frame_id", TSTYPE::INNER_FRAME_ID}
 };
 
 VioConfig *VioConfig::config_ = nullptr;
@@ -463,6 +464,8 @@ int VioCamera::Run() {
         pvio_image->timestamp = img_time;
       } else if (ts_type_ == TSTYPE::FRAME_ID) {
         pvio_image->timestamp = pvio_image->frame_id;
+      } else if (ts_type_ == TSTYPE::INNER_FRAME_ID) {
+        pvio_image->timestamp = frame_id;
       }
       if (res != 0 ||
           (check_timestamp && pvio_image->timestamp == last_timestamp)) {
@@ -554,6 +557,8 @@ int VioCamera::Run() {
       } else if (ts_type_ == TSTYPE::FRAME_ID) {
         pvio_image->img_info[0].timestamp =
             pvio_image->img_info[0].frame_id;
+      } else if (ts_type_ == TSTYPE::INNER_FRAME_ID) {
+        pvio_image->img_info[0].timestamp = frame_id;
       }
       if (res != 0 || pvio_image->img_info[0].timestamp == last_timestamp) {
         std::free(pvio_image);

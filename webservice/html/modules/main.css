@@ -88,14 +88,6 @@ ul li, ol li {
   width: 100%;
 }
 
-/* #canvas-1 {
-  border: 1px solid #f00;
-} */
-
-/* #canvas-2 {
-  border: 1px solid #f00;
-} */
-
 .cam .info-panel-1 {
   z-index: 2;
 }
@@ -103,14 +95,6 @@ ul li, ol li {
 .cam .info-panel-2 {
   z-index: 3;
 }
-
-/* .layer-W {
-  height: 100%;
-}
-
-.layer-H {
-  width: 100%;
-} */
 
 #message {
   z-index: 5;

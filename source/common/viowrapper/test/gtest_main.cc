@@ -28,11 +28,21 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <string>
 #include "gtest/gtest.h"
+#include "hobotlog/hobotlog.hpp"
+
+char* sensor_type;
+int test_num;
+int dump_en;
 
 GTEST_API_ int main(int argc, char **argv) {
   printf("Running main() from gtest_main.cc\n");
+  SetLogLevel(HOBOT_LOG_DEBUG);
   testing::InitGoogleTest(&argc, argv);
+  sensor_type = argv[1];
+  test_num = atoi(argv[2]);
+  dump_en = atoi(argv[3]);
   return RUN_ALL_TESTS();
 }

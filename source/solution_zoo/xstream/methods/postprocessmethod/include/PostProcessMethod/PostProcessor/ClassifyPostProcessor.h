@@ -28,8 +28,6 @@ class ClassifyPostProcessor : public PostProcessor {
   ClassifyPostProcessor() {}
   virtual ~ClassifyPostProcessor() {}
 
-  // virtual int Init(const std::string &cfg);
-
   std::vector<std::vector<BaseDataPtr>> Do(
       const std::vector<std::vector<BaseDataPtr>> &input,
       const std::vector<xstream::InputParamPtr> &param) override;

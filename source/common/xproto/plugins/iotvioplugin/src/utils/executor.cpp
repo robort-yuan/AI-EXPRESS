@@ -6,6 +6,8 @@
  * @email     ruoting.ding@horizon.ai
  * @date      2019.08.10
  */
+
+#include <functional>
 #include <memory>
 
 #include "hobotlog/hobotlog.hpp"
@@ -56,8 +58,10 @@ int Executor::Pause() {
 }
 int Executor::Stop() {
   if (!stop_) {
-    std::lock_guard<std::mutex> lck(task_queue_mutex_);
-    stop_ = true;
+    {
+      std::lock_guard<std::mutex> lck(task_queue_mutex_);
+      stop_ = true;
+    }
     condition_.notify_all();
   }
 
@@ -75,12 +79,14 @@ int Executor::Resume() {
 }
 
 std::future<bool> Executor::AddTask(exe_func func) {
-  std::lock_guard<std::mutex> lck(task_queue_mutex_);
   auto task = std::make_shared<Task>();
   task->func_ = func;
   task->p_ = std::make_shared<std::promise<bool>>();
-  task_queue_.push_back(task);
-  HOBOT_CHECK(task_queue_.size() <= 2);
+  {
+    std::lock_guard<std::mutex> lck(task_queue_mutex_);
+    task_queue_.push_back(task);
+    HOBOT_CHECK(task_queue_.size() <= 2);
+  }
   condition_.notify_one();  // wake worker thread(s)
   return task->p_->get_future();
 }

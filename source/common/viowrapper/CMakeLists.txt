@@ -39,7 +39,7 @@ if (${PLATFORM_X2})
 elseif (${PLATFORM_X3})
   add_definitions(-DX3)
   if (${IOT_VIO_API})
-    add_definitions(-DX3_IOT_VIO)    
+    add_definitions(-DX3_IOT_VIO)
   else ()
     add_definitions(-DX3_X2_VIO)
   endif ()
@@ -62,24 +62,62 @@ include_directories(
 )
 
 set(OpenCVLib opencv_world xstream-imagetools libturbojpeg.a libyuv.a)
+set(BaseLib vio cam pthread jsoncpp hobotlog dl rt)
 
 if (${PLATFORM_X2})
-  set(X3_HAPI_LIB )
+  set(X2_PREBUILT_LIB libcam.so libvio.so)
   set(SOURCE_FILES src/vio_wrapper.cpp)
 elseif (${PLATFORM_X3})
   if (${IOT_VIO_API})
+    # if (NOT (${IOT_VIO_SRC}))
+    #   set (AI_EXPRESS_ROOT ${PROJECT_SOURCE_DIR}/../..)
+    #   set (IOT_VIO_SRC ${AI_EXPRESS_ROOT}/xsdk/common/xproto/plugins/iotvioplugin)
+    #   message(STATUS "ai express root path = ${AI_EXPRESS_ROOT}")
+    #   message(STATUS "iot vio src path = ${IOT_VIO_SRC}")
+    #   include_directories(
+    #     ${AI_EXPRESS_ROOT}/x3_prebuilt/include
+    #     ${AI_EXPRESS_ROOT}/x3_prebuilt/include/hbmedia
+    #     ${AI_EXPRESS_ROOT}/xsdk/common/xproto/framework/include
+    #     ${AI_EXPRESS_ROOT}/xsdk/common/xproto/msgtype/include
+    #     ${AI_EXPRESS_ROOT}/xsdk/common/xstream/vision_type/include
+    #     ${AI_EXPRESS_ROOT}/xsdk/common/xstream/imagetools/include
+    #     ${IOT_VIO_SRC}/include
+    #     )
+    #   link_directories(
+    #     ${AI_EXPRESS_ROOT}/x3_prebuilt/lib
+    #     ${AI_EXPRESS_ROOT}/x3_prebuilt/lib/hbmedia
+    #     )
+      # file(GLOB PROJECT_SRC
+      #   "${AI_EXPRESS_ROOT}/xsdk/common/xstream/imagetools/src/*.cpp"
+      #   )
+      # set(OpenCVLib opencv_world libturbojpeg.a libyuv.a)
+    # endif()
+
     set(X3_HAPI_LIB isp iar isp_algo tinyalsa multimedia z avformat hbmedia)
-    set(SOURCE_FILES src/vio_wrapper_global.cpp 
-                      ${IOT_VIO_SRC}/src/vioplugin/iot_vio_api.cpp
-                      ${IOT_VIO_SRC}/src/vioplugin/iot_vio_cfg.cpp)
+    file(GLOB PROJECT_SRC
+      "${IOT_VIO_SRC}/src/iotviomanager/*.cpp"
+      )
+    file(GLOB PROJECT_INC
+      "${IOT_VIO_SRC}/include/iotviomanager/*.h"
+      "${PROJECT_SOURCE_DIR}/include/*.h"
+      )
+    set(SOURCE_FILES
+      src/vio_wrapper_global.cpp
+      ${PROJECT_SRC}
+      ${PROJECT_INC}
+      )
   else ()
-    set(X3_HAPI_LIB )
+    set(X2_PREBUILT_LIB libcam.so libvio.so)
     set(SOURCE_FILES src/vio_wrapper_global.cpp)
   endif()
 endif()
 
 add_library(viowrapper STATIC ${SOURCE_FILES})
-target_link_libraries(viowrapper ${OpenCVLib} ${X3_HAPI_LIB})
+if (${PLATFORM_X3})
+  target_link_libraries(viowrapper ${OpenCVLib} ${X3_HAPI_LIB} ${BaseLib})
+else ()
+  target_link_libraries(viowrapper ${OpenCVLib} ${X2_PREBUILT_LIB} ${BaseLib})
+endif ()
 
 if(${ALONE_BUILD})
   set(OUTPUT_ROOT ${CMAKE_SOURCE_DIR}/output)
@@ -93,9 +131,9 @@ else()
 endif()
 
 
-if(${ALONE_BUILD})
-add_subdirectory(test)
-endif()
+# if(${ALONE_BUILD})
+# add_subdirectory(test)
+# endif()
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include
    DESTINATION ${MY_OUTPUT_ROOT}/)

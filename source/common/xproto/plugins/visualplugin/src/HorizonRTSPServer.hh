@@ -47,14 +47,14 @@ class HorizonRTSPServer : public RTSPServerSupportingHTTPStreaming {
   lookupServerMediaSession(char const *streamName, Boolean isFirstLookupInSession);
 };
 
-class HisiH264FramedSource : public FramedSource {
+class HorizonH264FramedSource : public FramedSource {
  public:
-  static HisiH264FramedSource *createNew(UsageEnvironment &env);
+  static HorizonH264FramedSource *createNew(UsageEnvironment &env);
   static void onH264Frame(unsigned char *buff, int len);
 
   static void sendFrame(void *client);
 
-  static HisiH264FramedSource *frameSources[100];
+  static HorizonH264FramedSource *frameSources[100];
 
  public:
 //  static EventTriggerId eventTriggerId;
@@ -64,8 +64,8 @@ class HisiH264FramedSource : public FramedSource {
   static unsigned int referenceCount;
 
  protected:
-  HisiH264FramedSource(UsageEnvironment &env);
-  ~HisiH264FramedSource();
+  explicit HorizonH264FramedSource(UsageEnvironment &env);
+  ~HorizonH264FramedSource();
 
  private:
   virtual void doGetNextFrame();
@@ -73,8 +73,8 @@ class HisiH264FramedSource : public FramedSource {
 
   void getH264Frame(unsigned char *buff, int len);
 
-  int addSource(HisiH264FramedSource *source);
-  int eraseSource(HisiH264FramedSource *source);
+  int addSource(HorizonH264FramedSource *source);
+  int eraseSource(HorizonH264FramedSource *source);
 
   unsigned char frameBuffer[300000];
   unsigned char videoBuffer[2000000];
@@ -89,15 +89,15 @@ class HisiH264FramedSource : public FramedSource {
 
 };
 
-class HisiH264ServerMediaSubsession : public OnDemandServerMediaSubsession {
+class HorizonH264ServerMediaSubsession : public OnDemandServerMediaSubsession {
  public:
-  static HisiH264ServerMediaSubsession *
+  static HorizonH264ServerMediaSubsession *
   createNew(UsageEnvironment &env, Boolean reuseFirstSource);
 
  protected:
-  HisiH264ServerMediaSubsession(UsageEnvironment &env,
+  HorizonH264ServerMediaSubsession(UsageEnvironment &env,
                                 Boolean reuseFirstSource);
-  ~HisiH264ServerMediaSubsession();
+  ~HorizonH264ServerMediaSubsession();
 
   virtual FramedSource *createNewStreamSource(unsigned clientSessionId,
                                               unsigned &estBitrate);
@@ -119,7 +119,7 @@ class MetadataFramedSource : public FramedSource {
                                          bool sendFeature,
                                          bool sendBackground);
   static void onDataFrame(unsigned char *buff, int len, int msgType);
-//  static void onHisiFrame(VENC_STREAM_S *pstStream);
+
   static void onH264Frame(unsigned char *buff, int len);
 
   static void sendFrame(void *client);
@@ -153,8 +153,8 @@ class MetadataFramedSource : public FramedSource {
   int sendFeatureCnt;
 
  public:
-  //hisi在一个线程通知数据，全局唯一的事件
-  EventTriggerId hisiEventTriggerId;
+  //在一个线程通知数据，全局唯一的事件
+  EventTriggerId horizonEventTriggerId;
   //元数据可能在不同的线程上，每个实例都有自己的事件通知，防止线程不安全
   EventTriggerId dataEventTriggerId;
 

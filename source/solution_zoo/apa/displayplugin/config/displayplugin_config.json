@@ -1,0 +1,8 @@
+{
+  "source_num": 4,
+  "port": "tcp://*:7777",
+  "image_height": 720,
+  "image_width": 1280,
+  "image_seg_type": 6,
+  "ipm_seg_type": 10
+}

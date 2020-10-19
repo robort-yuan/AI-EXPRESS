@@ -16,7 +16,6 @@
 #include <vector>
 #include <deque>
 
-// #include "filter_param.h"
 #include "hobotxstream/method.h"
 #include "horizon/vision_type/vision_type.hpp"
 
@@ -62,7 +61,6 @@ class FilterSkipFrameMethod : public Method {
   int UpdateConfig(const std::string &config_str);
 
  private:
-  // std::atomic<float> area_threshold_;
   std::string config_file_name_;
   std::atomic<int> img_width_;
   std::atomic<int> img_height_;

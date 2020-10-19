@@ -94,7 +94,6 @@ TEST(XStreamSDKTest, RaiseHand) {
   flow->Init();
   auto out = flow->SyncPredict(input);
 
-  // std::vector<BaseDataPtr> out->datas_
   EXPECT_EQ(out->error_code_, 0);
   EXPECT_EQ(out->datas_.size(), static_cast<size_t>(1));
 

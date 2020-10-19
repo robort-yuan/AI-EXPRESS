@@ -1,7 +1,7 @@
 {
-    "match_type": "Euclidean",
+    "match_type": "IOU",
     "tracker_type": "IOU_2.0",
-    "use_kalman_filter": 0,
+    "use_kalman_filter": 1,
     "missing_time_thres": 2,
     "vanish_frame_count": 4,
     "time_gap": 40,

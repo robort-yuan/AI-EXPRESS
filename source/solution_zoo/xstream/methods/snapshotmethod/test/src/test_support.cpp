@@ -191,7 +191,6 @@ int ConstructInput(const std::string &smart_frame,
   input->datas_.push_back(BaseDataPtr(box_list));
 
   std::shared_ptr<BaseDataVector> select_score_list(new BaseDataVector());
-  //  BaseDataPtr select_score_list(new BaseData());
   select_score_list->name_ = "select_score_list";
   input->datas_.push_back(BaseDataPtr(select_score_list));
 
@@ -405,7 +404,6 @@ int ConstructInputInvalidUserdata(const std::string &smart_frame,
   input->datas_.push_back(BaseDataPtr(box_list));
 
   std::shared_ptr<BaseDataVector> select_score_list(new BaseDataVector());
-  //  BaseDataPtr select_score_list(new BaseData());
   select_score_list->name_ = "select_score_list";
   input->datas_.push_back(BaseDataPtr(select_score_list));
 

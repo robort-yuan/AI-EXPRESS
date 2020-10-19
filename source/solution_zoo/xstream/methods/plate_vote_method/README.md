@@ -28,7 +28,7 @@ max_slide_window_size 表示滑动窗口的大小，默认值为100.
 
 ### 策略简要描述
 
-算法提供的策略wiki: http://wiki.hobot.cc/pages/viewpage.action?pageId=75011640&showComments=true
+参考ROVER Voting算法。
 
 ### 编译运行
 

@@ -13,7 +13,8 @@ include_directories(
 # 头文件路径信息
 file(GLOB PROJECT_INC
     "include/vioplugin/*.h"
-    "include/vioplugin/utils/*.h"
+    "include/iotviomanager/*.h"
+    "include/utils/*.h"
 )
 
 # 源文件路径信息
@@ -21,6 +22,7 @@ if (${IOT_VIO_API})
     add_definitions(-DSUBSYS_NAME=IOT_VIO)
     file(GLOB PROJECT_SRC
         "src/vioplugin/*.cpp"
+        "src/iotviomanager/*.cpp"
         "src/utils/*.cpp")
 else ()
     file(GLOB PROJECT_SRC

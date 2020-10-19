@@ -34,7 +34,7 @@ extern "C" {
 #define JPEGE_MIN_HEIGHT 16
 
 #define VENC_MAX_NAME_LEN 16
-#define VENC_MAX_CHN_NUM 32
+#define VENC_MAX_CHN_NUM 64
 // #define VENC_MAX_GRP_NUM 16
 
 #define VENC_MAX_ROI_NUM 8 /* The max numbers of ROI region support */
@@ -48,7 +48,7 @@ extern "C" {
 **/
 #define VIDEO_MAX_MB_NUM                0x40000
 
-#define VDEC_MAX_CHN_NUM 32
+#define VDEC_MAX_CHN_NUM 64
 
 
 
@@ -130,7 +130,7 @@ typedef struct HB_CODEC_RECT_S {
 
 typedef struct HB_VIDEO_FRAME_PACK_S {
   hb_char* vir_ptr[3];
-  uint32_t phy_ptr[3];
+  uint64_t phy_ptr[3];
   uint32_t size;
   uint32_t width;
   uint32_t height;
@@ -432,7 +432,7 @@ typedef struct HB_VIDEO_FRAME_S {
 
 typedef struct HB_VIDEO_PACK_S {
   hb_char* vir_ptr;
-  uint32_t phy_ptr;
+  uint64_t phy_ptr;
   uint32_t size;
   uint64_t pts;
   uint32_t fd;
@@ -461,6 +461,8 @@ typedef struct HB_VIDEO_STREAM_INFO_S {
   int32_t enc_error_reason;
   int32_t enc_warn_info;
   uint32_t frame_cycle;
+  uint32_t temporal_id;
+  uint32_t longterm_ref_type;
 } VIDEO_STREAM_INFO_S;
 
 typedef struct HB_VIDEO_STREAM_INFO_JPEG_S {

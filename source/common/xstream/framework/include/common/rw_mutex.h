@@ -46,9 +46,11 @@ class RWLock {
     }
     if (_waiting_writers > 0) {
       if (_status == 0) {
+        lck.unlock();
         _write_cv.notify_one();
       }
     } else {
+      lck.unlock();
       _read_cv.notify_all();
     }
   }

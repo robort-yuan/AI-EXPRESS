@@ -87,6 +87,11 @@ int HidManager::Init() {
   }
   LOGD << "Hid open hid_file_handle";
 
+  serialize_thread_.CreatThread(1);
+  auto print_timestamp_str = getenv("uvc_print_timestamp");
+  if (print_timestamp_str && !strcmp(print_timestamp_str, "ON")) {
+    print_timestamp_ = true;
+  }
   return 0;
 }
 
@@ -114,52 +119,35 @@ void HidManager::SendThread() {
     int ret = read(hid_file_handle_, recv_data, 20);
     if (ret > 0 && strncmp(recv_data, "GetSmartResult", 14) == 0) {
       LOGD << "Receive GetSmartResult";
-      // 需要从pb_buffer中获取一个结果返回
-      std::unique_lock<std::mutex> lck(queue_lock_);
-      bool wait_ret =
-          condition_.wait_for(lck, std::chrono::milliseconds(10),
-                              [&]() { return pb_buffer_queue_.size() > 0; });
-      // 超时，返回0 给ap
-      if (wait_ret == 0) {
-        LOGI << "Get smart data time out";
-        int buffer_size = sizeof(int);
-        char *buffer = new char[buffer_size];
-        memset(buffer, 0x00, buffer_size);
-        memmove(buffer, &buffer_size, buffer_size);
+      std::string pb_string = "";
 
-        // 发送前select
-        FD_ZERO(&rset);                   // 文件描述符聚合变量清0
-        FD_SET(hid_file_handle_, &rset);  // 添加文件描述符
-        timeout.tv_sec = 1;
-        timeout.tv_usec = 0;
-        retv = select(hid_file_handle_ + 1, &rset, NULL, NULL, &timeout);
-        if (retv == 0) {
-          LOGD << "Hid select: send empty data time out";
-          continue;
-        } else if (retv < 0) {
-          LOGE << "Hid select: send empty data error, ret: " << retv;
-          continue;
-        }
-        // 发送4字节:4，即有效长度0
-        ret = write(hid_file_handle_, buffer, buffer_size);
-        delete[] buffer;
-        if (ret < 0 || ret != buffer_size) {
-          LOGE << "Send timeout message error: " << strerror(errno);
-        }
-      } else {
-        // send smart data
-        std::string pb_string = pb_buffer_queue_.front();
-        pb_buffer_queue_.pop();
-        // 将pb string 发送给ap
-        if (Send(pb_string)) {
-          LOGE << "Hid Send error!";
-        } else {
-          LOGD << "Hid Send end";
+      {
+        std::unique_lock<std::mutex> lck(queue_lock_);
+        bool wait_ret =
+            condition_.wait_for(lck, std::chrono::milliseconds(10),
+                              [&]() { return pb_buffer_queue_.size() > 0; });
+        // 从pb_buffer中获取结果
+        if (wait_ret != 0) {
+          // send smart data
+          pb_string = pb_buffer_queue_.front();
+          pb_buffer_queue_.pop();
         }
       }
-    } else {
-      LOGD << "Not receive request, hid waiting";
-      sleep(3);  // 3s
+      // 将pb string 发送给ap
+      auto send_start_time = std::chrono::system_clock::now();
+      if (Send(pb_string)) {
+        LOGE << "Hid Send error!";
+      } else {
+        LOGD << "Hid Send end";
+      }
+      auto send_end_time = std::chrono::system_clock::now();
+      if (print_timestamp_) {
+        auto duration_time =
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  send_end_time - send_start_time);
+        LOGW << "hid send " << pb_string.length()
+             << ",  use : " << duration_time.count() << " ms";
+      }
     }
   }
   delete[] recv_data;
@@ -187,19 +175,37 @@ int HidManager::FeedSmart(XProtoMessagePtr msg, int ori_image_width,
                           int ori_image_height, int dst_image_width,
                           int dst_image_height) {
   auto smart_msg = std::static_pointer_cast<SmartMessage>(msg);
-  std::string protocol;
   // convert pb2string
   if (!smart_msg.get()) {
     LOGE << "msg is null";
     return -1;
   }
+
+  if (serialize_thread_.GetTaskNum() > 5) {
+    LOGW << "Hid Serialize Thread task num more than 5: "
+         << serialize_thread_.GetTaskNum();
+  }
+  serialize_thread_.PostTask(
+      std::bind(&HidManager::Serialize, this, smart_msg,
+                ori_image_width, ori_image_height,
+                dst_image_width, dst_image_height));
+  return 0;
+}
+
+int HidManager::Serialize(SmartMessagePtr smart_msg,
+                          int ori_image_width, int ori_image_height,
+                          int dst_image_width, int dst_image_height) {
+  std::string protocol;
+  uint64_t timestamp = 0;
   switch ((SmartType)smart_type_) {
     case SmartType::SMART_FACE:
     case SmartType::SMART_BODY: {
       auto msg = dynamic_cast<CustomSmartMessage *>(smart_msg.get());
-      if (msg)
+      if (msg) {
         protocol = msg->Serialize(ori_image_width, ori_image_height,
                                   dst_image_width, dst_image_height);
+        timestamp = msg->time_stamp;
+      }
       break;
     }
     case SmartType::SMART_VEHICLE: {
@@ -207,6 +213,7 @@ int HidManager::FeedSmart(XProtoMessagePtr msg, int ori_image_width,
       if (msg) {
         protocol = msg->Serialize(ori_image_width, ori_image_height,
                                   dst_image_width, dst_image_height);
+        timestamp = msg->time_stamp;
       }
       break;
     }
@@ -217,13 +224,18 @@ int HidManager::FeedSmart(XProtoMessagePtr msg, int ori_image_width,
 
   // pb入队
   LOGD << "smart data to queue";
-  std::lock_guard<std::mutex> lck(queue_lock_);
-  pb_buffer_queue_.push(protocol);  // 将新的智能结果放入队列尾部
-  if (pb_buffer_queue_.size() > queue_max_size_) {
-    pb_buffer_queue_.pop();  // 将队列头部的丢弃
+  {
+    std::lock_guard<std::mutex> lck(queue_lock_);
+    pb_buffer_queue_.push(protocol);  // 将新的智能结果放入队列尾部
+    if (pb_buffer_queue_.size() > queue_max_size_) {
+      pb_buffer_queue_.pop();  // 将队列头部的丢弃
+      LOGD << "Drop smartMsg data...";
+    }
   }
   condition_.notify_one();
-
+  if (print_timestamp_) {
+    LOGW << "HidManager::Serialize timestamp:" << timestamp;
+  }
   return 0;
 }
 
@@ -247,14 +259,14 @@ int HidManager::Send(const std::string &proto_str) {
   char *buffer_offset = buffer;
   int remainding_size = buffer_size;
 
-  fd_set rset;      // 创建文件描述符的聚合变量
+  fd_set wset;      // 创建文件描述符的聚合变量
   timeval timeout;  // select timeout
   while (remainding_size > 0) {
-    FD_ZERO(&rset);                   // 文件描述符聚合变量清0
-    FD_SET(hid_file_handle_, &rset);  // 添加文件描述符
+    FD_ZERO(&wset);                   // 文件描述符聚合变量清0
+    FD_SET(hid_file_handle_, &wset);  // 添加文件描述符
     timeout.tv_sec = 1;
     timeout.tv_usec = 0;
-    int retv = select(hid_file_handle_ + 1, &rset, NULL, NULL, &timeout);
+    int retv = select(hid_file_handle_ + 1, NULL, &wset, NULL, &timeout);
     if (retv == 0) {
       LOGD << "Hid select: send data time out";
       continue;

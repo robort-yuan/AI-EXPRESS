@@ -75,7 +75,7 @@ then
   then
     cp deploy_dev/configs/hb_vio_x3_1080_fb.json ./config/vio_config -rf
     VIO_CONFIG_FILE=./config/vio_config/hb_vio_x3_1080_fb.json
-  elif [ ${2} == "VIO_HISI" ]
+  elif [ ${2} == "VIO_HAPI" ]
   then
     cp deploy_dev/configs/* ./config/vio_config -rf
     VIO_CONFIG_FILE=./config/vio_config/vio/x3dev/iot_vio_x3_1080_fb.json
@@ -150,6 +150,12 @@ function ChangeRunMode(){
   sed -i "s#\(\${face_body_multisource_vio} ./face_body_multisource/configs/face_body_solution.json -i\).*#\1 ${1}#g" run.sh
 }
 
+function stop_nginx(){
+  nginx_flag=$(ps | grep nginx | grep -v "grep")
+  if [ -n "${nginx_flag}" ]; then
+    killall -9 nginx
+  fi  
+}
 
 function RunSolutions(){
   cd ..
@@ -157,33 +163,60 @@ function RunSolutions(){
   ARCHITECTURE=${1}
   if [ ${ARCHITECTURE} == "x3" ];then
     ChangeRunMode ut
-    sh run.sh face x3dev hg cache
-    sh run.sh face x3dev hg jpg
-    sh run.sh face x3dev hg nv12
-    sh run.sh face_recog x3dev hg cache
-    sh run.sh face_recog x3dev hg jpg
-    sh run.sh face_recog x3dev hg nv12
-    sh run.sh body x3dev hg cache
-    sh run.sh body x3dev hg jpg
-    sh run.sh body x3dev hg nv12
-    sh run.sh xbox x3dev hg cache
-    sh run.sh xbox x3dev hg jpg
-    sh run.sh xbox x3dev hg nv12
-    sh run.sh behavior x3dev hg cache
-    sh run.sh behavior x3dev hg jpg
-    sh run.sh behavior x3dev hg nv12
-    sh run.sh video_box x3dev hg cache
-    sh run.sh video_box x3dev hg jpg
-    sh run.sh video_box x3dev hg nv12
-    sh run.sh gesture x3dev hg cache
-    sh run.sh gesture x3dev hg jpg
-    sh run.sh gesture x3dev hg nv12
-    sh run.sh tv_dance x3dev hg cache
-    sh run.sh tv_dance x3dev hg jpg
-    sh run.sh tv_dance x3dev hg nv12
-    sh run.sh face_body_multisource x3dev hg cache
-    sh run.sh face_body_multisource x3dev hg jpg
-    sh run.sh face_body_multisource x3dev hg nv12
+    # face x3dev hg cache
+    sh run.sh i ut 1 4 2 1
+    # face x3dev hg jpg
+    sh run.sh i ut 1 4 2 2
+    # face x3dev hg nv12
+    sh run.sh i ut 1 4 2 3
+    # face_recog x3dev hg cache
+    sh run.sh i ut 2 4 2 1
+    # face_recog x3dev hg jpg
+    sh run.sh i ut 2 4 2 2
+    # face_recog x3dev hg nv12
+    sh run.sh i ut 2 4 2 3
+    # body x3dev hg cache
+    sh run.sh i ut 3 4 2 1
+    # body x3dev hg jpg
+    sh run.sh i ut 3 4 2 2
+    # body x3dev hg nv12
+    sh run.sh i ut 3 4 2 3
+    # xbox x3dev hg cache
+    sh run.sh i ut 4 4 2 1
+    # xbox x3dev hg jpg
+    sh run.sh i ut 4 4 2 2
+    # xbox x3dev hg nv12
+    sh run.sh i ut 4 4 2 3
+    # behavior x3dev hg cache
+    sh run.sh i ut 5 4 2 1
+    # behavior x3dev hg jpg
+    sh run.sh i ut 5 4 2 2
+    # behavior x3dev hg nv12
+    sh run.sh i ut 5 4 2 3
+    # gesture x3dev hg cache
+    sh run.sh i ut 6 4 2 1
+    # gesture x3dev hg jpg
+    sh run.sh i ut 6 4 2 2
+    # gesture x3dev hg nv12
+    sh run.sh i ut 6 4 2 3
+    # video_box x3dev hg cache
+    sh run.sh i ut 7 4 2 1
+    # video_box x3dev hg jpg
+    sh run.sh i ut 7 4 2 2
+    # video_box x3dev hg nv12
+    sh run.sh i ut 7 4 2 3
+    # tv_dance x3dev hg cache
+    sh run.sh i ut 8 4 2 1
+    # tv_dance x3dev hg jpg
+    sh run.sh i ut 8 4 2 2
+    # tv_dance x3dev hg nv12
+    sh run.sh i ut 8 4 2 3
+    # face_body_multisource x3dev hg cache
+    sh run.sh i ut 12 4 2 1
+    # face_body_multisource x3dev hg jpg
+    sh run.sh i ut 12 4 2 2
+    # face_body_multisource x3dev hg nv12
+    sh run.sh i ut 12 4 2 3
     ChangeRunMode normal
   elif [ ${ARCHITECTURE} == "x2" ];then
     ChangeRunMode ut
@@ -201,7 +234,7 @@ function RunSolutions(){
     # sh run.sh face 96board hg nv12 # Cannot run
     ChangeRunMode normal
   fi
-
+  stop_nginx
   cd unit_test
 }
 
@@ -228,15 +261,15 @@ function RunSSDMethod(){
 #   usage
 # fi
 
-# VIOINTERFACE="VIO_HISI"
+# VIOINTERFACE="VIO_HAPI"
 # if [ $# -ge 3 ]
 # then
 #   if [ ${3} == "VIO_NORMAL" ]
 #   then
 #     VIOINTERFACE="VIO_NORMAL"
-#   elif [ ${3} == "VIO_HISI" ]
+#   elif [ ${3} == "VIO_HAPI" ]
 #   then
-#     VIOINTERFACE="VIO_HISI"
+#     VIOINTERFACE="VIO_HAPI"
 #   else
 #     usage
 #   fi
@@ -245,7 +278,7 @@ function RunSSDMethod(){
 #########test succ begin#################
 set -eux
 
-export LD_LIBRARY_PATH=../lib/
+export LD_LIBRARY_PATH=../lib/:../../lib
 UT_DIR=.
 ARCHITECTURE=$(cat platform.tmp)
 

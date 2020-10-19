@@ -97,7 +97,7 @@ ServerMediaSession *HorizonRTSPServer
           << " key:" << key
           << " value:" << value << "\n";
 
-  int eventTriggerCnt = HisiH264FramedSource::referenceCount +
+  int eventTriggerCnt = HorizonH264FramedSource::referenceCount +
     MetadataFramedSource::referenceCount * 2;
   if (eventTriggerCnt >= 32) {
     //最大支持的连接数量达到上限，不再接受新的连接
@@ -129,10 +129,10 @@ static ServerMediaSession *createNewSMS(UsageEnvironment &env,
                                         char *key, char *value) {
 
   ServerMediaSession *sms = ServerMediaSession::createNew(env,
-                                                          streamName,
-                                                          streamName,
-                                                          "session by hisiH264",
-                                                          False);
+                                              streamName,
+                                              streamName,
+                                              "session by horizonH264",
+                                              False);
   MetadataServerMediaSubsession *subsession = MetadataServerMediaSubsession::createNew(env,
                                                                                        False,
                                                                                        key,
@@ -142,20 +142,21 @@ static ServerMediaSession *createNewSMS(UsageEnvironment &env,
   return sms;
 }
 
-HisiH264FramedSource *HisiH264FramedSource::createNew(UsageEnvironment &env) {
-  HisiH264FramedSource *source = new HisiH264FramedSource(env);
+HorizonH264FramedSource *HorizonH264FramedSource::createNew
+  (UsageEnvironment &env) {
+  HorizonH264FramedSource *source = new HorizonH264FramedSource(env);
   return source;
 }
 
-HisiH264FramedSource *HisiH264FramedSource::frameSources[100];
+HorizonH264FramedSource *HorizonH264FramedSource::frameSources[100];
 
-void HisiH264FramedSource::onH264Frame(unsigned char *buff, int len) {
-  int count = sizeof(frameSources) / sizeof(HisiH264FramedSource *);
+void HorizonH264FramedSource::onH264Frame(unsigned char *buff, int len) {
+  int count = sizeof(frameSources) / sizeof(HorizonH264FramedSource *);
 
   for (int i = 0; i < count; i++) {
     pthread_mutex_lock(&gs_mutex);
 
-    HisiH264FramedSource *source = frameSources[i];
+    HorizonH264FramedSource *source = frameSources[i];
     if (source != NULL) {
       source->getH264Frame(buff, len);
     }
@@ -165,11 +166,11 @@ void HisiH264FramedSource::onH264Frame(unsigned char *buff, int len) {
 }
 
 
-unsigned int HisiH264FramedSource::referenceCount = 0;
+unsigned int HorizonH264FramedSource::referenceCount = 0;
 
-HisiH264FramedSource::HisiH264FramedSource(UsageEnvironment &env)
+HorizonH264FramedSource::HorizonH264FramedSource(UsageEnvironment &env)
   : FramedSource(env) {
-  envir() << "HisiH264FramedSource create . " << this << "\n";
+  envir() << "HorizonH264FramedSource create . " << this << "\n";
 
   videoFront = 0;
   videoTail = 0;
@@ -187,8 +188,8 @@ HisiH264FramedSource::HisiH264FramedSource(UsageEnvironment &env)
   addSource(this);
 }
 
-HisiH264FramedSource::~HisiH264FramedSource() {
-  envir() << "HisiH264FramedSource destory." << this << " \n";
+HorizonH264FramedSource::~HorizonH264FramedSource() {
+  envir() << "HorizonH264FramedSource destory." << this << " \n";
 
   eraseSource(this);
   referenceCount--;
@@ -199,38 +200,38 @@ HisiH264FramedSource::~HisiH264FramedSource() {
   }
 }
 
-int HisiH264FramedSource::addSource(HisiH264FramedSource *source) {
-  int count = sizeof(frameSources) / sizeof(HisiH264FramedSource *);
+int HorizonH264FramedSource::addSource(HorizonH264FramedSource *source) {
+  int count = sizeof(frameSources) / sizeof(HorizonH264FramedSource *);
   for (int i = 0; i < count; i++) {
     if (frameSources[i] == NULL) {
-      envir() << "HisiH264FramedSource " << source
+      envir() << "HorizonH264FramedSource " << source
               << " addSource i = " << i << "\n";
       frameSources[i] = source;
       return i;
     }
   }
-  envir() << "HisiH264FramedSource::addSource failed\n ";
+  envir() << "HorizonH264FramedSource::addSource failed\n ";
   return -1;
 }
 
-int HisiH264FramedSource::eraseSource(HisiH264FramedSource *source) {
+int HorizonH264FramedSource::eraseSource(HorizonH264FramedSource *source) {
   pthread_mutex_lock(&gs_mutex);
-  int count = sizeof(frameSources) / sizeof(HisiH264FramedSource *);
+  int count = sizeof(frameSources) / sizeof(HorizonH264FramedSource *);
   for (int i = 0; i < count; i++) {
     if (frameSources[i] == source) {
-      envir() << "HisiH264FramedSource " << source
+      envir() << "HorizonH264FramedSource " << source
               << " eraseSource i = " << i << "\n";
       frameSources[i] = NULL;
       pthread_mutex_unlock(&gs_mutex);
       return i;
     }
   }
-  envir() << "HisiH264FramedSource::eraseSource failed!\n";
+  envir() << "HorizonH264FramedSource::eraseSource failed!\n";
   pthread_mutex_unlock(&gs_mutex);
   return -1;
 }
 
-void HisiH264FramedSource::getH264Frame(unsigned char *buff, int len) {
+void HorizonH264FramedSource::getH264Frame(unsigned char *buff, int len) {
     int offset = 0;
     memcpy(frameBuffer + offset, buff, len);
     offset += len;
@@ -240,7 +241,7 @@ void HisiH264FramedSource::getH264Frame(unsigned char *buff, int len) {
 
     //缓存满需要另外处理
     if (videoTail + offset > totalSize || videoBuffCnt >= totalCnt) {
-        envir() << "HisiH264FramedSource drop frame videoCurrentCnt:"
+        envir() << "HorizonH264FramedSource drop frame videoCurrentCnt:"
                 << videoCurrentCnt
                 << " videoBuffCnt:" << videoBuffCnt
                 << " videoTail:" << videoTail
@@ -266,12 +267,13 @@ void HisiH264FramedSource::getH264Frame(unsigned char *buff, int len) {
     }
 }
 
-void HisiH264FramedSource::sendFrame(void *client) {
-  HisiH264FramedSource *source = (HisiH264FramedSource *) client;
+void HorizonH264FramedSource::sendFrame(void *client) {
+  HorizonH264FramedSource *source =
+  reinterpret_cast<HorizonH264FramedSource *>(client);
   source->doGetNextFrame();
 }
 
-void HisiH264FramedSource::doGetNextFrame() {
+void HorizonH264FramedSource::doGetNextFrame() {
   if (isCurrentlyAwaitingData() == False) { //上次读的数据还没有处理完
     return;
   }
@@ -304,8 +306,8 @@ void HisiH264FramedSource::doGetNextFrame() {
   }
 }
 
-void HisiH264FramedSource::doStopGettingFrames() {
-  envir() << "HisiH264FramedSource::doStopGettingFrames\n";
+void HorizonH264FramedSource::doStopGettingFrames() {
+  envir() << "HorizonH264FramedSource::doStopGettingFrames\n";
   eraseSource(this);
 
   pthread_mutex_lock(&gs_mutex);
@@ -326,37 +328,37 @@ void HisiH264FramedSource::doStopGettingFrames() {
   FramedSource::doStopGettingFrames();
 }
 
-HisiH264ServerMediaSubsession *HisiH264ServerMediaSubsession::createNew(UsageEnvironment &env,
-                                                                        Boolean reuseFirstSource) {
-  HisiH264ServerMediaSubsession *subsession = new HisiH264ServerMediaSubsession(env,
-                                                                                reuseFirstSource);
+HorizonH264ServerMediaSubsession *HorizonH264ServerMediaSubsession::createNew(
+  UsageEnvironment &env, Boolean reuseFirstSource) {
+  HorizonH264ServerMediaSubsession *subsession =
+  new HorizonH264ServerMediaSubsession(env, reuseFirstSource);
   return subsession;
 }
 
-HisiH264ServerMediaSubsession::HisiH264ServerMediaSubsession(UsageEnvironment &env,
-                                                             Boolean reuseFirstSource)
+HorizonH264ServerMediaSubsession::HorizonH264ServerMediaSubsession(
+  UsageEnvironment &env, Boolean reuseFirstSource)
   : OnDemandServerMediaSubsession(env, reuseFirstSource) {
 
 }
 
-HisiH264ServerMediaSubsession::~HisiH264ServerMediaSubsession() {
+HorizonH264ServerMediaSubsession::~HorizonH264ServerMediaSubsession() {
 
 }
 
-FramedSource *HisiH264ServerMediaSubsession::createNewStreamSource(unsigned clientSessionId,
-                                                                   unsigned &estBitrate) {
+FramedSource *HorizonH264ServerMediaSubsession::createNewStreamSource(
+  unsigned clientSessionId, unsigned &estBitrate) {
   envir() << "createNewStreamSource clientSessionId:" << clientSessionId << "\n";
   estBitrate = 8000; // 1080p 8000kbit/s
-  FramedSource *source = HisiH264FramedSource::createNew(envir());
+  FramedSource *source = HorizonH264FramedSource::createNew(envir());
 
   //add a framer in front of the source:
   source = H264VideoStreamDiscreteFramer::createNew(envir(), source);
   return source;
 }
 
-RTPSink *HisiH264ServerMediaSubsession::createNewRTPSink(Groupsock *rtpGroupsock,
-                                                         unsigned char rtpPayloadTypeIfDynamic,
-                                                         FramedSource *inputSource) {
+RTPSink *HorizonH264ServerMediaSubsession::createNewRTPSink(
+  Groupsock *rtpGroupsock, unsigned char rtpPayloadTypeIfDynamic,
+  FramedSource *inputSource) {
   return H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
 }
 
@@ -409,8 +411,8 @@ void MetadataFramedSource::getH264Frame(unsigned char *buff, int len) {
 
     videoBuffCnt++;
 
-    if (hisiEventTriggerId > 0) {
-        scheduler->triggerEvent(hisiEventTriggerId, this);
+    if (horizonEventTriggerId > 0) {
+        scheduler->triggerEvent(horizonEventTriggerId, this);
     }
 }
 
@@ -560,9 +562,10 @@ MetadataFramedSource::MetadataFramedSource(UsageEnvironment &env,
   sendBackgroudCnt = 0;
   sendFeatureCnt = 0;
 
-  hisiEventTriggerId = 0;
-  if (hisiEventTriggerId == 0) {
-    hisiEventTriggerId = envir().taskScheduler().createEventTrigger(sendFrame);
+  horizonEventTriggerId = 0;
+  if (horizonEventTriggerId == 0) {
+    horizonEventTriggerId =
+    envir().taskScheduler().createEventTrigger(sendFrame);
   }
   dataEventTriggerId = 0;
   if (dataEventTriggerId == 0) {
@@ -581,9 +584,9 @@ MetadataFramedSource::~MetadataFramedSource() {
     // Reclaim our 'event trigger'
   }
 
-  if (hisiEventTriggerId > 0) {
-    envir().taskScheduler().deleteEventTrigger(hisiEventTriggerId);
-    hisiEventTriggerId = 0;
+  if (horizonEventTriggerId > 0) {
+    envir().taskScheduler().deleteEventTrigger(horizonEventTriggerId);
+    horizonEventTriggerId = 0;
   }
   if (dataEventTriggerId > 0) {
     envir().taskScheduler().deleteEventTrigger(dataEventTriggerId);
@@ -634,7 +637,7 @@ void MetadataFramedSource::doGetNextFrame() {
     return;
   }
 
-  if (videoTail > videoFront && hisiEventTriggerId > 0) {
+  if (videoTail > videoFront && horizonEventTriggerId > 0) {
     pthread_mutex_lock(&gs_mutex);
 
     int offset = videoOffset[videoCurrentCnt];
@@ -713,9 +716,9 @@ void MetadataFramedSource::doStopGettingFrames() {
 
   pthread_mutex_lock(&gs_mutex);
 
-  if (hisiEventTriggerId > 0) {
-    envir().taskScheduler().deleteEventTrigger(hisiEventTriggerId);
-    hisiEventTriggerId = 0;
+  if (horizonEventTriggerId > 0) {
+    envir().taskScheduler().deleteEventTrigger(horizonEventTriggerId);
+    horizonEventTriggerId = 0;
   }
   if (dataEventTriggerId > 0) {
     envir().taskScheduler().deleteEventTrigger(dataEventTriggerId);
@@ -995,7 +998,7 @@ int server_send(unsigned char *buffer, int len, int msgType) {
 }
 
 int server_send_h264(unsigned char *buffer, int len) {
-  HisiH264FramedSource::onH264Frame(buffer, len);
+  HorizonH264FramedSource::onH264Frame(buffer, len);
 
   return 0;
 }
@@ -1005,8 +1008,8 @@ int server_run(SERVER_PARAM_S *param_s) {
 
   pthread_mutex_init(&gs_mutex, NULL);
 
-  memset(HisiH264FramedSource::frameSources, 0,
-         sizeof(HisiH264FramedSource::frameSources));
+  memset(HorizonH264FramedSource::frameSources, 0,
+         sizeof(HorizonH264FramedSource::frameSources));
   memset(MetadataFramedSource::frameSources, 0,
          sizeof(MetadataFramedSource::frameSources));
 
