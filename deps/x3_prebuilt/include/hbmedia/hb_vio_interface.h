@@ -70,8 +70,10 @@ typedef enum VIO_DATA_TYPE_S {
 	HB_VIO_SIF_YUV_DATA,
 	HB_VIO_ISP_YUV_DATA,	// for debug, a process result for raw feedback
 	HB_VIO_GDC_DATA,
+	HB_VIO_GDC1_DATA,
 	HB_VIO_IARWB_DATA,
 	HB_VIO_GDC_FEEDBACK_SRC_DATA,
+	HB_VIO_GDC1_FEEDBACK_SRC_DATA,
 	HB_VIO_PYM_LAYER_DATA,
 	HB_VIO_MD_DATA,
 	HB_VIO_DATA_TYPE_MAX
@@ -397,6 +399,15 @@ int   hb_vio_gen_gdc_cfg(param_t *gdc_parm, window_t *wnds,
 int   hb_vio_set_gdc_cfg(uint32_t pipeline_id, uint32_t* cfg_buf,
 								uint64_t cfg_size);
 
+int   hb_vio_set_gdc_cfg_opt(uint32_t pipeline_id, uint32_t gdc_id,
+							uint32_t* cfg_buf, uint64_t cfg_size);
+int hb_vio_run_gdc_opt(uint32_t pipeline_id,
+					   uint32_t gdc_id,
+					   hb_vio_buffer_t * src_img_info,
+					   hb_vio_buffer_t * dst_img_info,
+					   int rotate);
+
+
 /*ipu channel    osd
  *   us 0      ==> osd 0
  *   ds 0      ==> osd 1
@@ -420,6 +431,8 @@ int hb_vio_osd_draw_word(osd_draw_word_t *osd_draw_word_data);
 
 int hb_vio_free_ipubuf(uint32_t pipeline_id, hb_vio_buffer_t * dst_img_info);
 int hb_vio_free_gdcbuf(uint32_t pipeline_id, hb_vio_buffer_t * dst_img_info);
+int hb_vio_free_gdcbuf_opt(uint32_t pipeline_id, uint32_t gdc_id,
+									hb_vio_buffer_t * dst_img_info);
 int hb_vio_free_pymbuf(uint32_t pipeline_id, VIO_DATA_TYPE_E data_type,
 		    void *img_info);
 int hb_vio_run_pym(uint32_t pipeline_id, hb_vio_buffer_t * src_img_info);

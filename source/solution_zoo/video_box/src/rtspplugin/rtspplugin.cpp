@@ -16,12 +16,8 @@
 #include <memory>
 #include <string>
 
-#include "hobotlog/hobotlog.hpp"
-#include "xproto/message/pluginflow/flowmsg.h"
-#include "xproto/message/pluginflow/msg_registry.h"
-#include "xproto/plugin/xpluginasync.h"
-
 #include "BasicUsageEnvironment.hh"
+#include "hobotlog/hobotlog.hpp"
 #include "hobotxsdk/xstream_sdk.h"
 #include "horizon/vision/util.h"
 #include "horizon/vision_type/vision_error.h"
@@ -29,14 +25,14 @@
 #include "horizon/vision_type/vision_type.h"
 #include "horizon/vision_type/vision_type_util.h"
 #include "liveMedia.hh"
-
-#include "rtspplugin/rtspmessage.h"
-#include "xproto_msgtype/vioplugin_data.h"
-
-#include "unistd.h"
-
 #include "mediapipemanager/mediapipemanager.h"
 #include "mediapipemanager/meidapipeline.h"
+#include "rtspplugin/rtspmessage.h"
+#include "unistd.h"
+#include "xproto/message/pluginflow/flowmsg.h"
+#include "xproto/message/pluginflow/msg_registry.h"
+#include "xproto/plugin/xpluginasync.h"
+#include "xproto_msgtype/vioplugin_data.h"
 // #include "mediapipemanager/meidapipelinetest.h"
 
 // #define PIPE_TEST
@@ -131,27 +127,10 @@ int RtspPlugin::Init() {
   for (int i = 0; i < channel_number_; ++i) {
     std::shared_ptr<horizon::vision::MediaPipeLine> pipeline =
         std::make_shared<horizon::vision::MediaPipeLine>(i, i);
-    pipeline->Init();
-//    pipeline->Start();
+    // pipeline->Init();
+    //    pipeline->Start();
     MediaPipeManager::GetInstance().AddPipeLine(pipeline);
   }
-  // std::shared_ptr<horizon::vision::MediaPipeLine> pipeline =
-  // std::make_shared<horizon::vision::MediaPipeLine>(0, 0); pipeline->Init();
-  // pipeline->Start();
-  // MediaPipeManager::GetInstance().AddPipeLine(pipeline);
-  // std::shared_ptr<horizon::vision::MediaPipeLine> pipeline1 =
-  // std::make_shared<horizon::vision::MediaPipeLine>(1, 1); pipeline1->Init();
-  // pipeline1->Start();
-  // MediaPipeManager::GetInstance().AddPipeLine(pipeline1);
-  // std::shared_ptr<horizon::vision::MediaPipeLine> pipeline2 =
-  // std::make_shared<horizon::vision::MediaPipeLine>(2,2); pipeline2->Init();
-  // pipeline2->Start();
-  // MediaPipeManager::GetInstance().AddPipeLine(pipeline2);
-  // std::shared_ptr<horizon::vision::MediaPipeLine> pipeline3 =
-  // std::make_shared<horizon::vision::MediaPipeLine>(3,3); pipeline3->Init();
-  // pipeline3->Start();
-  // MediaPipeManager::GetInstance().AddPipeLine(pipeline3);
-
   return XPluginAsync::Init();
 }
 
@@ -161,17 +140,30 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
   int ret = 0;
   printf("Enter get decode frame thread000000\n");
   while (running_) {
-//     usleep(1000*40);
+    //    usleep(1000*40);
     ret = pipeline->Output((void **)(&out_pym_buf));
-    LOGW << "pipeline out grp:" << pipeline->GetGrpId() << " ret:" << ret;
+    // LOGW << "pipeline out grp:" << pipeline->GetGrpId() << " ret:" << ret;
     if (ret != 0) {
-      LOGI << "Frame Drop";
+      if (ret == -5) {  // not ready
+        usleep(500 * 200);
+        continue;
+      }
+
+      LOGI << "channel:" << channel << " Frame Drop";
+      continue;
+    }
+    if (out_pym_buf == NULL) {
+      LOGE << "mediapipeline output null pym buf, but not return error!";
       continue;
     }
 
 #if 1
     std::vector<std::shared_ptr<PymImageFrame>> pym_images;
     auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
+    if (pym_image_frame_ptr == NULL) {
+      LOGE << "make shared ptr fail, return null pointer!";
+      continue;
+    }
     Convert(out_pym_buf, *pym_image_frame_ptr);
     pym_image_frame_ptr->channel_id = 0;
     {
@@ -184,9 +176,10 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
         [&](ImageVioMessage *p) {
           if (p) {
             if (p->pipeline_ != nullptr) {
-              LOGI << "image vio message destrct  grp:"
-                   << p->pipeline_->GetGrpId()
-                   << "  frame_id:" << pym_image_frame_ptr->frame_id;
+              // LOGI << "channel:" << channel
+              //      << "image vio message destrct  grp:"
+              //      << p->pipeline_->GetGrpId()
+              //      << "  frame_id:" << pym_image_frame_ptr->frame_id;
               p->pipeline_->OutputBufferFree(p->slot_data_);
             }
             // p->FreeImage();
@@ -197,7 +190,8 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
           p = nullptr;
         });
 
-    LOGI << "image vio message construct  grp:" << pipeline->GetGrpId()
+    LOGI << "channel:" << channel
+         << "image vio message construct  grp:" << pipeline->GetGrpId()
          << "  frame_id:" << pym_image_frame_ptr->frame_id;
     PushMsg(input);
 #endif
@@ -206,7 +200,6 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
 }
 
 void RtspPlugin::GetDecodeFrame0() {
-
   static int count = 1;
   int ret = 0;
   VIDEO_FRAME_S pstFrame;
@@ -352,9 +345,9 @@ void RtspPlugin::Process() {
 
   for (int i = 0; i < channel_number_; ++i) {
     ourRTSPClient *client = nullptr;
-    client = openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
-                     rtsp_url_[i].tcp_flag,
-                     ("channel" + std::to_string(i) + ""));
+    client =
+        openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
+                rtsp_url_[i].tcp_flag, ("channel" + std::to_string(i) + ""));
     client->SetChannel(i);
     rtsp_clients_.push_back(client);
   }
@@ -380,6 +373,7 @@ void RtspPlugin::Process() {
   for (uint32_t i = 0; i < pipelines.size(); ++i) {
     t[i] = new std::thread(&RtspPlugin::GetDeocdeFrame, this, pipelines[i], i);
   }
+
   // All subsequent activity takes place within the event loop:
   env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
   for (int i = 0; i < channel_number_; ++i) {
@@ -421,44 +415,44 @@ void RtspPlugin::CheckRtspState() {
   const std::vector<std::shared_ptr<MediaPipeLine>> &pipelines =
       MediaPipeManager::GetInstance().GetPipeLine();
 
-  while (running_)
-  {
+  sleep(5);  // wait for rtsp stream connect success
+  LOGW << "Start CheckRtspState thread,running flag:" << running_;
+  while (running_) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     uint64_t time_now = (uint64_t)tv.tv_sec;
-    for (uint32_t i = 0; i < pipelines.size(); ++i)
-    {
-      if (time_now - pipelines[i]->GetlastReadDataTime() <= 5)
-      {
-        sleep(1);
+    for (uint32_t i = 0; i < pipelines.size(); ++i) {
+      if (time_now - pipelines[i]->GetlastReadDataTime() < 10) {
         continue;
       }
 
       int channel = pipelines[i]->GetGrpId();
-      LOGI << "RTSP channel:" << channel << " , 10 seconds no stream!";
+      LOGE << "RTSP channel:" << channel << " , 10 seconds no stream!";
       rtsp_clients_[i]->Stop();
-
       // reopen rtsp url
       ourRTSPClient *client = nullptr;
-      client = openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
-                      rtsp_url_[i].tcp_flag,
-                      ("channel" + std::to_string(i) + ""));
+      client =
+          openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
+                  rtsp_url_[i].tcp_flag, ("channel" + std::to_string(i) + ""));
       client->SetChannel(i);
       LOGI << "after reopen rtsp stream, channel:" << i;
       rtsp_clients_[i] = client;
+      pipelines[i]->UpdateTime();
     }
+    sleep(1);
   }
 }
 
 int RtspPlugin::Start() {
-  auto &pipelines =
-          MediaPipeManager::GetInstance().GetPipeLine();
-  for (auto& pipeline : pipelines) {
-    pipeline->Start();
-  }
+  // auto &pipelines =
+  //         MediaPipeManager::GetInstance().GetPipeLine();
+  // for (auto& pipeline : pipelines) {
+  // pipeline->Start();
+  // }
 
   process_thread_ = std::make_shared<std::thread>(&RtspPlugin::Process, this);
 
+#if 0
   for (size_t idx = 0; idx < pipelines.size(); idx++) {
     auto stat = pipelines.at(idx)->CheckStat();
     if (stat < 0) {
@@ -473,9 +467,9 @@ int RtspPlugin::Start() {
       rtsp_clients_stat_[idx] = true;
     }
   }
-
-  check_thread_ = std::make_shared<std::thread>(
-    &RtspPlugin::CheckRtspState, this);
+#endif
+  check_thread_ =
+      std::make_shared<std::thread>(&RtspPlugin::CheckRtspState, this);
   return 0;
 }
 
@@ -604,7 +598,7 @@ int RtspPlugin::DecodeInit() {
 
   // EXPECT_EQ(HB_VDEC_GetChnAttr(hb_VDEC_Chn, &hb_VencChnAttr), 0);
 
-  ret = HB_VDEC_SetChnAttr(i, &vdec_attr); // config
+  ret = HB_VDEC_SetChnAttr(i, &vdec_attr);  // config
   if (ret != 0) {
     printf("HB_VDEC_SetChnAttr failed %x\n", ret);
     return ret;
@@ -677,7 +671,7 @@ void RtspPlugin::GetConfigFromFile(const std::string &path) {
     std::string channel("channel" + std::to_string(i));
     std::string rtsp_url = config_[channel.c_str()]["rtsp_link"].asString();
     // bool use_tcp = config_[channel.c_str()]["tcp"].asBool();
-    LOGW << "channel: " << channel << " rtsp url: " << rtsp_url;
+    LOGW << channel << ": rtsp url: " << rtsp_url;
     Rtspinfo info;
     info.url = rtsp_url;
     info.tcp_flag = config_[channel.c_str()]["tcp"].asBool();

@@ -14,7 +14,8 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-
+#define HB_VIN_PIPE_NAME_LENGTH  16
+#define HB_VIN_PIPE_CALIB_PATH_LEGNTH 64
 #define RET_OK 0
 #define RET_ERROR 1
 
@@ -27,6 +28,7 @@ enum HB_VIN_ERROR_CODE {
 	HB_VIN_INVALID_PARAM,
 	HB_VIN_ISP_INIT_FAIL,
 	HB_VIN_ISP_MODULE_INIT_FAIL,
+	HB_VIN_ISP_FRAME_CORRUPTED,
 	HB_VIN_CHANNEL_INIT_FAIL,
 	HB_VIN_MALLOC_BUFMGR_FAIL,
 	HB_VIN_DWE_INIT_FAIL,
@@ -39,6 +41,7 @@ enum HB_VIN_ERROR_CODE {
 	HB_VIN_GET_DEVFRAME_FAIL,
 	HB_VIN_MD_ENABLE_FAIL,
 	HB_VIN_MD_DISABLE_FAIL,
+	HB_VIN_SWITCH_SNS_TABLE_FAIL,
 };
 
 typedef enum HB_VIN_DEV_INTF_MODE_E {
@@ -79,7 +82,7 @@ typedef struct HB_VIN_DEV_OUTPUT_DDR_S {
 	// uint32_t mux_out_enable_index;
 	uint32_t stride;
 	uint32_t buffer_num;
-	uint32_t raw_dump_en;
+	uint32_t frameDepth;
 } VIN_DEV_OUTPUT_DDR_S;
 
 typedef struct HB_VIN_DEV_OUTPUT_ISP_S {
@@ -158,6 +161,7 @@ typedef struct HB_VIN_PIPE_CALIB_S {
 
 typedef struct HB_VIN_PIPE_ATTR_S {
 	uint32_t  ddrOutBufNum;
+	uint32_t  frameDepth;
 	VIN_PIPE_SENSOR_MODE_E snsMode;
 	VIN_PIPE_SIZE_S stSize;
 	VIN_PIPE_CFA_PATTERN_E cfaPattern;
@@ -300,6 +304,15 @@ typedef struct HB_VIN_LENS_CTRL_ATTR_S {
         };
 } VIN_LENS_CTRL_ATTR_S;
 
+
+typedef struct HB_VIN_PIPE_SNS_TABLE_S {
+	char name[HB_VIN_PIPE_NAME_LENGTH];
+	VIN_PIPE_SENSOR_MODE_E mode;
+	uint8_t bitWidth;
+	uint8_t cfaPattern;
+	unsigned char calibPath[HB_VIN_PIPE_CALIB_PATH_LEGNTH];
+} VIN_PIPE_SNS_TABLE_S;
+
 extern int HB_VIN_SetDevAttr(uint32_t devId,
 			const VIN_DEV_ATTR_S *stVinDevAttr);
 extern int HB_VIN_GetDevAttr(uint32_t devId,
@@ -373,6 +386,8 @@ extern int HB_VIN_DeinitLens(uint32_t pipeId);
 extern int HB_VIN_RegisterDisCallback(uint32_t pipeId,
 	VIN_DIS_CALLBACK_S *pstDISCallback);
 
+extern int HB_VIN_SwPipeSnstable(uint32_t pipeId,
+	VIN_PIPE_SNS_TABLE_S *snsTable);
 
 #ifdef __cplusplus
 }

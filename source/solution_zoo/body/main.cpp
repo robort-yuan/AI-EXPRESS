@@ -23,6 +23,7 @@
 #include "vioplugin/vioplugin.h"
 #include "visualplugin/visualplugin.h"
 #include "websocketplugin/websocketplugin.h"
+#include "bpu_predict/bpu_predict_extension.h"
 #ifdef X3
 #include "uvcplugin/uvcplugin.h"
 #endif
@@ -52,6 +53,7 @@ static void signal_handle(int param) {
 
 int main(int argc, char **argv) {
   mallopt(M_TRIM_THRESHOLD, 128 * 1024);
+  HB_BPU_setGlobalConfig(BPU_GLOBAL_ENGINE_TYPE, "native");
   std::string run_mode = "ut";
 
   if (argc < 5) {
@@ -122,7 +124,6 @@ int main(int argc, char **argv) {
 
   signal(SIGINT, signal_handle);
   signal(SIGPIPE, signal_handle);
-  signal(SIGSEGV, signal_handle);
 
   auto vio_plg = std::make_shared<VioPlugin>(vio_config_file);
   auto smart_plg = std::make_shared<SmartPlugin>(smart_config_file);

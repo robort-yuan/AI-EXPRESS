@@ -60,6 +60,7 @@ py::dict SmartPlgHelper::ToXStreamData(py::object msg) {
   for (uint32_t idx = 0; idx < 1; ++idx) {
     BaseDataPtr xstream_input;
     if (vio_msg_ptr->num_ > idx) {
+#ifdef X2
       auto xstream_img =
         horizon::vision::util::ImageFrameConversion(vio_msg_ptr->image_[idx]);
       xstream_input = xstream::BaseDataPtr(xstream_img);
@@ -67,6 +68,19 @@ py::dict SmartPlgHelper::ToXStreamData(py::object msg) {
                 << xstream_img->value->frame_id
                 << ", Timestamp = " << xstream_img->value->time_stamp
                 << std::endl;
+#endif
+
+#ifdef X3
+      std::shared_ptr<hobot::vision::PymImageFrame> pym_img =
+        vio_msg_ptr->image_[idx];
+      LOGI << "vio message, frame_id = " << pym_img->frame_id;
+      auto xstream_img =
+        std::make_shared<xstream::XStreamData<ImageFramePtr>>();
+      xstream_img->type_ = "ImageFrame";
+      xstream_img->value =
+        std::static_pointer_cast<hobot::vision::ImageFrame>(pym_img);
+      xstream_input = xstream::BaseDataPtr(xstream_img);
+#endif
     } else {
       xstream_input = std::make_shared<BaseData>();
       xstream_input->state_ = DataState::INVALID;

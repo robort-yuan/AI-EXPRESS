@@ -42,11 +42,7 @@ void RuntimeMonitor::PushFrame(const SmartInput *input) {
   input_frames_[frame_id].image_num = frame_info->num_;
   input_frames_[frame_id].img = frame_info->image_;
   input_frames_[frame_id].context = input->context;
-  if (frame_info->profile_) {
-    input_frames_[frame_id].vio_msg = frame_info;
-  } else {
-    input_frames_[frame_id].vio_msg = nullptr;
-  }
+  input_frames_[frame_id].vio_msg = frame_info;
 }
 
 RuntimeMonitor::InputFrameData RuntimeMonitor::PopFrame(

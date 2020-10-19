@@ -6,13 +6,16 @@
  */
 #include "rtspclient/rtspclient.h"
 
-#include "hb_comm_vdec.h"
-#include "hb_vdec.h"
-#include "hb_vp_api.h"
 #include "hobotlog/hobotlog.hpp"
-
 #include "mediapipemanager/mediapipemanager.h"
+#include "rtspclient/AudioG711Sink.h"
+#include "rtspclient/H264Sink.h"
+#include "rtspclient/H265Sink.h"
 #include "rtspclient/rtspclient.h"
+
+extern "C" {
+#include "rtspclient/sps_pps.h"
+}
 
 // Forward function definitions:
 
@@ -26,10 +29,10 @@ void continueAfterPLAY(RTSPClient *rtspClient, int resultCode,
 
 // Other event handler functions:
 void subsessionAfterPlaying(
-    void *clientData); // called when a stream's subsession (e.g., audio or
-                       // video substream) ends
+    void *clientData);  // called when a stream's subsession (e.g., audio or
+                        // video substream) ends
 void subsessionByeHandler(
-    void *clientData); // called when a RTCP "BYE" is received for a subsession
+    void *clientData);  // called when a RTCP "BYE" is received for a subsession
 void streamTimerHandler(void *clientData);
 // called at the end of a stream's expected duration (if the stream has not
 // already signaled its end using a RTCP "BYE")
@@ -57,7 +60,10 @@ UsageEnvironment &operator<<(UsageEnvironment &env,
 // Implementation of "StreamClientState":
 
 StreamClientState::StreamClientState()
-    : iter(NULL), session(NULL), subsession(NULL), streamTimerTask(NULL),
+    : iter(NULL),
+      session(NULL),
+      subsession(NULL),
+      streamTimerTask(NULL),
       duration(0.0) {}
 
 StreamClientState::~StreamClientState() {
@@ -65,7 +71,7 @@ StreamClientState::~StreamClientState() {
   if (session != NULL) {
     // We also need to delete "session", and unschedule "streamTimerTask" (if
     // set)
-    UsageEnvironment &env = session->envir(); // alias
+    UsageEnvironment &env = session->envir();  // alias
 
     env.taskScheduler().unscheduleDelayedTask(streamTimerTask);
     Medium::close(session);
@@ -98,15 +104,23 @@ ourRTSPClient::ourRTSPClient(UsageEnvironment &env, char const *rtspURL,
                              portNumBits tunnelOverHTTPPortNum)
     : RTSPClient(env, rtspURL, verbosityLevel, applicationName,
                  tunnelOverHTTPPortNum, -1) {
-                   tcp_flag_ = false;
-                   has_shut_down = false;
-                 }
+  tcp_flag_ = false;
+  has_shut_down = false;
+}
 
 ourRTSPClient::~ourRTSPClient() {
-  LOGI << "channel "<< channel_ << " ~ourRTSPClient()";
+  LOGI << "channel " << channel_ << " ~ourRTSPClient()";
   if (!has_shut_down) {
     LOGI << "channel " << channel_ << " ~ourRTSPClient() call shutdownStream";
     shutdownStream(this);
+  }
+
+  LOGI << "~ourRTSPClient(), call media pipeline deinit, channel:" << channel_;
+  auto media =
+      horizon::vision::MediaPipeManager::GetInstance().GetPipeLine()[channel_];
+  if (media) {
+    media->Stop();
+    media->DeInit();
   }
   LOGI << "leave ourRTSPClient::~ourRTSPClient(), channel:" << channel_;
 }
@@ -114,317 +128,26 @@ ourRTSPClient::~ourRTSPClient() {
 void ourRTSPClient::Stop() {
   LOGI << "call ourRTSPClient::Stop(), channel:" << channel_;
   if (!has_shut_down) {
-      shutdownStream(this);
-      has_shut_down = true;
+    shutdownStream(this);
+    has_shut_down = true;
+  }
+
+  LOGI << "ourRTSPClient Stop(), call media pipeline deinit, channel:"
+       << channel_;
+  auto media =
+      horizon::vision::MediaPipeManager::GetInstance().GetPipeLine()[channel_];
+  if (media) {
+    media->Stop();
+    media->DeInit();
   }
   LOGI << "leave call ourRTSPClient::Stop(), channel:" << channel_;
 }
 
-// Implementation of "DummySink":
-#define DUMMY_SINK_RECEIVE_BUFFER_SIZE 200000
-void DummySink::SetFileName(const std::string &file_name) {
-  file_name_ = file_name;
-};
-
-int DummySink::SaveToFile(void *data, const int data_size) {
-  std::ofstream outfile;
-  if (file_name_ == "") {
-    return -1;
-  }
-  outfile.open(file_name_, std::ios::app | std::ios::out | std::ios::binary);
-  outfile.write(reinterpret_cast<char *>(data), data_size);
-  return 0;
-}
-
-void DummySink::SetChannel(int channel) { channel_ = channel; };
-
-int DummySink::GetChannel(void) const { return channel_; };
-
-DummySink *DummySink::createNew(UsageEnvironment &env,
-                                MediaSubsession &subsession,
-                                char const *streamId, int buffer_size,
-                                int buffer_count) {
-  return new DummySink(env, subsession, streamId, buffer_size, buffer_count);
-}
-
-DummySink::DummySink(UsageEnvironment &env, MediaSubsession &subsession,
-                     char const *streamId, int buffer_size, int buffer_count)
-    : MediaSink(env), subsession_(subsession), buffer_size_(buffer_size),
-      buffer_count_(buffer_count), channel_(-1), first_frame_(true),
-      waiting_(true), frame_count_(0) {
-  int ret = 0;
-  stream_id_ = strDup(streamId);
-  ret = HB_SYS_Alloc(&buffers_pyh_, (void **)&buffers_vir_,
-                     buffer_size_ * buffer_count_);
-  if (ret != 0) {
-    LOGE << "DummySink sys alloc failed";
-  }
-}
-
-DummySink::~DummySink() {
-  LOGI << "DummySink::~DummySink(), channel:" << channel_;
-  HB_SYS_Free(buffers_pyh_, buffers_vir_);
-  LOGI << "~DummySink(), channel:" << channel_ << " after HB_SYS_Free";
-  // delete[] buffers_vir_;
-  delete[] stream_id_;
-  LOGI << "leave ~DummySink(), channel:" << channel_;
-}
-
-void DummySink::afterGettingFrame(void *clientData, unsigned frameSize,
-                                  unsigned numTruncatedBytes,
-                                  struct timeval presentationTime,
-                                  unsigned durationInMicroseconds) {
-  DummySink *sink = (DummySink *)clientData;
-  sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime,
-                          durationInMicroseconds);
-}
-
-// If you don't want to see debugging output for each received frame, then
-// comment out the following line:
-#define DEBUG_PRINT_EACH_RECEIVED_FRAME 0
-
-void DummySink::afterGettingFrame(unsigned frameSize,
-                                  unsigned numTruncatedBytes,
-                                  struct timeval presentationTime,
-                                  unsigned /*durationInMicroseconds*/) {
-  // We've just received a frame of data.  (Optionally) print out information
-  // about it:
-#if DEBUG_PRINT_EACH_RECEIVED_FRAME
-  if (stream_id_ != NULL)
-    envir() << "Stream \"" << stream_id_ << "\"; ";
-  envir() << subsession_.mediumName() << "/" << subsession_.codecName()
-          << ":\tReceived " << frameSize << " bytes";
-  if (numTruncatedBytes > 0)
-    envir() << " (with " << numTruncatedBytes << " bytes truncated)";
-  char uSecsStr[6 + 1]; // used to output the 'microseconds' part of the
-                        // presentation time
-  sprintf(uSecsStr, "%06u", (unsigned)presentationTime.tv_usec);
-  envir() << ".\tPresentation time: " << (int)presentationTime.tv_sec << "."
-          << uSecsStr;
-  if (subsession_.rtpSource() != NULL &&
-      !subsession_.rtpSource()->hasBeenSynchronizedUsingRTCP()) {
-    envir() << "!"; // mark the debugging output to indicate that this
-                    // presentation time is not RTCP-synchronized
-  }
-#ifdef DEBUG_PRINT_NPT
-  envir() << "\tNPT: " << subsession_.getNormalPlayTime(presentationTime);
-#endif
-  envir() << "\n";
-#endif
-  // unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
-
-  waiting_ = isNeedToWait(frameSize);
-  if (waiting_) {    
-    frame_count_++;
-    // Then continue, to request the next frame of data:
-    continuePlaying();
-    return;    
-  }
-
-  if (batch_send_) {
-    for (auto cache : buffer_stat_cache_) {
-      LOGW << "batch_send_";
-      u_int8_t *buffer =
-              buffers_vir_ + (cache.buffer_idx) * buffer_size_;
-      uint64_t buffer_phy =
-              buffers_pyh_ + (cache.buffer_idx) * buffer_size_;
-#if DEBUG_PRINT_EACH_RECEIVED_FRAME
-      printf("recv h264 grp %d  data: %02x %02x %02x %02x %02x\n\n",
-             pipe_line_->GetGrpId(),
-             buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
-#endif
-      VIDEO_STREAM_S pstStream;
-      memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
-      pstStream.pstPack.phy_ptr = buffer_phy;
-      pstStream.pstPack.vir_ptr = reinterpret_cast<char *>(buffer);
-//      pstStream.pstPack.pts = frame_count_;
-      pstStream.pstPack.src_idx = cache.buffer_idx;
-      pstStream.pstPack.size = cache.frame_size + 4;
-      pstStream.pstPack.stream_end = HB_FALSE;
-      int ret = 0;
-      ret = pipe_line_->Input(&pstStream);
-      LOGI << "pipeline in grp:" << pipe_line_->GetGrpId() << "  ret:" << ret;
-      if (ret != 0) {
-        LOGE << "pipeline in failed  grp:" << pipe_line_->GetGrpId()
-             << "  ret:" << ret;
-      }
-    }
-
-    batch_send_ = false;
-    buffer_stat_cache_.clear();
-    frame_count_++;
-    // Then continue, to request the next frame of data:
-    continuePlaying();
-    return;
-  }
-
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-  uint64_t buffer_phy =
-      buffers_pyh_ + (frame_count_ % buffer_count_) * buffer_size_;
-  // if (waiting_) {
-  //   if ((buffer[4] & 0x1F) == 0x07 && (buffer[4] & 0x80) == 0x00 &&
-  //       (buffer[4] & 0x60) != 0x00) {
-  //     waiting_ = false;
-  //   } else {
-  //     frame_count_++;
-  //     // Then continue, to request the next frame of data:
-  //     continuePlaying();
-  //     return;
-  //   }
-  // }
-
-  VIDEO_STREAM_S pstStream;
-  memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
-  pstStream.pstPack.phy_ptr = buffer_phy;
-  pstStream.pstPack.vir_ptr = (char *)buffer;
-  pstStream.pstPack.pts = frame_count_;
-  pstStream.pstPack.src_idx = frame_count_ % buffer_count_;
-  pstStream.pstPack.size = frameSize + 4;
-  pstStream.pstPack.stream_end = HB_FALSE;
-  int ret = 0;
-  ret = pipe_line_->Input(&pstStream);
-  LOGI << "pipeline in grp:" << pipe_line_->GetGrpId() << "  ret:" << ret;
-  if (ret != 0) {
-    LOGE << "pipeline in failed  grp:" << pipe_line_->GetGrpId()
-         << "  ret:" << ret;
-  }
-  // SaveToFile(buffer, frameSize + 4);
-#if 0
-  if (first_frame_) {
-    // envir() << "first frame, insert frame\n";
-    unsigned int num = 0;
-    // unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
-    subsession_.fmtp_spropparametersets();
-    SPropRecord *sps = parseSPropParameterSets(subsession_.fmtp_spropparametersets(), num);
-    // SaveToFile(start_code, 4);
-    // SaveToFile(sps[0].sPropBytes, sps[0].sPropLength);
-    // SaveToFile(start_code, 4);
-    // SaveToFile(sps[1].sPropBytes, sps[1].sPropLength);
-    // int full_frame_size = frameSize + 4 + sps[0].sPropLength + 4 + sps[1].sPropLength;
-    int full_frame_size = 4 + sps[0].sPropLength + 4 + sps[1].sPropLength;
-    VIDEO_STREAM_S pstStream;
-    memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
-    pstStream.pstPack.phy_ptr = buffer_phy;
-    pstStream.pstPack.vir_ptr = (char *)buffer;
-    pstStream.pstPack.pts = frame_count_;
-    pstStream.pstPack.src_idx = frame_count_ % buffer_count_;
-    pstStream.pstPack.size = full_frame_size;
-    pstStream.pstPack.stream_end = HB_FALSE;
-
-    int ret = 0;
-    // ret = HB_VDEC_SendStream(0, &pstStream, 40);
-    ret = pipe_line_->Input(&pstStream);
-    printf("HB_VDEC_SendStream\n");
-    if (ret != 0) {
-        printf("HB_VDEC_SendStream failed %d\n", ret);
-    }
-    SaveToFile(buffer, full_frame_size);
-    first_frame_ = false;
-  } else {
-    VIDEO_STREAM_S pstStream;
-    memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
-    pstStream.pstPack.phy_ptr = buffer_phy;
-    pstStream.pstPack.vir_ptr = (char *)buffer;
-    pstStream.pstPack.pts = frame_count_;
-    pstStream.pstPack.src_idx = frame_count_ % buffer_count_;
-    pstStream.pstPack.size = frameSize + 4;
-    pstStream.pstPack.stream_end = HB_FALSE;
-
-    int ret = 0;
-    ret = pipe_line_->Input(&pstStream);
-    printf("HB_VDEC_SendStream\n");
-    if (ret != 0) {
-        printf("HB_VDEC_SendStream failed %d\n", ret);
-    }
-    // memcpy((void *)buffer, start_code, 4);
-    // SaveToFile(buffer, frameSize);
-    SaveToFile(buffer, frameSize + 4);
-  }
-#endif
-
-  frame_count_++;
-  // Then continue, to request the next frame of data:
-  continuePlaying();
-}
-void DummySink::AddPipeLine(
-    std::shared_ptr<horizon::vision::MediaPipeLine> pipe_line) {
-  pipe_line_ = pipe_line;
-}
-
-Boolean DummySink::isNeedToWait(unsigned frameSize) {
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-  int nNalUnitType = 0;
-  nNalUnitType |= (buffer[4] & 0xff);
-  if (nNalUnitType == 0x67 || nNalUnitType == 0x68
-      || nNalUnitType == 0x06 || nNalUnitType == 0x65) {
-    buffer_stat_t stat;
-    stat.buffer_idx = frame_count_ % buffer_count_;
-    stat.frame_size = frameSize;
-    buffer_stat_cache_.emplace_back(stat);
-    if (nNalUnitType == 0x65) {
-      if (buffer_stat_cache_.size() == 4) {
-        batch_send_ = true;
-        LOGI << "stat done";
-        return false;
-      } else {
-        LOGE << "stat error";
-        buffer_stat_cache_.clear();
-        batch_send_ = false;
-        return true;
-      }
-    }
-    return true;
-  }
-
-  return false;
-  // }else if(nNalUnitType == 8){ //pps
-  //   return false;
-  // }
-}
-
-Boolean DummySink::continuePlaying() {
-  if (fSource == NULL)
-    return False; // sanity check (should not happen)
-  unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
-
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-
-  // Request the next frame of data from our input source. "afterGettingFrame()"
-  // will get called later, when it arrives:
-#if 0
-  if (first_frame_) {
-    unsigned int num = 0;
-    subsession_.fmtp_spropparametersets();
-    SPropRecord *sps = parseSPropParameterSets(subsession_.fmtp_spropparametersets(), num);
-    memcpy((void *)buffer, start_code, 4);
-    buffer += 4;
-    memcpy((void *)buffer, sps[0].sPropBytes, sps[0].sPropLength);
-    buffer += sps[0].sPropLength;
-    memcpy((void *)buffer, start_code, 4);
-    buffer += 4;
-    memcpy((void *)buffer, sps[1].sPropBytes, sps[1].sPropLength);
-    buffer += sps[1].sPropLength;
-  } else {
-    memcpy((void *)buffer, start_code, 4);
-    buffer += 4;
-  }
-#endif
-  memcpy((void *)buffer, start_code, 4);
-  buffer += 4;
-
-  fSource->getNextFrame(buffer, buffer_size_, afterGettingFrame, this,
-                        onSourceClosure, this);
-  return True;
-}
-
-#define RTSP_CLIENT_VERBOSITY_LEVEL                                            \
-  1 // by default, print verbose output from each "RTSPClient"
+#define RTSP_CLIENT_VERBOSITY_LEVEL \
+  1  // by default, print verbose output from each "RTSPClient"
 
 static unsigned rtspClientCount =
-    0; // Counts how many streams (i.e., "RTSPClient"s) are currently in use.
+    0;  // Counts how many streams (i.e., "RTSPClient"s) are currently in use.
 
 ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
                        char const *rtspURL, const bool tcp_flag,
@@ -443,7 +166,7 @@ ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
   rtspClient->SetChannel(rtspClientCount);
   rtspClient->SetTCPFlag(tcp_flag);
 
-  env << "Set output file name:" << file_name.c_str();
+  env << "Set output file name:" << file_name.c_str() << "\n";
 
   ++rtspClientCount;
 
@@ -461,8 +184,9 @@ ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
 void continueAfterDESCRIBE(RTSPClient *rtspClient, int resultCode,
                            char *resultString) {
   do {
-    UsageEnvironment &env = rtspClient->envir();                 // alias
-    StreamClientState &scs = ((ourRTSPClient *)rtspClient)->scs; // alias
+    UsageEnvironment &env = rtspClient->envir();  // alias
+    StreamClientState &scs =
+        (reinterpret_cast<ourRTSPClient *>(rtspClient))->scs;  // alias
 
     if (resultCode != 0) {
       env << *rtspClient << "Failed to get a SDP description: " << resultString
@@ -476,7 +200,7 @@ void continueAfterDESCRIBE(RTSPClient *rtspClient, int resultCode,
 
     // Create a media session object from this SDP description:
     scs.session = MediaSession::createNew(env, sdpDescription);
-    delete[] sdpDescription; // because we don't need it anymore
+    delete[] sdpDescription;  // because we don't need it anymore
     if (scs.session == NULL) {
       env << *rtspClient
           << "Failed to create a MediaSession object from the SDP description: "
@@ -502,36 +226,38 @@ void continueAfterDESCRIBE(RTSPClient *rtspClient, int resultCode,
   shutdownStream(rtspClient);
 }
 
-static unsigned getBufferSize_(UsageEnvironment& env, int bufOptName,
-			      int socket) {
+static unsigned getBufferSize_(UsageEnvironment &env, int bufOptName,
+                               int socket) {
   int curSize = 0;
   int optlen = sizeof(int);
-  //SOCKLEN_T sizeSize = sizeof curSize;
+  // SOCKLEN_T sizeSize = sizeof curSize;
   if (getsockopt(socket, SOL_SOCKET, bufOptName,
-		 (char*)&curSize, (socklen_t *)(&optlen)) < 0) {
-    LOGE<< "rtsp getBufferSize error!!!";
+                 reinterpret_cast<char *>(&curSize),
+                 reinterpret_cast<socklen_t *>(&optlen)) < 0) {
+    LOGE << "rtsp getBufferSize error!!!";
     return 0;
   }
 
   return curSize;
 }
 
-unsigned getReceiveBufferSize_(UsageEnvironment& env, int socket) {
+unsigned getReceiveBufferSize_(UsageEnvironment &env, int socket) {
   return getBufferSize_(env, SO_RCVBUF, socket);
 }
 
-static unsigned setBufferTo_(UsageEnvironment& env, int bufOptName,
-			    int socket, unsigned requestedSize) {
+static unsigned setBufferTo_(UsageEnvironment &env, int bufOptName, int socket,
+                             unsigned requestedSize) {
   SOCKLEN_T sizeSize = sizeof requestedSize;
-  setsockopt(socket, SOL_SOCKET, bufOptName, (char*)&requestedSize, sizeSize);
+  setsockopt(socket, SOL_SOCKET, bufOptName,
+             reinterpret_cast<char *>(&requestedSize), sizeSize);
 
   // Get and return the actual, resulting buffer size:
   return getBufferSize_(env, bufOptName, socket);
 }
 
-unsigned setReceiveBufferTo_(UsageEnvironment& env,
-			    int socket, unsigned requestedSize) {
-	return setBufferTo_(env, SO_RCVBUF, socket, requestedSize);
+unsigned setReceiveBufferTo_(UsageEnvironment &env, int socket,
+                             unsigned requestedSize) {
+  return setBufferTo_(env, SO_RCVBUF, socket, requestedSize);
 }
 
 // By default, we request that the server stream its data using RTP/UDP.
@@ -540,8 +266,9 @@ unsigned setReceiveBufferTo_(UsageEnvironment& env,
 #define REQUEST_STREAMING_OVER_TCP False
 
 void setupNextSubsession(RTSPClient *rtspClient) {
-  UsageEnvironment &env = rtspClient->envir();                 // alias
-  StreamClientState &scs = ((ourRTSPClient *)rtspClient)->scs; // alias
+  UsageEnvironment &env = rtspClient->envir();  // alias
+  StreamClientState &scs =
+      (reinterpret_cast<ourRTSPClient *>(rtspClient))->scs;  // alias
   bool tcp_flag = (reinterpret_cast<ourRTSPClient *>(rtspClient))->GetTCPFlag();
 
   scs.subsession = scs.iter->next();
@@ -550,7 +277,7 @@ void setupNextSubsession(RTSPClient *rtspClient) {
       env << *rtspClient << "Failed to initiate the \"" << *scs.subsession
           << "\" subsession: " << env.getResultMsg() << "\n";
       setupNextSubsession(
-          rtspClient); // give up on this subsession; go to the next one
+          rtspClient);  // give up on this subsession; go to the next one
     } else {
       env << *rtspClient << "Initiated the \"" << *scs.subsession
           << "\" subsession (";
@@ -564,7 +291,7 @@ void setupNextSubsession(RTSPClient *rtspClient) {
 
       // Continue setting up this subsession, by sending a RTSP "SETUP" command:
       rtspClient->sendSetupCommand(*scs.subsession, continueAfterSETUP, False,
-                                  tcp_flag);
+                                   tcp_flag);
     }
     return;
   }
@@ -586,10 +313,10 @@ void setupNextSubsession(RTSPClient *rtspClient) {
 void continueAfterSETUP(RTSPClient *rtspClient, int resultCode,
                         char *resultString) {
   do {
-    UsageEnvironment &env = rtspClient->envir(); // alias
+    UsageEnvironment &env = rtspClient->envir();  // alias
     ourRTSPClient *our_rtsp_client =
         reinterpret_cast<ourRTSPClient *>(rtspClient);
-    StreamClientState &scs = our_rtsp_client->scs; // alias
+    StreamClientState &scs = our_rtsp_client->scs;  // alias
 
     if (resultCode != 0) {
       env << *rtspClient << "Failed to set up the \"" << *scs.subsession
@@ -617,28 +344,134 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode,
     // call "startPlaying()" on it. (This will prepare the data sink to receive
     // data; the actual flow of data from the client won't start happening until
     // later, after we've sent a RTSP "PLAY" command.)
+    int pay_load = horizon::vision::RTSP_Payload_NONE;
+    if (strcmp(scs.subsession->mediumName(), "video") == 0) {
+      if (strcmp(scs.subsession->codecName(), "H264") == 0) {
+        pay_load = horizon::vision::RTSP_Payload_H264;
+      } else if (strcmp(scs.subsession->codecName(), "H265") == 0) {
+        pay_load = horizon::vision::RTSP_Payload_H265;
+      } else {
+        LOGE << "rtsp recv sdp video, unknow codee name:"
+             << scs.subsession->codecName();
+        shutdownStream(rtspClient);
+      }
+    } else if (strcmp(scs.subsession->mediumName(), "audio") == 0) {
+      LOGE << "channel: " << our_rtsp_client->GetChannel()
+           << "recv audio media";
+      break;
+      if (strcmp(scs.subsession->codecName(), "PCMA") == 0) {
+        pay_load = horizon::vision::RTSP_Payload_PCMA;
+      } else if (strcmp(scs.subsession->codecName(), "PCMU") == 0) {
+        pay_load = horizon::vision::RTSP_Payload_PCMU;
+      } else {
+        LOGE << "rtsp recv sdp audio, unknow codee name:"
+             << scs.subsession->codecName();
+        shutdownStream(rtspClient);
+      }
+    } else {
+      LOGE << "rtsp recv sdp info, unknow codee name:"
+           << scs.subsession->codecName();
+      shutdownStream(rtspClient);
+    }
 
-    scs.subsession->sink =
-        DummySink::createNew(env, *scs.subsession, rtspClient->url());
+    LOGI << "channel:" << our_rtsp_client->GetChannel()
+         << " , rtsp recv decode strem:" << scs.subsession->codecName()
+         << ", resolution:" << scs.subsession->videoWidth() << ", "
+         << scs.subsession->videoHeight();
+
+    int width = scs.subsession->videoWidth();
+    int height = scs.subsession->videoHeight();
+    if (width == 0) {
+      width = 1920;
+      height = 1080;
+      LOGW << "channel:" << our_rtsp_client->GetChannel()
+           << " recv video width is 0 from sdp, analytics resolution from sps";
+#if 0
+      if (strcmp(scs.subsession->codecName(), "H264") == 0) {
+        unsigned int num = 0;
+        SPropRecord *record = parseSPropParameterSets(
+            scs.subsession->fmtp_spropparametersets(), num);
+        if (num > 0) {
+          SPropRecord sps = record[0];
+          // SPropRecord pps = record[1];
+          struct get_bit_context objBit;
+          memset(&objBit, 0, sizeof(objBit));
+          objBit.buf = reinterpret_cast<uint8_t *>(sps.sPropBytes) + 1;
+          objBit.buf_size = sps.sPropLength;
+          struct SPS objSps;
+          memset(&objSps, 0, sizeof(objSps));
+          if (h264dec_seq_parameter_set(&objBit, &objSps) == 0) {
+            width = h264_get_width(&objSps);
+            height = h264_get_height(&objSps);
+            LOGW << "sps anlytics get width:" << width << " height:" << height;
+          }
+        }
+        delete[] record;
+      }
+#endif
+    }
+
+    int buffer_size = 200 * 1024;
+    int buffer_count = 8;
+    if (width > 1920 && height > 1080) {
+      buffer_size = 1024 * 1024;
+      buffer_count = 6;
+      LOGW << "channel:" << our_rtsp_client->GetChannel()
+           << " relloc buffer size 1024*1024";
+    }
+
+    auto media = horizon::vision::MediaPipeManager::GetInstance()
+                     .GetPipeLine()[our_rtsp_client->GetChannel()];
+
+    if (pay_load == horizon::vision::RTSP_Payload_H264) {
+      H264Sink *dummy_sink_ptr = H264Sink::createNew(
+          env, *scs.subsession, rtspClient->url(), buffer_size, buffer_count);
+      LOGI << "rtsp client new H264Sink, channel:"
+           << our_rtsp_client->GetChannel();
+      dummy_sink_ptr->SetFileName(our_rtsp_client->GetOutputFileName());
+      dummy_sink_ptr->SetChannel(our_rtsp_client->GetChannel());
+      dummy_sink_ptr->AddPipeLine(media);
+      scs.subsession->sink = dummy_sink_ptr;
+    } else if (pay_load == horizon::vision::RTSP_Payload_H265) {
+      H265Sink *dummy_sink_ptr = H265Sink::createNew(
+          env, *scs.subsession, rtspClient->url(), buffer_size, buffer_count);
+      LOGI << "rtsp client new H265Sink, channel:"
+           << our_rtsp_client->GetChannel();
+      dummy_sink_ptr->SetFileName(our_rtsp_client->GetOutputFileName());
+      dummy_sink_ptr->SetChannel(our_rtsp_client->GetChannel());
+      dummy_sink_ptr->AddPipeLine(media);
+      scs.subsession->sink = dummy_sink_ptr;
+    } else if (pay_load == horizon::vision::RTSP_Payload_PCMU ||
+               pay_load == horizon::vision::RTSP_Payload_PCMA) {
+      AudioG711Sink *dummy_sink_ptr =
+          AudioG711Sink::createNew(env, *scs.subsession, rtspClient->url());
+      LOGI << "rtsp client new G711Sink, channel:"
+           << our_rtsp_client->GetChannel();
+      dummy_sink_ptr->SetFileName(our_rtsp_client->GetOutputFileName());
+      dummy_sink_ptr->SetChannel(our_rtsp_client->GetChannel());
+      dummy_sink_ptr->AddPipeLine(media);
+      scs.subsession->sink = dummy_sink_ptr;
+    }
+
     // perhaps use your own custom "MediaSink" subclass instead
     if (scs.subsession->sink == NULL) {
       env << *rtspClient << "Failed to create a data sink for the \""
           << *scs.subsession << "\" subsession: " << env.getResultMsg() << "\n";
       break;
     }
-    DummySink *dummy_sink_ptr =
-        reinterpret_cast<DummySink *>(scs.subsession->sink);
-    dummy_sink_ptr->SetFileName(our_rtsp_client->GetOutputFileName());
-    dummy_sink_ptr->SetChannel(our_rtsp_client->GetChannel());
-    dummy_sink_ptr->AddPipeLine(
-        horizon::vision::MediaPipeManager::GetInstance()
-            .GetPipeLine()[dummy_sink_ptr->GetChannel()]);
+
+    // our_rtsp_client->SetPayloadType(pay_load);
+    media->SetDecodeType(pay_load);
+    media->SetDecodeResolution(width, height);
+
+    media->Init();
+    media->Start();
 
     env << *rtspClient << "Created a data sink for the \"" << *scs.subsession
         << "\" subsession\n";
     scs.subsession->miscPtr =
-        rtspClient; // a hack to let subsession handler functions get the
-                    // "RTSPClient" from the subsession
+        rtspClient;  // a hack to let subsession handler functions get the
+                     // "RTSPClient" from the subsession
     scs.subsession->sink->startPlaying(*(scs.subsession->readSource()),
                                        subsessionAfterPlaying, scs.subsession);
     // Also set a handler to be called if a RTCP "BYE" arrives for this
@@ -659,8 +492,9 @@ void continueAfterPLAY(RTSPClient *rtspClient, int resultCode,
   Boolean success = False;
 
   do {
-    UsageEnvironment &env = rtspClient->envir();                 // alias
-    StreamClientState &scs = ((ourRTSPClient *)rtspClient)->scs; // alias
+    UsageEnvironment &env = rtspClient->envir();  // alias
+    StreamClientState &scs =
+        (reinterpret_cast<ourRTSPClient *>(rtspClient))->scs;  // alias
 
     if (resultCode != 0) {
       env << *rtspClient << "Failed to start playing session: " << resultString
@@ -676,8 +510,8 @@ void continueAfterPLAY(RTSPClient *rtspClient, int resultCode,
     // entire stream, you could set this timer for some shorter value.)
     if (scs.duration > 0) {
       unsigned const delaySlop =
-          2; // number of seconds extra to delay, after the stream's expected
-             // duration.  (This is optional.)
+          2;  // number of seconds extra to delay, after the stream's expected
+              // duration.  (This is optional.)
       scs.duration += delaySlop;
       unsigned uSecsToDelay = (unsigned)(scs.duration * 1000000);
       scs.streamTimerTask = env.taskScheduler().scheduleDelayedTask(
@@ -690,14 +524,23 @@ void continueAfterPLAY(RTSPClient *rtspClient, int resultCode,
     }
     env << "...\n";
 
-    if (scs.subsession != NULL && scs.subsession->rtpSource() != NULL) {
-      int socketNum = scs.subsession->rtpSource()->RTPgs()->socketNum();
-      int curBufferSize = getReceiveBufferSize_(env, socketNum);
-      int newBufferSize = 200 * 1024;
-      if (curBufferSize < newBufferSize) {
-        newBufferSize = setReceiveBufferTo_(env, socketNum, newBufferSize);
+    //{{
+    MediaSubsessionIterator iter(*scs.session);
+    MediaSubsession *subsession;
+    while ((subsession = iter.next()) != NULL) {
+      if (subsession->rtpSource() != NULL) {
+        unsigned const thresh = 1000000;  // 1 second
+        subsession->rtpSource()->setPacketReorderingThresholdTime(thresh);
+        int socketNum = subsession->rtpSource()->RTPgs()->socketNum();
+        int curBufferSize = getReceiveBufferSize_(env, socketNum);
+        int newBufferSize = 200 * 1024;
+        if (curBufferSize < newBufferSize) {
+          newBufferSize = setReceiveBufferTo_(env, socketNum, newBufferSize);
+        }
       }
     }
+    //}}
+
     success = True;
   } while (0);
   delete[] resultString;
@@ -722,8 +565,7 @@ void subsessionAfterPlaying(void *clientData) {
   MediaSession &session = subsession->parentSession();
   MediaSubsessionIterator iter(session);
   while ((subsession = iter.next()) != NULL) {
-    if (subsession->sink != NULL)
-      return; // this subsession is still active
+    if (subsession->sink != NULL) return;  // this subsession is still active
   }
 
   // All subsessions' streams have now been closed, so shutdown the client:
@@ -733,7 +575,7 @@ void subsessionAfterPlaying(void *clientData) {
 void subsessionByeHandler(void *clientData) {
   MediaSubsession *subsession = (MediaSubsession *)clientData;
   RTSPClient *rtspClient = (RTSPClient *)subsession->miscPtr;
-  UsageEnvironment &env = rtspClient->envir(); // alias
+  UsageEnvironment &env = rtspClient->envir();  // alias
 
   env << *rtspClient << "Received RTCP \"BYE\" on \"" << *subsession
       << "\" subsession\n";
@@ -744,7 +586,7 @@ void subsessionByeHandler(void *clientData) {
 
 void streamTimerHandler(void *clientData) {
   ourRTSPClient *rtspClient = (ourRTSPClient *)clientData;
-  StreamClientState &scs = rtspClient->scs; // alias
+  StreamClientState &scs = rtspClient->scs;  // alias
 
   scs.streamTimerTask = NULL;
 
@@ -753,8 +595,9 @@ void streamTimerHandler(void *clientData) {
 }
 
 void shutdownStream(RTSPClient *rtspClient, int exitCode) {
-  UsageEnvironment &env = rtspClient->envir();                 // alias
-  StreamClientState &scs = ((ourRTSPClient *)rtspClient)->scs; // alias
+  UsageEnvironment &env = rtspClient->envir();  // alias
+  StreamClientState &scs =
+      (reinterpret_cast<ourRTSPClient *>(rtspClient))->scs;  // alias
 
   // First, check whether any subsessions have still to be closed:
   if (scs.session != NULL) {
@@ -772,8 +615,8 @@ void shutdownStream(RTSPClient *rtspClient, int exitCode) {
         printf("subsession->sink\n");
         if (subsession->rtcpInstance() != NULL) {
           subsession->rtcpInstance()->setByeHandler(
-              NULL, NULL); // in case the server sends a RTCP "BYE" while
-                           // handling "TEARDOWN"
+              NULL, NULL);  // in case the server sends a RTCP "BYE" while
+                            // handling "TEARDOWN"
         }
         someSubsessionsWereActive = True;
       }

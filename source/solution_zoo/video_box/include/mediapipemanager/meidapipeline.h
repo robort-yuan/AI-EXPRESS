@@ -7,8 +7,8 @@
 #ifndef INCLUDE_MEDIAPIPELINE_H_
 #define INCLUDE_MEDIAPIPELINE_H_
 
-#include <memory>
 #include <future>
+#include <memory>
 
 #include "mediapipemanager/vdecmodule.h"
 #include "mediapipemanager/vpsmodule.h"
@@ -17,7 +17,7 @@
 namespace horizon {
 namespace vision {
 class MediaPipeLine {
-public:
+ public:
   MediaPipeLine(uint32_t gp_id0, uint32_t gp_id1);
   virtual int Init();
   virtual int Start();
@@ -30,6 +30,20 @@ public:
   uint32_t GetGrpId();
   int CheckStat();
 
+  void SetDecodeType(const int deocde_type) { decode_type_ = deocde_type; }
+  const int GetDecodeType() { return decode_type_; }
+
+  void SetDecodeResolution(const int width, const int height) {
+    width_ = width;
+    height_ = height;
+  }
+
+  void GetDecodeResolution(int &width, int &height) {
+    width = width_;
+    height = height_;
+  }
+
+  void UpdateTime();
   uint64_t GetlastReadDataTime() { return last_recv_data_time_; }
 
 protected:
@@ -45,6 +59,11 @@ private:
   std::shared_ptr<VpsModule> vps_module_;
   // std::shared_ptr<VotModule> vot_module_;
 
+  int decode_type_;
+  int width_ = 0;
+  int height_ = 0;
+
+  bool init_ = false;
   bool running_ = false;
   std::promise<int> promise_;
   bool set_prom_ = false;

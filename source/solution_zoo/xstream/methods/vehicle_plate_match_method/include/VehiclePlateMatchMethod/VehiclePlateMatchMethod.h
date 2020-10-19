@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-// #include "hobotxstream/data_types/filter_param.h"
 #include "hobotxstream/method.h"
 #include "horizon/vision_type/vision_type.hpp"
 

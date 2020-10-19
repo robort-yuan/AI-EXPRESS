@@ -182,10 +182,14 @@ void IOU2::track_to_rects(const time_t &time_stamp,
         tracklet->GetTargetOfTimeStamp(time_stamp, flag);
       if (target_out) {
         int box_id = target_out->body_bbox->box_id;
-        if (box_id >= 0 &&
+        if (flag && box_id >= 0 &&
             static_cast<uint32_t>(box_id) < p_out_rects->size()) {
           auto bbox =
               std::static_pointer_cast<XStreamBBox>((*p_out_rects)[box_id]);
+          bbox->value.x1 = target_out->body_bbox->x1;
+          bbox->value.x2 = target_out->body_bbox->x2;
+          bbox->value.y1 = target_out->body_bbox->y1;
+          bbox->value.y2 = target_out->body_bbox->y2;
           bbox->value.id = tracklet->track_id;
           bbox->state_ = DataState::VALID;
         }

@@ -20,6 +20,7 @@ typedef enum HB_SYS_MOD_ID_E {
 	HB_ID_VDEC,
 	HB_ID_AENC,
 	HB_ID_ADEC,
+	HB_ID_MAX
 } SYS_MOD_ID_E;
 
 typedef struct HB_SYS_MOD_S {

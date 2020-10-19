@@ -1,0 +1,7 @@
+{
+  "type": "mono",
+  "cam_index": 19,
+  "data_source_num": 4,
+  "mono_cam_cfg_file": "/etc/cam/hb_xj3dev.json",
+  "mono_vio_cfg_file": "configs/ov10635_yuv_1280x720_offline_Pipeline_960_4pipes.json"
+}

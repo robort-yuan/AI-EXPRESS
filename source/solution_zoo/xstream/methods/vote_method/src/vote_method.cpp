@@ -273,7 +273,6 @@ void VoteMethod::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
   for (size_t i = 0; i < boxes.size(); ++i) {
     const auto &box = std::static_pointer_cast<XStreamData<BBox>>(
                       boxes[i])->value;
-    // assert(box.id >= 0);
     if (boxes[i]->state_ != xstream::DataState::VALID || box.id < 0) {
       if (type_ == VEHICLE_TYPE_COLOR) {
         std::shared_ptr<XStreamData<int>> invalid_vote(new XStreamData<int>());
@@ -428,8 +427,6 @@ void VoteMethod::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
       timestamp_map_.erase(timestamp_iter);
     }
   }
-
-  // LOGD << "track_id2slide_window's size: " << slide_window_map.size();
 }
 
 }  // namespace xstream

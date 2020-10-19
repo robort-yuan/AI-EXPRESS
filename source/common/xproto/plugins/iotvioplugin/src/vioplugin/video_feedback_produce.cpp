@@ -29,6 +29,7 @@
 #include "vioplugin/viomessage.h"
 #include "vioplugin/vioprocess.h"
 #include "vioplugin/vioproduce.h"
+#include "iotviomanager/viopipemanager.h"
 
 namespace horizon {
 namespace vision {
@@ -37,38 +38,43 @@ namespace vioplugin {
 
 VideoFeedbackProduce::VideoFeedbackProduce(const char *vio_cfg_file)
     : VioProduce() {
-#if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
+#if defined(X3_X2_VIO)
   auto ret = hb_vio_init(vio_cfg_file);
   HOBOT_CHECK_LE(ret, 0) << "vio init failed";
   ret = hb_vio_start();
   HOBOT_CHECK_LE(ret, 0) << "vio start failed";
-// #elif defined(X3_IOT_VIO)
-//   auto ret = iot_vio_init(vio_cfg_file);
-//   HOBOT_CHECK_LE(ret, 0) << "vio init failed";
-//   ret = iot_vio_start();
-//   HOBOT_CHECK_LE(ret, 0) << "vio start failed";
+#elif defined(X3_IOT_VIO)
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(vio_cfg_file);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "VideoFeedbackProduce: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+      << "VideoFeedbackProduce: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
+  HOBOT_CHECK(ret == 0) << "vio pipeline init failed!";
+  ret = vio_pipeline_->Start();
+  HOBOT_CHECK(ret == 0) << "vio pipeline start failed!";
 #endif
 }
 
 VideoFeedbackProduce::~VideoFeedbackProduce() {
-#if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
+#if defined(X3_X2_VIO)
   hb_vio_stop();
   hb_vio_deinit();
-// #elif defined(X3_IOT_VIO)
-//   iot_vio_stop();
-//   iot_vio_deinit();
+#elif defined(X3_IOT_VIO)
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
 #endif
 }
 
-#if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
-extern bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len);
-extern bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
-                           int len);
-#endif
-
-#ifdef X3_IOT_VIO
-extern bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len);
-#endif
 
 int VideoFeedbackProduce::Run() {
   if (is_running_)
@@ -178,7 +184,7 @@ int VideoFeedbackProduce::Run() {
         reinterpret_cast<VioFeedbackContext *>(
             std::calloc(1, sizeof(VioFeedbackContext)));
 #endif
-    bool ret = GetPyramidInfo(
+    bool ret = GetPyramidInfo(vio_pipeline_,
         feedback_context, reinterpret_cast<char *>(nv12_data), nv12_data_size);
     HOBOT_CHECK(ret) << "Get Pymrid info failed";
     HobotXStreamFreeImage(nv12_data);
@@ -192,7 +198,8 @@ int VideoFeedbackProduce::Run() {
     // set context to feedback_context
     pym_image_frame_ptr->context = static_cast<void *>(feedback_context);
     pym_images.push_back(pym_image_frame_ptr);
-    std::shared_ptr<VioMessage> input(new ImageVioMessage(pym_images, 1),
+    std::shared_ptr<VioMessage> input(new ImageVioMessage(
+                                      vio_pipeline_, pym_images, 1),
                                       [&](ImageVioMessage *p) {
                                         if (p) {
                                           p->FreeImage(1);

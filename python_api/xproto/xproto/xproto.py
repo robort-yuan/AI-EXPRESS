@@ -2,17 +2,22 @@ import sys
 import os
 import json
 import time
+import subprocess
 sys.path.append("..")
 sys.setdlopenflags(os.RTLD_LAZY)
 
 import xstream   # noqa
 import vision_type as vt    # noqa
-from native_xproto import XPlgAsync, NativeVioPlg, SmartHelper   # noqa
+from .global_var import GlobalVar   # noqa
+from native_xproto import XPlgAsync, NativeVioPlg   # noqa
+from native_xproto import SmartHelper   # noqa
 
 __all__ = [
   "VioPlugin",
-  "SmartPlugin"
+  "SmartPlugin",
 ]
+
+global_variable = GlobalVar()
 
 
 class XPluginAsync:
@@ -32,6 +37,9 @@ class XPluginAsync:
     def init(self):
         self.native_xplgasync_.init()
 
+    def deinit(self):
+        self.native_xplgasync_.deinit()
+
     def push_msg(self, msg):
         self.native_xplgasync_.push_msg(msg)
 
@@ -39,73 +47,140 @@ class XPluginAsync:
 class VioPlugin(object):
     """
     VioPlugin
-    platform_: Which platform will the code run on. Support 96board, 2610
-    cam_type_: camera type. Support mono
-    data_source_: Input type.
-    Support panel_camera, ipc_camera,
-            jpeg_image_list, nv12_image_list, cached_image_list
-    name_list_: Images name list file.
-    image_list_: cached image list
+    currently not support multi_vio
+    platform_: Which platform will the code run on. Support x3dev
+    sensor_: sensor type. Support imx327.
+    vio_type_: vio type. Support single_cam
+    data_source_: hb data source. Support cache, jpg, nv12.
+    cfg_file_: Path to vio config file.
     _native_vio_: An instance of native vioplugin.
     """
 
     def __gen_cfg_file(self):
-        template_file = ""
-        if self.platform_ == "96board":
-            template_file = "configs/vio_config.json.96board"
-        elif self.platform_ == "2610":
-            template_file = "configs/vio_config.json.2610"
-        with open(template_file) as json_file:
-            vio_template = json.load(json_file)
-            # set cam_type & data_source
-            vio_template["cam_type"] = self.cam_type_
-            vio_template["data_source"] = self.data_source_
-            # set name_list
-            if len(self.name_list_) != 0:
-                vio_template["file_path"] = self.name_list_
-            # set image_list
-            if len(self.image_list_) != 0:
-                vio_template["image_list"] = self.image_list_
-            # write to local file
-            try:
-                with open("configs/py_vio_cfg.json", "w") as cfg_file:
-                    json.dump(vio_template, cfg_file)
-            except:
-                print("Failed to wirte vio config file")
+        # load vio config file
+        template_path = global_variable.get_vio_cfg_template_path()
+        if global_variable.get_platform_prefix() == "x3":
+            if global_variable.vio_type_ == "single_cam":
+                template_path = template_path + ".cam"
+            elif global_variable.vio_type_ == "single_feedback":
+                template_path = template_path + ".fb"
+            elif global_variable.vio_type_ == "multi_cam_sync":
+                template_path = template_path + "multi_cam_sync"
+            elif global_variable.vio_type_ == "multi_cam_async":
+                template_path = template_path + "multi_cam_async"
+            elif global_variable.vio_type_ == "fb_cam":
+                template_path = template_path + "fb_cam"
+        else:   # x2
+            pass
+
+        template_file = open(template_path)
+        vio_cfg_json = json.load(template_file)
+        template_file.close()
+
+        # load panel camera config file
+        panel_camera_cfg_path = \
+            vio_cfg_json["config_data"][0]["vio_cfg_file"]["panel_camera"]
+        panel_camera_cfg_json = json.load(open(panel_camera_cfg_path))
+
+        # modify data field in mono vio config file
+        cfg_json = None
+        if not global_variable.sensor_ == "hg":
+            cfg_path = global_variable.get_mono_vio_cfg_path()
+            if global_variable.platform_ == "x3dev":
+                cfg_json = json.load(open(cfg_path))
+                if global_variable.sensor_ == "os8a10":
+                    cfg_json["i2c_bus"] = 5   # set i2c5 bus
+            elif global_variable.platform_ == "x3svb":
+                cfg_json = json.load(open(cfg_path))
+                if global_variable.sensor_ == "os8a10":
+                    cfg_json["i2c_bus"] = 2   # set i2c2 bus
+                    # enable mclk output to os8a10 sensor in x3svb
+                    os.system(
+                        "echo 1 > /sys/class/vps/mipi_host1/param/snrclk_en")
+                    # reset os8a10 mipi cam
+                    os.system("echo 111 > /sys/class/gpio/export")
+                    os.system("echo out > /sys/class/gpio/gpio111/direction")
+                    os.system("echo 0 > /sys/class/gpio/gpio111/value")
+                    time.sleep(0.2)
+                    os.system("echo 1 > /sys/class/gpio/gpio111/value")
+            else:
+                pass
+
+        # save modified mono vio config file
+        if cfg_json is not None:
+            # out_file = open(global_variable.get_mono_vio_cfg_path(), "w")
+            cfg_path = "configs/py_vio_mono_cfg.json"
+            out_file = open(cfg_path, "w")
+            json.dump(cfg_json, out_file, indent=4)
+            out_file.close()
+            # set mono vio config file in panel config file
+            panel_camera_cfg_json["mono_vio_cfg_file"] = cfg_path
+        else:
+            print("mono vio config file which is None")
+
+        # save modified panel camera config file
+        py_panel_cfg_path = "configs/py_panel_cfg.json"
+        py_panel_cfg_mod = open(py_panel_cfg_path, "w")
+        json.dump(panel_camera_cfg_json, py_panel_cfg_mod, indent=4)
+        py_panel_cfg_mod.close()
+        vio_cfg_json["config_data"][0]["vio_cfg_file"]["panel_camera"] = \
+            py_panel_cfg_path
+
+        # modify data field in vio config file
+        if global_variable.sensor_ == "hg":
+            if global_variable.data_source_ == "cache":
+                vio_cfg_json["config_data"][0]["data_source"] = \
+                    "cached_image_list"
+            elif global_variable.data_source_ == "jpg":
+                vio_cfg_json["config_data"][0]["data_source"] = \
+                    "jpeg_image_list"
+                vio_cfg_json["config_data"][0]["file_path"] = \
+                    "configs/vio_hg/name.list"
+            elif global_variable.data_source_ == "nv12":
+                vio_cfg_json["config_data"][0]["data_source"] = \
+                    "nv12_image_list"
+                vio_cfg_json["config_data"][0]["file_path"] = \
+                    "configs/vio_hg/name_nv12.list"
+            else:
+                print("Default data source is cached image list")
+                vio_cfg_json["config_data"][0]["data_source"] = \
+                    "cached_image_list"
+        if global_variable.sensor_ == "usb_cam":
+            # TODO(shiyu.fu): update cfg file path
+            vio_cfg_json["data_source"] = "usb_cam"
+
+        # save modified vio config file
+        py_vio_cfg_path = "py_vio_cfg.json"
+        out_file = open(py_vio_cfg_path, "w")
+        json.dump(vio_cfg_json, out_file, indent=4)
+        out_file.close()
+
+        # return template_path
+        return py_vio_cfg_path
 
     def __init__(
-      self, platform, data_source="panel_camera", cam_type="mono", **kwargs):
-        self.supported_platform_ = ["96board", "2610"]
-        self.supported_cam_type_ = ["mono"]
-        self.supported_data_source = [
-            "panel_camera", "ipc_camera", "jpeg_image_list",
-            "nv12_image_list", "cached_image_list"]
+      self, platform, sensor="default", vio_type="single_cam",
+      data_source="default", **kwargs):
         # check & set platform
-        assert platform in self.supported_platform_, \
+        assert platform in global_variable.supported_platform_, \
             "Given platform is not supported"
-        self.platform_ = platform
-        # check & set camera type
-        assert cam_type in self.supported_cam_type_, \
-            "Given camera type is not supported"
-        self.cam_type_ = cam_type
-        # check & set data source
-        assert data_source in self.supported_data_source, \
+        global_variable.set_platform(platform)
+        # check & set sensor type
+        assert sensor in global_variable.supported_sensor_, \
+            "Given sensor type is not supported"
+        global_variable.set_sensor(sensor)
+        # check & set vio_type
+        assert vio_type in global_variable.supported_vio_type_, \
+            "Given vio type is not supported"
+        global_variable.set_vio_type(vio_type)
+        # check & set data source for hg
+        assert data_source in GlobalVar.supported_data_source_, \
             "Given data_source is not supported"
-        self.data_source_ = data_source
-        # check & set name list file
-        self.name_list_ = "" if "name_list" not in kwargs else kwargs["name_list"]    # noqa
-        if len(self.name_list_) != 0:
-            assert os.access(self.name_list_, os.F_OK), \
-                "Failed access image_list"
-        # check & set image list
-        self.image_list_ = [] if "image_list" not in kwargs else kwargs["image_list"]   # noqa
-        if self.data_source_ == "cached_image_list":
-            assert len(self.image_list_) != 0, \
-                "image list cannot be empty in cached_image_list mode"
-        # generate config file
-        self.__gen_cfg_file()
+        global_variable.set_data_source(data_source)
+
+        self.cfg_file_ = self.__gen_cfg_file()
         self.msg_cb_ = {}
-        self._native_vio_ = NativeVioPlg("configs/py_vio_cfg.json")
+        self._native_vio_ = NativeVioPlg(self.cfg_file_)
         self._helper_ = SmartHelper()
 
     def start(self, sync_mode=False):
@@ -139,6 +214,10 @@ class VioPlugin(object):
         time.sleep(1)
         vio_msg = self._native_vio_.get_image()
         return self._helper_.to_xstream_data(vio_msg)
+
+    def get_name_list(self):
+        cfg_json = json.load(self.cfg_file_)
+        return cfg_json["file_path"]
 
 
 class SmartPlugin(XPluginAsync):

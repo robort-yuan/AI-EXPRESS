@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 2.8)
+project(xproto_example)
+
+get_filename_component(LIB_AIEXRESS_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+get_filename_component(LIB_AIEXRESS_DIR ${LIB_AIEXRESS_DIR} DIRECTORY)
+message("lib aiexpres dir init:${LIB_AIEXRESS_DIR}")
+
+include_directories(
+  ${LIB_AIEXRESS_DIR}/include/xproto/include/
+)
+link_directories(
+  ${LIB_AIEXRESS_DIR}/lib
+)
+if(${X86_ARCH})
+  SET (CMAKE_C_COMPILER "/usr/bin/gcc")
+  SET (CMAKE_CXX_COMPILER "/usr/bin/g++")
+  if(${X86_CENTOS})
+    include_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/hobotlog/include
+    )
+    link_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/hobotlog/lib
+    )
+  else ()
+    include_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/hobotlog/include
+    )
+    link_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/hobotlog/lib
+    )
+  endif()
+else()
+  SET (CMAKE_C_COMPILER "/opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc")
+  SET (CMAKE_CXX_COMPILER "/opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++")
+  include_directories(
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/hobotlog/include
+  )
+  link_directories(
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/hobotlog/lib
+  )
+endif()
+
+# test case的所有cpp文件
+set(SOURCE_FILES
+        sample_plugin.cpp
+        )
+
+list(APPEND CMAKE_C_FLAGS "-Wall -Wno-unknown-pragmas -fPIC -fexceptions ")
+list(APPEND CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 ")
+string(REGEX REPLACE ";" " " CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+string(REGEX REPLACE ";" " " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+# hobot_util.cmake已经设置了在build/bin中生成可执行文件，默认应该在test目录里生成
+add_executable(sample_plugin ${SOURCE_FILES})
+target_link_libraries(sample_plugin xproto rt pthread hobotlog)

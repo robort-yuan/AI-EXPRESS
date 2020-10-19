@@ -120,7 +120,7 @@ int Predictor::RunModelWithBBox(
       static_cast<BPU_CAMERA_BUFFER>(&pym_image.img),
       box, box_num, output_tensors_.data(),
       bpu_model_->output_num, &run_ctrl,
-      true, resizable_cnt, &task_handle);
+      false, resizable_cnt, &task_handle);
 #endif
 
 #ifdef X3
@@ -132,18 +132,21 @@ int Predictor::RunModelWithBBox(
       static_cast<BPU_CAMERA_BUFFER>(&bpu_predict_pyramid.result_info),
       box, box_num, output_tensors_.data(),
       bpu_model_->output_num, &run_ctrl,
-      true, resizable_cnt, &task_handle);
+      false, resizable_cnt, &task_handle);
 
 #endif
   if (ret != 0 && *resizable_cnt == 0) {
-    LOGI << "no box pass resizer";
-    // ReleaseOutputTensor();
+    LOGE << "no box pass resizer," << HB_BPU_getErrorName(ret);
+    HB_BPU_releaseTask(&task_handle);
     return -1;
   } else if (ret != 0) {
     LOGE << "RunModelWithBBox failed, " << HB_BPU_getErrorName(ret);
-    // ReleaseOutputTensor();
+    HB_BPU_releaseTask(&task_handle);
     return -1;
   }
+
+  HB_BPU_waitModelDone(&task_handle);
+  HB_BPU_releaseTask(&task_handle);
 
   LOGD << "resizeable box:" << *resizable_cnt;
   return 0;

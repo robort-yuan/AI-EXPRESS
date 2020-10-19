@@ -442,84 +442,6 @@ int ConstructInput(const std::string &smart_frame,
     }
   }
 
-  //  while (ss >> id) {
-  //    ss >> md_id >> x0 >> y0 >> x1 >> y1;
-  //    ss >> pose;
-  //    ss >> pitch >> yaw >> roll;
-  //    ss >> quality >> over_quality;
-  //    ss >> lmk0 >> lmk1 >> lmk2 >> lmk3 >> lmk4;
-  //
-  //    std::shared_ptr<BBox> bbox(new BBox());
-  //    std::shared_ptr<Number> track_id(new Number());
-  //    std::shared_ptr<Number> score(new Number());
-  //
-  //    track_id->value_ = id;
-  //    score->value_ = over_quality;
-  //
-  //    if (md_id == 0) {
-  //      id_set.insert(id);
-  //      if (track_map.find(id) == track_map.end()) {
-  //        TrackState state;
-  //        state.start = frame_num;
-  //        state.last = frame_num;
-  //        track_map[id] = state;
-  //      } else {
-  //        track_map[id].last = frame_num;
-  //      }
-  //      float resp_width = x1 - x0;
-  //      float resp_height = y1 - y0;
-  //      float size = std::min(resp_width, resp_height);
-  //      bbox->values_ = { x0, y0, x1, y1 };
-  //      if (pose > 1000 && size > 40 && x0 > 10
-  //      && x1 < 1910 && y0 > 10 && y1 < 1070) {
-  //        bbox->state_ = DataState::VALID;
-  //      } else {
-  //        bbox->state_ = DataState::FILTERED;
-  //      }
-  //      std::shared_ptr<RectInfo> info(new RectInfo);
-  //      info->track_id_ = id;
-  //      info->pitch_ = pitch;
-  //      info->yaw_ = yaw;
-  //      info->roll_ = roll;
-  //      info->pose_ = pose;
-  //      info->size_ = size;
-  //      info->quality_ = quality;
-  //      info->lmk0_ = lmk0;
-  //      info->lmk1_ = lmk1;
-  //      info->lmk2_ = lmk2;
-  //      info->lmk3_ = lmk3;
-  //      info->lmk4_ = lmk4;
-  //
-  //      box_list->datas_.push_back(BaseDataPtr(bbox));
-  //      track_id_list->datas_.push_back(BaseDataPtr(track_id));
-  //      select_score_list->datas_.push_back(BaseDataPtr(score));
-  //      userdata_list->datas_.push_back(BaseDataPtr(info));
-  //    }
-  //  }
-  //
-  //  auto iter = track_map.begin();
-  //  while (iter != track_map.end()) {
-  //    std::shared_ptr<BBox> bbox(new BBox());
-  //    std::shared_ptr<Number> track_id(new Number());
-  //    std::shared_ptr<Number> score(new Number());
-  //    std::shared_ptr<BaseData> data(new xstream::BaseData);
-  //    track_id->value_ = iter->first;
-  //    if (frame_num - iter->second.last == 0) {
-  //      track_id->state_ = DataState::DISAPPEARED;
-  //      iter = track_map.erase(iter);
-  //    } else {
-  //      if (id_set.find(iter->first) == id_set.end()) {
-  //        track_id->state_ = DataState::VALID;
-  //        bbox->state_ = DataState::DISAPPEARED;
-  //      }
-  //      iter++;
-  //    }
-  //    box_list->datas_.push_back(BaseDataPtr(bbox));
-  //    track_id_list->datas_.push_back(BaseDataPtr(track_id));
-  //    select_score_list->datas_.push_back(BaseDataPtr(score));
-  //    userdata_list->datas_.push_back(BaseDataPtr(data));
-  //  }
-
   return 0;
 }
 
@@ -533,18 +455,9 @@ int main(int argc, char const *argv[]) {
   flow->Init();
 
   callback.json_ofs_.open("./snap_res.json");
-
-  //  BuildIdMap_dh5c(callback.id_map);
-  //  std::string algo_res = "/media/psf/Home/Data/dh5c/logdh5cdump.log";
-  //  std::string img_list_path = "/media/psf/Home/Data/dh5c/img_list.txt";
-
   BuildIdMap_gsmk(callback.id_map);
   std::string algo_res = "/media/psf/Home/Data/gsmk/loggsmkdump.log";
   std::string img_list_path = "/media/psf/Home/Data/gsmk/img_list.txt";
-
-  //  BuildIdMap_xqmk(callback.id_map);
-  //  std::string algo_res = "/media/psf/Home/Data/xqmk/logxqmkdump.log";
-  //  std::string img_list_path = "/media/psf/Home/Data/xqmk/img_list.txt";
 
   std::ifstream fin(algo_res.data(), std::ios::binary);
   if (fin.fail()) {

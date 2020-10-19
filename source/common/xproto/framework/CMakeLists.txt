@@ -1,27 +1,53 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 2.8)
 
 # project name
 project(xproto)
-
-option(X86_ARCH "x86 architecture" ON)
 
 # add header files path
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
 )
 
+get_filename_component(XPROTO_CURRENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+#message("xproto current dir init:${XPROTO_CURRENT_DIR}")
+set(RELEASE_ROOT_DIR)
+function(get_parent_dir arg dir n)
+  foreach(i RANGE ${ARGV2})
+    get_filename_component(dir ${dir} DIRECTORY)
+    #message("i:${i} dir:${dir}") 
+  endforeach()
+  set(RELEASE_ROOT_DIR ${dir} PARENT_SCOPE)
+endfunction()
+get_parent_dir(XPROTO_CURRENT_DIR ${XPROTO_CURRENT_DIR} 2)
+set(XSTREAM_CURRENT_DIR ${RELEASE_ROOT_DIR}/source/common/xstream)
+#message("xproto current dir:${XPROTO_CURRENT_DIR}")
+#message("release root dir:${RELEASE_ROOT_DIR}")
+message("xstream current dir:${XSTREAM_CURRENT_DIR}")
+option(X86_ARCH "x86 architecture" OFF)
+option(X86_CENTOS "centos release" OFF)
+
 # x86 architecture
 if (${X86_ARCH})
-  message("tool chain:${CMAKE_CXX_COMPILER}")
-  include_directories(
-    ${PROJECT_SOURCE_DIR}/third_party/hobotlog/include
-  )
+  # centos release
+  if (${X86_CENTOS})
+    message("tool chain:${CMAKE_CXX_COMPILER}")
+    add_definitions(-std=c++11)
+    include_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/centos/hobotlog/include
+    )
+  else()
+    message("tool chain:${CMAKE_CXX_COMPILER}")
+    add_definitions(-std=c++11)
+    include_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/ubuntu/hobotlog/include
+    )
+  endif()
 # arm architecture
 else ()
   set(CMAKE_CXX_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++)
   message("tool chain:${CMAKE_CXX_COMPILER}")
   include_directories(
-    ../../../../deps/hobotlog/include
+    ${RELEASE_ROOT_DIR}/deps/hobotlog/include
   )
 endif()
 

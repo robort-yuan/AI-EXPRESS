@@ -35,6 +35,10 @@ class XMsgQueue : public hobot::CSingleton<XMsgQueue> {
  public:
   XMsgQueue() {
     msg_handle_.CreatThread(1);
+    auto max_plugin_msg_str = getenv("max_plugin_msg");
+    if (max_plugin_msg_str) {
+      max_plugin_msg_ = atoi(max_plugin_msg_str);
+    }
   }
   ~XMsgQueue() = default;
 
@@ -67,7 +71,65 @@ class XMsgQueue : public hobot::CSingleton<XMsgQueue> {
   }
 
   void PushMsg(XProtoMessagePtr msg) {
+    auto type_handle = XPluginMsgRegistry::Instance().Get(msg->type());
+    if (type_handle == XPLUGIN_INVALID_MSG_TYPE) {
+      LOGW << "push no consumer message，type:" << msg->type();
+      return;
+    }
+    std::unique_lock<std::mutex> lck(mutex_);  // support add and del plugins
+    auto &plugins = table_[type_handle];
+    while (true) {
+      auto msg_queue_normal = true;
+      for (auto &plugin : plugins) {
+        auto msg_count = plugin->GetPluginMsgCount();
+        auto plugin_msg_limit = plugin->GetPluginMsgLimit();
+        auto max_plugin_msg_count =
+            plugin_msg_limit <= 0 ? max_plugin_msg_ : plugin_msg_limit;
+        if (msg_count > max_plugin_msg_count) {
+          msg_queue_normal = false;
+          break;
+        }
+      }
+      if (false == msg_queue_normal) {
+        lck.unlock();
+        LOGW << "PushMsg type: " << msg->type()
+             << ", try to wait 500us until plugin msg-queue is free.";
+        std::this_thread::sleep_for(std::chrono::microseconds(500));
+        lck.lock();
+      } else {
+        lck.unlock();
+        break;
+      }
+    }
     msg_handle_.PostTask(std::bind(&XMsgQueue::Dispatch, this, msg));
+  }
+
+  int TryPushMsg(XProtoMessagePtr msg) {
+    auto type_handle = XPluginMsgRegistry::Instance().Get(msg->type());
+    if (type_handle == XPLUGIN_INVALID_MSG_TYPE) {
+      LOGW << "push no consumer message，type:" << msg->type();
+      return -1;
+    }
+    auto msg_queue_normal = true;
+    {
+      std::lock_guard<std::mutex> lck(mutex_);
+      auto &plugins = table_[type_handle];
+      for (auto &plugin : plugins) {
+        auto msg_count = plugin->GetPluginMsgCount();
+        auto plugin_msg_limit = plugin->GetPluginMsgLimit();
+        auto max_plugin_msg_count =
+            plugin_msg_limit <= 0 ? max_plugin_msg_ : plugin_msg_limit;
+        if (msg_count > max_plugin_msg_count) {
+          msg_queue_normal = false;
+          break;
+        }
+      }
+    }
+    if (false == msg_queue_normal) {
+      return -1;
+    }
+    msg_handle_.PostTask(std::bind(&XMsgQueue::Dispatch, this, msg));
+    return 0;
   }
 
  private:
@@ -89,6 +151,7 @@ class XMsgQueue : public hobot::CSingleton<XMsgQueue> {
   hobot::CThreadPool msg_handle_;
 
   std::mutex mutex_;
+  int max_plugin_msg_ = 30;
 };
 
 }  // namespace xproto

@@ -15,6 +15,7 @@
 #include <atomic>
 #include <utility>
 #include "hobotxsdk/xstream_data.h"
+#include "hobotxstream/image_tools.h"
 #include "horizon/vision_type/vision_type.hpp"
 #include "bpu_predict/bpu_predict.h"
 #include "bpu_predict/bpu_predict_extension.h"
@@ -139,14 +140,6 @@ class FasterRCNNImp {
 
   int RunModelFromPym(void* pyramid, int pym_layer,
                       BPU_DATA_TYPE_E data_type);
-
-  int RunModelResize(uint8_t *img_data,
-                     int data_length,
-                     int img_height,
-                     int img_width,
-                     int img_channel,
-                     BPU_DATA_TYPE_E pre_data_type,
-                     BPU_DATA_TYPE_E model_data_type);
 
   // prepare input_tensor
   void PrepareInputTensor(uint8_t *img_data,

@@ -1,6 +1,8 @@
 import sys
 import os
 import time
+sys.path.append("your/path/to/shared/libraries")
+sys.path.append("your/path/to/xstream/xproto/packages")
 sys.setdlopenflags(os.RTLD_LAZY)
 import xstream    # noqa
 import vision_type as vt    # noqa
@@ -12,10 +14,10 @@ bbox_method = xstream.Method("BBoxFilter").inputs(["in_bbox"])
 def my_workflow(in_bbox):
     bbox_filtered_A = bbox_method(
         in_bbox, outputs=["bbox_filtered_A"],
-        config_file="configs/method_configs/a_filter.json")
+        config_file="configs/pytest_configs/a_filter.json")
     bbox_filtered_B = bbox_method(
         in_bbox, outputs=["bbox_filtered_B"],
-        config_file="configs/method_configs/b_filter.json")
+        config_file="configs/pytest_configs/b_filter.json")
 
     return bbox_filtered_A, bbox_filtered_B
 

@@ -159,12 +159,10 @@ Build timestamp as int: 1574262295
  `sudo yum -y install cmake`
 
 #### 安装交叉编译工具链
-  为编译在X2 Soc板上运行的可执行程序或库文件, 需要安装工具链：`x2j2-aarch64-6.5.0`
-  具体安装交叉工具链压缩包, 如在公司内部可从以下地址下载：
-http://gallery.hobot.cc/download/aiot/toolchain/x2j2-aarch64/project/snapshot/linux/x86_64/general/basic/6.5.0/x2j2-aarch64-6.5.0.tar.xz
-  如在公司外部，请联系技术支持人员获取工具链。
-  工具链压缩包-sha256值：63e35c43452bca1761751ab7a6af35d88b8f36a8f906c12e4dd284a06309d37f
-
+  
+  可直接下载：http://releases.linaro.org/components/toolchain/binaries/6.5-2018.12/aarch64-linux-gnu/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu.tar.xz
+  或者联系地平线技术支持人员获取
+   
 #### 编译
 * X2 交叉编译 
   `build.properties.local` 默认是 X2交叉编译工具链
@@ -283,6 +281,7 @@ class XStreamSDK {
 3）key为"profiler_file",value为性能统计输出文件路径，用于设置性能统计文件的路径名称，默认为./profiler.txt   
 4）key为"free_framedata", value为"on", 表示尽早地释放掉在后面node节点中不再需要使用的Framework Data中的某项数据。   
 打开此项配置,可以减少峰值内存使用。"off"表示关闭, 默认为关闭。   
+5）key为"time_monitor", value为字符串表示的时间（单位秒）, 表示一帧数据在workflow内预期运行的最大耗时。当监测到一帧数据耗时超过该预期时间后，会向控制台输出Warning日志。
 
 #### Init
 `virtual int Init() = 0;`

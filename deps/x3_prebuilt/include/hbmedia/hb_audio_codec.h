@@ -9,6 +9,11 @@
 #include "hb_media_codec.h"
 #include <stdbool.h>
 #include <string.h>
+#include "logging.h"
+
+#define aec_err(format, ...) pr_err(format"\n", ##__VA_ARGS__)
+#define aec_info(format, ...) pr_info(format"\n", ##__VA_ARGS__)
+#define aec_dbg(format, ...) pr_debug(format"\n", ##__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -184,8 +189,6 @@ extern "C" {
 		int (*audio_decode_frame)(void *decode, uint8_t *inbuf,
 				int inlen, mc_audio_frame_buffer_info_t *outbuf,
 				int *outlen);
-		int (*audio_get_frame_info)(void *decoder,
-				void *info);
 		int (*audio_close_decoder)(void *decoder);
 	};
 
@@ -197,7 +200,8 @@ extern "C" {
 		uint32_t s32MilliSec);
 	int HB_AENC_ReleaseStream(uint8_t aeChn,
 		const struct HB_AUDIO_STREAM_S *pstStream);
-	int HB_AENC_GetFd(uint8_t aeChn);
+	/** NotSupport */
+	// int HB_AENC_GetFd(uint8_t aeChn);
 	int HB_AENC_RegisterEncoder(int *handle,
 		struct HB_AENC_ENCODE_PARAM_S *encoder);
 	int HB_AENC_UnregisterEncoder(int handle);

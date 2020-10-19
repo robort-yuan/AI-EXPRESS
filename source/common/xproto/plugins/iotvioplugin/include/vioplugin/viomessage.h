@@ -21,12 +21,13 @@
 #endif
 #if defined(X3_IOT_VIO)
 #include "./hb_vio_interface.h"
-#include "./iot_vio_api.h"
 #endif
 
 #include "hobot_vision/blocking_queue.hpp"
 
 #include "xproto_msgtype/vioplugin_data.h"
+#include "iotviomanager/vio_data_type.h"
+#include "iotviomanager/viopipeline.h"
 
 namespace horizon {
 namespace vision {
@@ -39,6 +40,7 @@ struct ImageVioMessage : VioMessage {
  public:
   ImageVioMessage() = delete;
   explicit ImageVioMessage(
+      const std::shared_ptr<VioPipeLine> &vio_pipeline,
       std::vector<std::shared_ptr<PymImageFrame>> &image_frame,
       uint32_t img_num, bool is_valid = true);
   ~ImageVioMessage();
@@ -48,6 +50,9 @@ struct ImageVioMessage : VioMessage {
 
   void FreeImage();
   void FreeImage(int tmp);  // 用于释放x3临时回灌功能的接口
+
+ private:
+  std::shared_ptr<VioPipeLine> vio_pipeline_;
 };
 
 struct DropVioMessage : VioMessage {
@@ -64,6 +69,7 @@ struct DropImageVioMessage : VioMessage {
  public:
   DropImageVioMessage() = delete;
   explicit DropImageVioMessage(
+      const std::shared_ptr<VioPipeLine> &vio_pipeline,
       std::vector<std::shared_ptr<PymImageFrame>> &image_frame,
       uint32_t img_num, bool is_valid = true);
   ~DropImageVioMessage();
@@ -72,6 +78,9 @@ struct DropImageVioMessage : VioMessage {
   std::string Serialize() { return "No need serialize"; }
 
   void FreeImage();
+
+ private:
+  std::shared_ptr<VioPipeLine> vio_pipeline_;
 };
 
 }  // namespace vioplugin

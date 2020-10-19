@@ -11,6 +11,7 @@ file(GLOB PROJECT_SRC
     "src/*.cpp"
     "src/mediapipemanager/*.cpp"
     "src/rtspclient/*.cpp"
+    "src/rtspclient/*.c"
     "src/rtspplugin/*.cpp"
     "src/smartplugin_box/*.cpp"
 )

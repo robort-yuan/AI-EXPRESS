@@ -32,6 +32,7 @@ UvcConfig::UvcConfig(const std::string &path) : path_(path) {
   res_720p_layer_ = 5;
   is_cbr_ = 1;
   bitrate_ = 2000;
+  h264_encode_time_ = 0;
 }
 
 bool UvcConfig::LoadConfig() {
@@ -139,6 +140,9 @@ bool UvcConfig::CheckConfig() {
     bitrate_ = json_["bitrate"].asInt();
   }
 
+  if (json_.isMember("h264_encode_time")) {
+    h264_encode_time_ = json_["h264_encode_time"].asInt();
+  }
   // check the value
   // to do ..
   return true;

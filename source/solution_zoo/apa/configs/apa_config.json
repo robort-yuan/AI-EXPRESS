@@ -1,0 +1,12 @@
+{
+    "workflows": [
+        {
+            "xstream_workflow_file": "./apa/configs/detection.json",
+            "source_list": [
+                0,1,2,3
+            ],
+            "overwrite": true,
+            "enable_profile": 0
+        }
+    ]
+}

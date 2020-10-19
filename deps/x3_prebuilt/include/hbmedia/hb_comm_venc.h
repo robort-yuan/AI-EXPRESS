@@ -420,6 +420,8 @@ typedef struct HB_VENC_ATTR_S {
 	HB_BOOL bEnableUserPts;
 
   uint32_t vlc_buf_size;
+  int32_t s32BufJoint;
+  int32_t s32BufJointSize;
 
   union {
     VENC_ATTR_H264_S stAttrH264;
@@ -429,6 +431,13 @@ typedef struct HB_VENC_ATTR_S {
   };
 } VENC_ATTR_S;
 
+/*
+*   1  sps+pps+vps+idr  in one stream
+*   0  sps+pps+vps  in one stream  idr in one stream
+ */
+typedef struct HB_VENC_PARAM_MOD_S {
+  uint32_t u32OneStreamBuffer;
+} VENC_PARAM_MOD_S;
 /******************************VENC_ATTR_S  end ******************************/
 
 /******************************VENC_RC_ATTR_S*********************************/
@@ -1467,13 +1476,18 @@ typedef struct HB_VENC_REF_PARAM_S {
   uint32_t longterm_pic_using_period;
 } VENC_REF_PARAM_S;
 
+typedef struct HB_VENC_FRAME_RATE_S {
+  int32_t s32InputFrameRate;
+  int32_t s32OutputFrameRate;
+} VENC_FRAME_RATE_S;
+
 typedef struct HB_VENC_CHN_PARAM_S {
-  HB_BOOL bColor2Grey;
+  // HB_BOOL bColor2Grey;
   // uint32_t u32Priority;    //编码通道优先级参数
   // uint32_t u32MaxStrmCnt;  //最大码流缓存帧数
   // uint32_t u32PollWakeUpFrmCnt;
   // HB_VIDEO_CROP_INFO_S stCropCfg;     //裁剪静态属性不支持修改
-  // VENC_FRAME_RATE_S stFrameRate;  //帧率控制
+  VENC_FRAME_RATE_S stFrameRate;  //帧率控制
 } VENC_CHN_PARAM_S;
 
 typedef struct HB_VENC_RECV_PIC_PARAM_S {

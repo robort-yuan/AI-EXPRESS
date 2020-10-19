@@ -10,6 +10,7 @@
 #include <iostream>
 #include <condition_variable>
 #include <deque>
+#include <functional>
 #include <mutex>
 
 #include "xproto/utils/singleton.h"

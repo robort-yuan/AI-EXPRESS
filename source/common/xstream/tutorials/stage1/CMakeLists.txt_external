@@ -1,0 +1,69 @@
+cmake_minimum_required(VERSION 2.8)
+# 项目名称
+project(stage1)
+#add_definitions(-DHR_POSIX)
+#add_definitions(-DHR_LINUX)
+
+get_filename_component(LIB_AIEXRESS_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+get_filename_component(LIB_AIEXRESS_DIR ${LIB_AIEXRESS_DIR} DIRECTORY)
+message("lib aiexpres dir init:${LIB_AIEXRESS_DIR}")
+
+list(APPEND CMAKE_C_FLAGS "-Wall -Wno-unknown-pragmas -fPIC -fexceptions ")
+list(APPEND CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 ")
+string(REGEX REPLACE ";" " " CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+string(REGEX REPLACE ";" " " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+include_directories(
+  .
+  ${LIB_AIEXRESS_DIR}/include/xstream/include
+)
+link_directories(${LIB_AIEXRESS_DIR}/lib)
+if(${X86_ARCH})
+  SET (CMAKE_C_COMPILER "/usr/bin/gcc")
+  SET (CMAKE_CXX_COMPILER "/usr/bin/g++")
+  if(${X86_CENTOS})
+    include_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/jsoncpp/include
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/hobotlog/include
+    )
+    link_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/jsoncpp/lib
+      ${LIB_AIEXRESS_DIR}/third_party/x86/centos/hobotlog/lib
+    )
+  else ()
+    include_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/jsoncpp/include
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/hobotlog/include
+    )
+    link_directories(
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/jsoncpp/lib
+      ${LIB_AIEXRESS_DIR}/third_party/x86/ubuntu/hobotlog/lib
+    )
+  endif()
+else()
+  SET (CMAKE_C_COMPILER "/opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc")
+  SET (CMAKE_CXX_COMPILER "/opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++")
+  include_directories(
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/jsoncpp/include
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/hobotlog/include
+  )
+  link_directories(
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/jsoncpp/lib
+    ${LIB_AIEXRESS_DIR}/third_party/aarch64/hobotlog/lib
+  )
+endif()
+
+#set(BASE_LIBRARIES jsoncpp hobotlog pthread dl rt)
+
+set(SOURCE_FILES method/b_box_filter.cc method_factory.cc)
+
+SET(BASE_LIBRARIES  xstream jsoncpp hobotlog rt pthread)
+add_executable(stage1_sync_main sync_main.cc ${SOURCE_FILES})
+target_link_libraries(stage1_sync_main ${BASE_LIBRARIES})
+
+add_executable(stage1_async_main async_main.cc ${SOURCE_FILES})
+target_link_libraries(stage1_async_main ${BASE_LIBRARIES})
+
+add_executable(stage1_update_param_main update_param_main.cc ${SOURCE_FILES})
+target_link_libraries(stage1_update_param_main ${BASE_LIBRARIES})
+

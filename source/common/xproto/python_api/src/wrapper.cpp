@@ -11,13 +11,12 @@
 #include "xproto/plugin/xplugin.h"
 #include "xproto/plugin/xpluginasync.h"
 #include "xproto/message/pluginflow/flowmsg.h"
-// #include "xproto_msgtype/smartplugin_data.h"
 #include "xproto_msgtype/vioplugin_data.h"
 #include "vioplugin/vioplugin.h"
-// #include "hbipcplugin/hbipcplugin.h"
 #include "smartplugin/smartplugin.h"
 #include "horizon/vision/util.h"
 #include "smart_helper.h"     // NOLINT
+#include "websocketplg_helper.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
@@ -54,6 +53,7 @@ PYBIND11_MODULE(native_xproto, m) {
       .def(py::init<>())
       .def(py::init<int>())
       .def("init", &XPluginAsync::Init)
+      .def("deinit", &XPluginAsync::DeInit)
       .def("register_msg", &XPluginAsync::RegMsg)
       .def("push_msg", &XPluginHelper::PushMsg);
 
@@ -71,24 +71,23 @@ PYBIND11_MODULE(native_xproto, m) {
       .def("set_mode", &vioplugin::VioPlugin::SetMode)
       .def("add_msg_cb", &vioplugin::VioPlugin::AddMsgCB);
 
-  // py::class_<hbipcplugin::HbipcPlugin,
-  //           std::shared_ptr<hbipcplugin::HbipcPlugin>>(m, "NativeHbipcPlg")
-  //     .def(py::init<const std::string &>())
-  //     .def("init", &hbipcplugin::HbipcPlugin::Init)
-  //     .def("deinit", &hbipcplugin::HbipcPlugin::Deinit)
-  //     .def("start", &hbipcplugin::HbipcPlugin::Start)
-  //     .def("stop", &hbipcplugin::HbipcPlugin::Stop);
-
-  // py::class_<smartplugin::SmartPlugin,
-  //           std::shared_ptr<smartplugin::SmartPlugin>>(m, "SmartPlg")
-  //     .def(py::init<const std::string &>())
-  //     .def("init", &smartplugin::SmartPlugin::Init);
-
   py::class_<SmartPlgHelper>(m, "SmartHelper")
       .def(py::init<>())
       .def("to_xstream_data", &SmartPlgHelper::ToXStreamData)
       .def("to_native_msg", &SmartPlgHelper::ToNativeFlowMsg)
       .def("set_mode", &SmartPlgHelper::SetMode);
+
+/*
+  // currently unavailable
+  py::class_<WebsocketPlgHelper>(m, "WebsocketPlgHelper")
+      .def(py::init<const std::string &>())
+      .def("start", &WebsocketPlgHelper::Start)
+      .def("stop", &WebsocketPlgHelper::Stop)
+      .def("invoke_native_feed_video",
+           &WebsocketPlgHelper::InvokeNativeFeedVideo)
+      .def("invoke_native_feed_smart",
+           &WebsocketPlgHelper::InvokeNativeFeedSmart);
+*/
 }
 
 }   // namespace xproto

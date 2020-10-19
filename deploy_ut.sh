@@ -100,7 +100,7 @@ then
   then
     cp deploy_dev/configs/hb_vio_x3_1080_fb.json ./config/vio_config -rf
     VIO_CONFIG_FILE=./config/vio_config/hb_vio_x3_1080_fb.json
-  elif [ ${2} == "VIO_HISI" ]
+  elif [ ${2} == "VIO_HAPI" ]
   then
     cp deploy_dev/configs/* ./config/vio_config -rf
     VIO_CONFIG_FILE=./config/vio_config/vio/x3dev/iot_vio_x3_1080_fb.json
@@ -232,15 +232,15 @@ function CopySSDMethod(){
 #   usage
 # fi
 
-# VIOINTERFACE="VIO_HISI"
+# VIOINTERFACE="VIO_HAPI"
 # if [ $# -ge 3 ]
 # then
 #   if [ ${3} == "VIO_NORMAL" ]
 #   then
 #     VIOINTERFACE="VIO_NORMAL"
-#   elif [ ${3} == "VIO_HISI" ]
+#   elif [ ${3} == "VIO_HAPI" ]
 #   then
-#     VIOINTERFACE="VIO_HISI"
+#     VIOINTERFACE="VIO_HAPI"
 #   else
 #     usage
 #   fi
@@ -248,6 +248,8 @@ function CopySSDMethod(){
 
 set -eux
 bash deploy.sh
+# for xstream_test
+cp build/lib/libxstream.so deploy/lib
 mkdir -p deploy/unit_test
 ARCHITECTURE=$(cat platform.tmp)
 ALL_PROJECT_DIR=$PWD

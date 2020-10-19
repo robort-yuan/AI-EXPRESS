@@ -68,7 +68,7 @@ void uvc_gadget_user_params_init(struct uvc_params *params);
 /**
  * uvc_gadget_init - init uvc gadget context according to user params
  * @pctx: uvc context, just pass a pointer, context will be allocated in lib.
- * @uvc_devname: uvc device name, for example, xj3 use /dev/video8 now.
+ * @uvc_devname: uvc device name, for example, xj3 use /dev/video0 now.
  *		suggest using NULL, as lib will auto-find the uvc device.
  * @v4l2_devname: frontend v4l2 device, like vivid, v4l2-encoder...
  *		for xj3, just NULL... as encoder doesn't use v4l2 framework

@@ -116,7 +116,6 @@ std::vector<std::vector<BaseDataPtr>> FilterSkipFrameMethod::DoProcess(
       auto out_rects = std::make_shared<BaseDataVector>();
       out_batch_i[j] = std::static_pointer_cast<BaseData>(out_rects);
       for (auto &in_rect : in_rects->datas_) {
-        // assert("BBox" == in_rect->type_);
         auto bbox = std::static_pointer_cast<XStreamBBox>(in_rect);
         float top_left_x_ = bbox->value.x1;
         float top_left_y_ = bbox->value.y1;
@@ -136,7 +135,6 @@ std::vector<std::vector<BaseDataPtr>> FilterSkipFrameMethod::DoProcess(
           it = trackState_.find(bbox->value.id);
           if (it == trackState_.end()) {
             trackState_[bbox->value.id] = 0;
-            // out_rect->state_ = xstream::DataState::FILTERED;
             trackVec_.push_back(bbox->value.id);
             if (trackVec_.size() > 1000) {
               trackState_.erase(trackVec_[0]);

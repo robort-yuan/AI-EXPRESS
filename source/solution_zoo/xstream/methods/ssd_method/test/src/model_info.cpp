@@ -20,7 +20,6 @@ void ModelInfo::Init(BPUHandle bpuHandler,
                      BPUModelInfo *input_model_info,
                      BPUModelInfo *output_model_info) {
   model_name_ = model_name;
-  //  model_file_path_ = model_file_path;
   aligned_nhwc_.resize(output_model_info->num);
   real_nhwc_.resize(output_model_info->num);
   output_layer_size_.resize(output_model_info->num);

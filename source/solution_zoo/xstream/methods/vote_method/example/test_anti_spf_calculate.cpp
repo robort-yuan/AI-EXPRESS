@@ -33,38 +33,23 @@ int TestAntiSpfCalculate(int argc, char **argv) {
   box1->value.id = 1;
   std::shared_ptr<XStreamData<BBox>> box2(new XStreamData<BBox>());
   box2->value.id = 2;
-  // std::shared_ptr<XStreamData<BBox>> box3(new XStreamData<BBox>());
-  // box3->value.id = 3;
-  // std::shared_ptr<XStreamData<BBox>> box4(new XStreamData<BBox>());
-  // box4->value.id = 4;
+
   face_rects_ptr->datas_.push_back(box1);
   face_rects_ptr->datas_.push_back(box2);
-  // face_rects_ptr->datas_.push_back(box3);
-  // face_rects_ptr->datas_.push_back(box4);
 
   std::shared_ptr<BaseDataVector> liveness_ptr(new BaseDataVector);
   std::shared_ptr<XStreamData<int>> liveness1(new XStreamData<int>());
   liveness1->value = 1;
   std::shared_ptr<XStreamData<int>> liveness2(new XStreamData<int>());
   liveness2->value = 2;
-  // std::shared_ptr<XStreamData<int>> liveness3(new XStreamData<int>());
-  // liveness3->value = 3;
-  // std::shared_ptr<XStreamData<int>> liveness4(new XStreamData<int>());
-  // liveness4->value = 4;
   liveness_ptr->datas_.push_back(liveness1);
   liveness_ptr->datas_.push_back(liveness2);
-  // liveness_ptr->datas_.push_back(liveness3);
-  // liveness_ptr->datas_.push_back(liveness4);
 
   std::shared_ptr<BaseDataVector> disappeared_track_ids_ptr(new BaseDataVector);
   std::shared_ptr<XStreamData<uint32_t>> disappeard_track_id1(
       new XStreamData<uint32_t>());
   disappeard_track_id1->value = 1;
-  // std::shared_ptr<XStreamData<uint32_t>> disappeard_track_id2(
-  //     new XStreamData<uint32_t>());
-  // disappeard_track_id2->value = 2;
   disappeared_track_ids_ptr->datas_.push_back(disappeard_track_id1);
-  // disappeared_track_ids_ptr->datas_.push_back(disappeard_track_id2);
 
   std::vector<std::vector<BaseDataPtr>> input;
   std::vector<xstream::InputParamPtr> param;
@@ -75,49 +60,29 @@ int TestAntiSpfCalculate(int argc, char **argv) {
     input[i].push_back(nullptr);
     input[i].push_back(liveness_ptr);
   }
-  // auto ptr = static_pointer_cast<XStreamData<int>>(
-  //     liveness_ptr->datas_[batch_size - 1]);
-  // ptr->value = 5;
-  // static_pointer_cast<XStreamData<int>>(liveness_ptr->datas_[batch_size -
-  // 1])->value = 5;
   std::shared_ptr<BaseDataVector> face_rects_ptr2(new BaseDataVector());
   std::shared_ptr<XStreamData<BBox>> box12(new XStreamData<BBox>());
   box12->value.id = 1;
   std::shared_ptr<XStreamData<BBox>> box22(new XStreamData<BBox>());
   box22->value.id = 2;
-  // std::shared_ptr<XStreamData<BBox>> box3(new XStreamData<BBox>());
-  // box3->value.id = 3;
-  // std::shared_ptr<XStreamData<BBox>> box4(new XStreamData<BBox>());
-  // box4->value.id = 4;
   face_rects_ptr2->datas_.push_back(box12);
   face_rects_ptr2->datas_.push_back(box22);
-  // face_rects_ptr->datas_.push_back(box3);
-  // face_rects_ptr->datas_.push_back(box4);
 
   std::shared_ptr<BaseDataVector> liveness_ptr2(new BaseDataVector);
   std::shared_ptr<XStreamData<int>> liveness12(new XStreamData<int>());
   liveness12->value = 2;
   std::shared_ptr<XStreamData<int>> liveness22(new XStreamData<int>());
   liveness22->value = 3;
-  // std::shared_ptr<XStreamData<int>> liveness3(new XStreamData<int>());
-  // liveness3->value = 3;
-  // std::shared_ptr<XStreamData<int>> liveness4(new XStreamData<int>());
-  // liveness4->value = 4;
+
   liveness_ptr2->datas_.push_back(liveness12);
   liveness_ptr2->datas_.push_back(liveness22);
-  // liveness_ptr->datas_.push_back(liveness3);
-  // liveness_ptr->datas_.push_back(liveness4);
 
   std::shared_ptr<BaseDataVector> disappeared_track_ids_ptr2(
       new BaseDataVector);
   std::shared_ptr<XStreamData<uint32_t>> disappeard_track_id12(
       new XStreamData<uint32_t>());
   disappeard_track_id12->value = 1;
-  // std::shared_ptr<XStreamData<uint32_t>> disappeard_track_id2(
-  //     new XStreamData<uint32_t>());
-  // disappeard_track_id2->value = 2;
   disappeared_track_ids_ptr2->datas_.push_back(disappeard_track_id12);
-  // disappeared_track_ids_ptr->datas_.push_back(disappeard_track_id2);
   input[batch_size - 1].push_back(face_rects_ptr2);
   input[batch_size - 1].push_back(disappeared_track_ids_ptr2);
   input[batch_size - 1].push_back(liveness_ptr2);

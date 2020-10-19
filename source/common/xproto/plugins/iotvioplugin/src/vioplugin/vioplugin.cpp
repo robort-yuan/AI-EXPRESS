@@ -89,16 +89,32 @@ int VioPlugin::OnGetHbipcResult(XProtoMessagePtr msg) {
 
 VioPlugin::VioPlugin(const std::string &path) {
   config_ = GetConfigFromFile(path);
-  config_->SetConfig(config_);
+  GetSubConfigs();
+  HOBOT_CHECK(configs_.size() > 0);
+}
+
+void VioPlugin::GetSubConfigs() {
   HOBOT_CHECK(config_);
+  if (config_->HasMember("config_data")) {
+    auto multi_configs = config_->GetSubConfig("config_data");
+    int cnt = multi_configs->ItemCount();
+    for (int i = 0; i < cnt; i++) {
+      configs_.push_back(multi_configs->GetSubConfig(i));
+    }
+  } else {
+    configs_.push_back(config_);
+  }
 }
 
 int VioPlugin::Init() {
   ClearAllQueue();
-  auto data_source_ = config_->GetValue("data_source");
-  VioProduceHandle_ = VioProduce::CreateVioProduce(data_source_);
-  HOBOT_CHECK(VioProduceHandle_);
-  VioProduceHandle_->SetConfig(config_);
+  for (auto config : configs_) {
+    auto data_source_ = config->GetValue("data_source");
+    auto vio_handle = VioProduce::CreateVioProduce(config, data_source_);
+    HOBOT_CHECK(vio_handle);
+    vio_handle->SetConfig(config);
+    vio_produce_handles_.push_back(vio_handle);
+  }
 
   if (!is_sync_mode_) {
 #ifndef PYAPI
@@ -121,7 +137,7 @@ int VioPlugin::Init() {
   return 0;
 }
 
-VioPlugin::~VioPlugin() { delete config_; }
+VioPlugin::~VioPlugin() {}
 
 int VioPlugin::Start() {
   int ret;
@@ -145,12 +161,14 @@ int VioPlugin::Start() {
     }
     return 0;
   };
-
-  VioProduceHandle_->SetListener(send_frame);
-  ret = VioProduceHandle_->Start();
-  if (ret < 0) {
-    LOGF << "VioPlugin start failed, err: " << ret << std::endl;
-    return -1;
+  for (auto vio_handle : vio_produce_handles_) {
+    vio_handle->SetListener(send_frame);
+    ret = vio_handle->Start();
+    // std::this_thread::sleep_for(std::chrono::seconds(2));
+    if (ret < 0) {
+      LOGF << "VioPlugin start failed, err: " << ret << std::endl;
+      return -1;
+    }
   }
 
   return 0;
@@ -158,11 +176,14 @@ int VioPlugin::Start() {
 
 int VioPlugin::Stop() {
   ClearAllQueue();
-  VioProduceHandle_->Stop();
+  for (auto vio_handle : vio_produce_handles_) {
+    vio_handle->Stop();
+  }
   return 0;
 }
 
-VioConfig *VioPlugin::GetConfigFromFile(const std::string &path) {
+std::shared_ptr<VioConfig> VioPlugin::GetConfigFromFile(
+    const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
     LOGF << "Open config file " << path << " failed";
@@ -181,7 +202,7 @@ VioConfig *VioPlugin::GetConfigFromFile(const std::string &path) {
     bool ret = reader->parse(content.c_str(), content.c_str() + content.size(),
                              &value, &error);
     if (ret) {
-      auto *config = new VioConfig(path, value);
+      auto config = std::shared_ptr<VioConfig>(new VioConfig(value));
       return config;
     } else {
       return nullptr;

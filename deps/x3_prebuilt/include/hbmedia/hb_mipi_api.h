@@ -12,6 +12,8 @@ extern "C" {
 
 #include <stdint.h>
 #define MIPIHOST_CHANNEL_NUM (4)
+#define GPIO_NUM 8
+#define LPWM_PIN_NUM  4
 
 enum HB_MIPI_ERROR_CODE {
 	MIPI_INPUT_PARAM_INVALID = 30,
@@ -78,14 +80,25 @@ typedef struct HB_MIPI_SNS_INFO_S {
 	int extra_mode;
 	int deserial_index;
 	int deserial_port;
+	int gpio_num;
+	int gpio_pin[GPIO_NUM];
+	int gpio_level[GPIO_NUM];
 	MIPI_SPI_DATA_S spi_info;
 }MIPI_SNS_INFO_S;
+
+typedef struct HB_MIPI_LPWM_INFO_S {
+	uint32_t lpwm_enable;
+	uint32_t offset_us[LPWM_PIN_NUM];
+	uint32_t period_us[LPWM_PIN_NUM];
+	uint32_t duty_us[LPWM_PIN_NUM];
+}MIPI_LPWM_INFO_S;
 
 typedef struct HB_MIPI_SENSOR_INFO_S {
 	int  	 deseEnable;
 	MIPI_INPUT_MODE_E inputMode;
 	MIPI_DESERIAL_INFO_T deserialInfo;
 	MIPI_SNS_INFO_S sensorInfo;
+	MIPI_LPWM_INFO_S lpwmInfo;
 }MIPI_SENSOR_INFO_S;
 
 typedef struct HB_MIPI_DEV_CFG_S {
@@ -126,7 +139,6 @@ extern int HB_MIPI_UnresetSensor(uint32_t devId);
 extern int HB_MIPI_SetSensorFps(uint32_t devId, uint32_t fps);
 extern int HB_MIPI_GetSensorInfo(uint32_t devId, MIPI_SENSOR_INFO_S *snsInfo);
 extern int HB_MIPI_SwSensorFps(uint32_t devId, uint32_t fps);
-extern int HB_MIPI_SwSensorMode(uint32_t devId, uint32_t SenMode);
 
 extern int HB_MIPI_ReadSensor(uint32_t devId,
 	uint32_t regAddr, char *buffer, uint32_t size);

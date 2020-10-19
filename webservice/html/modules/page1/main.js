@@ -4,8 +4,6 @@ function RenderFrame1(canvasObj, canvasOjb2, videoId) {
 
   this.smartCanvas = new HCanvas(canvasObj);
   this.smartCanvas2 = new HCanvas(canvasOjb2);
-
-  // this.openCVLoad = false
 }
 
 /**
@@ -13,7 +11,6 @@ function RenderFrame1(canvasObj, canvasOjb2, videoId) {
  * @param {*} frame
  */
 RenderFrame1.prototype.render = function (frame) {
-  // this.openCVLoad = frame.openCVLoad
   if (frame.imageBlob) {
     let obj = this.smartCanvas.getImageWH()
     if (obj.w !== frame.imageWidth || obj.h !== frame.imageHeight) {
@@ -75,7 +72,6 @@ RenderFrame1.prototype.renderFrameStart = function ({ smartMsgData, imageWidth, 
     let htmls2 = '';
     smartMsgData.map(item => {
       if (item.boxes.length > 0) {
-        // let box = item.boxes.filter(obj => obj.type === 'body')
         this.renderFrameBoxes(item.boxes, item.fall.fallShow);
         if (typeof item.attributes !== 'undefined' && typeof item.attributes.box !== 'undefined') {
           htmls += this.renderAttributes(item.attributes, imageWidth, imageHeight)
@@ -157,9 +153,6 @@ RenderFrame1.prototype.createTemplateAttributesHtml = function (attributes, clas
         ? ':' + attributes.score.toFixed(3) : ''}
     </li>`
   }
-  // if (typeof attributes.score !== 'undefined' && attributes.score > 0) {
-  //   html += `<li class="${attributes.score}">${attributes.score.toFixed(3)}</li>`
-  // }
   if (attributes.attributes.length > 0) {
     attributes.attributes.map(val => {
       // console.log(val)
@@ -175,11 +168,6 @@ RenderFrame1.prototype.createTemplateAttributesHtml = function (attributes, clas
 
 // 渲染属性框
 RenderFrame1.prototype.renderAttributes = function (attributes, w, h) {
-  // if (typeof attributes.box === 'undefined') {
-  //   return '';
-  // }
-  // let height = this.imgMain.offsetHeight
-  // let width = this.imgMain.offsetWidth
   let box = attributes.box;
   let len = attributes.attributes.length;
   if (typeof attributes.type !== 'undefined') {
@@ -188,8 +176,6 @@ RenderFrame1.prototype.renderAttributes = function (attributes, w, h) {
   let className = 'attribute-panel small';
   let left = box.p1.x * this.canvasOffset.xScale;
   let top = box.p1.y * this.canvasOffset.yScale;
-  // let y = box.p2.y * this.canvasOffset.yScale - box.p1.y * this.canvasOffset.yScale
-  // let top = box.p1.y * this.canvasOffset.yScale + y + 3;
 
   if (top - len * 40 >= 0) {
     top = top - len * 40
@@ -215,14 +201,12 @@ RenderFrame1.prototype.createAlertHtml = function (fall, w, h) {
     return
   }
   let box = fall.box
-  // let parentContainer = document.querySelector('.info-panel-2');
   let html = ''
   if (fall.value === 1) {
     if (box.p1.y <= 1) {
       return;
     }
     let x = box.p2.x * this.canvasOffset.yScale - box.p1.x * this.canvasOffset.yScale
-    // let y = (box.p2.y - box.p1.y)
     let left = box.p2.x * this.canvasOffset.xScale - x + 'px';
     let top = box.p1.y * this.canvasOffset.yScale - 3 + 'px';
     html = this.createTemplateAlertHtml(fall.score, top, left);
@@ -239,23 +223,8 @@ RenderFrame1.prototype.floatMatrixs = function (floatMatrixs) {
 
 // 目标分割
 RenderFrame1.prototype.floatMatrixsMask = function (floatMatrixs) {
-  // console.log(111, floatMatrixs) //  && this.openCVLoad
   if (typeof floatMatrixs.points !== 'undefined') {
-    // let data = updateDAta(floatMatrixs)
-
-    // this.smartCanvas2.drawFloatMask(floatMatrixs);
-
-    // const maskX = floatMatrixs.floatWH.p1.x;
-    // const maskY = floatMatrixs.floatWH.p1.y;
     let color = `rgba(0, 255, 25, 0.5)`;
-    // let segmentPoints = updateData(floatMatrixs)
     this.smartCanvas2.drawSegmentBorder(floatMatrixs.points, color) //, maskX, maskY
-
-    // let img = cv.imread(this.imgMain)
-    // for(let i = 1; i < data.length; i++) {
-    //   console.log(data[i])
-    //   cv.line(img, data[i].p1, data[i-1].p1, [0,255, 50, 155], 1, 8, 6 )
-    // }
-    // cv.imshow('canvas-2', img);
   }
 }

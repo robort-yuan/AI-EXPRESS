@@ -10,7 +10,7 @@
 
 #include <signal.h>
 #include <unistd.h>
-
+#include <malloc.h>
 #include <iostream>
 #include <sstream>
 #include <memory>
@@ -20,6 +20,7 @@
 #include "smartplugin_box/smartplugin.h"
 #include "vioplugin/vioplugin.h"
 #include "visualplugin/visualplugin.h"
+#include "bpu_predict/bpu_predict_extension.h"
 
 using horizon::vision::xproto::XPluginAsync;
 using horizon::vision::xproto::XProtoMessage;
@@ -46,6 +47,8 @@ static void signal_handle(int param) {
 }
 
 int main(int argc, char **argv) {
+  mallopt(M_TRIM_THRESHOLD, 128 * 1024);
+  HB_BPU_setGlobalConfig(BPU_GLOBAL_ENGINE_TYPE, "native");
   std::string run_mode = "ut";
 
   if (argc < 5) {
@@ -84,7 +87,6 @@ int main(int argc, char **argv) {
 
   signal(SIGINT, signal_handle);
   signal(SIGPIPE, signal_handle);
-  signal(SIGSEGV, signal_handle);
 
   // auto vio_plg = std::make_shared<VioPlugin>(vio_config_file);
   // auto visual_plg = std::make_shared<VisualPlugin>(visual_config_file);
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
     while (!exit_) {
       // std::this_thread::sleep_for(std::chrono::microseconds(40));
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
-      LOGI << "wait to quit";
+      LOGD << "wait to quit";
     }
   }
   // vio_plg->Stop();

@@ -45,6 +45,9 @@ class XPluginAsync : public XPlugin {
   int DeInit() override;
   // 消息处理上半部分，将消息推送该plugin的消息队列 + 流量控制
   void OnMsg(XProtoMessagePtr msg);
+  int GetPluginMsgCount();
+  int GetPluginMsgLimit();
+  void SetPluginMsgLimit(int msg_limit_count);
   // 启动Plugin
   virtual int Start() {
     return 0;
@@ -71,6 +74,9 @@ class XPluginAsync : public XPlugin {
   void OnMsgDown(XProtoMessagePtr msg);
 
   hobot::CThreadPool msg_handle_;
+  std::mutex msg_mutex_;
+  int msg_limit_count_ = 0;
+  std::mutex msg_limit_mutex_;
   std::map<std::string, XProtoMessageFunc> msg_map_;
 };
 

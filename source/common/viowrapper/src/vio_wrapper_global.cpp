@@ -13,13 +13,9 @@
 #include <string>
 #include <memory>
 #include "hobotxstream/image_tools.h"
+#include "hobotlog/hobotlog.hpp"
 
 #ifdef X3_X2_VIO
-#include "./hb_cam_interface.h"
-#endif
-#ifdef X3_IOT_VIO
-#include "./hb_cam_interface.h"  // NOLINT
-#include "vioplugin/iot_vio_api.h"
 #endif
 
 #ifdef X3_X2_VIO
@@ -127,6 +123,16 @@ HbVioFbWrapperGlobal::~HbVioFbWrapperGlobal() {
   }
 }
 
+int HbVioFbWrapperGlobal::Reset() {
+  int ret = -1;
+#ifdef X3_IOT_VIO
+  VioPipeManager &manager = VioPipeManager::Get();
+  ret = manager.Reset();
+  HOBOT_CHECK(ret == 0) << "FbVioWrapper reset success";
+#endif
+  return 0;
+}
+
 int HbVioFbWrapperGlobal::Init() {
 #ifdef X3_X2_VIO
   if (hb_vio_init(hb_vio_cfg_.c_str()) < 0)
@@ -137,11 +143,24 @@ int HbVioFbWrapperGlobal::Init() {
   return 0;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_init(hb_vio_cfg_.c_str()) < 0)
-    return -1;
-  if (iot_vio_start() < 0)
-    return -1;
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(hb_vio_cfg_);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "ImageList: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "ImageList: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
+  HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
+  ret = vio_pipeline_->Start();
+  HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
   init_ = true;
+
   return 0;
 #endif
 }
@@ -156,11 +175,12 @@ int HbVioFbWrapperGlobal::DeInit() {
   return 0;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_stop() < 0)
-    return -1;
-  if (iot_vio_deinit() < 0)
-    return -1;
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
   init_ = false;
+
   return 0;
 #endif
 }
@@ -214,10 +234,12 @@ HbVioFbWrapperGlobal::GetImgInfo(std::string rgb_file, uint32_t *effective_w,
   return pym_image_frame_ptr;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_get_info(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_) < 0) {
-    std::cout << "get fb src fail!!!" << std::endl;
+  auto ret = vio_pipeline_->GetInfo(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_);
+  if (ret < 0) {
+    LOGE << "vio pipeline get feedback src info failed";
     return nullptr;
   }
+
   cv::Mat img = cv::imread(rgb_file);
   cv::Mat img_1080p;
   int width = 1920;
@@ -243,16 +265,21 @@ HbVioFbWrapperGlobal::GetImgInfo(std::string rgb_file, uint32_t *effective_w,
          output_data + y_out_len, uv_out_len);
 
   HobotXStreamFreeImage(output_data);
-  iot_vio_set_info(IOT_VIO_FEEDBACK_FLUSH, &process_info_);
-  if (iot_vio_pym_process(&process_info_) < 0) {
-    std::cout << "fb process fail!!!" << std::endl;
+
+  ret = vio_pipeline_->SetInfo(IOT_VIO_FEEDBACK_PYM_PROCESS,
+      &process_info_);
+  if (ret < 0) {
+    LOGE << "vio pipeline set feedback pym process info failed";
     return nullptr;
   }
+
   pym_buffer_t *pym_img = new pym_buffer_t();
-  if (iot_vio_get_info(IOT_VIO_PYM_INFO, pym_img) < 0) {
-    std::cout << "hb_vio_get_info fail!!!" << std::endl;
+  ret = vio_pipeline_->GetInfo(IOT_VIO_PYM_INFO, pym_img);
+  if (ret < 0) {
+    LOGE << "vio pipeline get vio pym info failed";
     return nullptr;
   }
+
   auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
   Convert(pym_img, *pym_image_frame_ptr);
   return pym_image_frame_ptr;
@@ -288,8 +315,9 @@ std::shared_ptr<PymImageFrame> HbVioFbWrapperGlobal::GetImgInfo(uint8_t *nv12,
   return pym_image_frame_ptr;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_get_info(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_) < 0) {
-    std::cout << "get fb src fail!!!" << std::endl;
+  auto ret = vio_pipeline_->GetInfo(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_);
+  if (ret < 0) {
+    LOGE << "vio pipeline get feedback src info failed";
     return nullptr;
   }
 
@@ -299,14 +327,16 @@ std::shared_ptr<PymImageFrame> HbVioFbWrapperGlobal::GetImgInfo(uint8_t *nv12,
   memcpy(reinterpret_cast<uint8_t *>(process_info_.img_addr.addr[1]),
          nv12 + w * h, w * h / 2);
 
-  iot_vio_set_info(IOT_VIO_FEEDBACK_FLUSH, &process_info_);
-  if (iot_vio_pym_process(&process_info_) < 0) {
-    std::cout << "fb process fail!!!" << std::endl;
+  ret = vio_pipeline_->SetInfo(IOT_VIO_FEEDBACK_PYM_PROCESS,
+      &process_info_);
+  if (ret < 0) {
+    LOGE << "vio pipeline set feedback pym process info failed";
     return nullptr;
   }
   pym_buffer_t *pym_img = new pym_buffer_t();
-  if (iot_vio_get_info(IOT_VIO_PYM_INFO, pym_img) < 0) {
-    std::cout << "iot_vio_get_info fail!!!" << std::endl;
+  ret = vio_pipeline_->GetInfo(IOT_VIO_PYM_INFO, pym_img);
+  if (ret < 0) {
+    LOGE << "vio pipeline get vio pym info failed";
     return nullptr;
   }
   auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
@@ -332,11 +362,19 @@ int HbVioFbWrapperGlobal::FreeImgInfo(
 #endif
 #ifdef X3_IOT_VIO
   // src image buffer need be free by next module
-  if (iot_vio_free_info(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_) < 0)
+  auto ret = vio_pipeline_->FreeInfo(IOT_VIO_FEEDBACK_SRC_INFO, &process_info_);
+  if (ret) {
+    LOGE << "vio pipeline free vio feedback src info failed";
     return -1;
+  }
+
   pym_buffer_t *pym_img = static_cast<pym_buffer_t *>(pym_image->context);
   if (pym_img) {
-    int ret = iot_vio_free(pym_img);
+      ret = vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, pym_img);
+      if (ret) {
+        LOGE << "vio pipeline free vio pym info failed";
+        return -1;
+      }
     delete pym_img;
     pym_image->context = nullptr;
     return ret;
@@ -379,6 +417,16 @@ HbVioMonoCameraGlobal::~HbVioMonoCameraGlobal() {
   }
 }
 
+int HbVioMonoCameraGlobal::Reset() {
+  int ret = -1;
+#ifdef X3_IOT_VIO
+  VioPipeManager &manager = VioPipeManager::Get();
+  ret = manager.Reset();
+  HOBOT_CHECK(ret == 0) << "MonoCamera VioWrapper reset success";
+#endif
+  return 0;
+}
+
 int HbVioMonoCameraGlobal::Init() {
 #ifdef X3_X2_VIO
   if (hb_cam_init(camera_idx_, camera_cfg_.c_str()) < 0)
@@ -393,10 +441,22 @@ int HbVioMonoCameraGlobal::Init() {
   return 0;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_init(hb_vio_cfg_.c_str()) < 0) return -1;
-  if (iot_cam_init(camera_idx_, camera_cfg_.c_str()) < 0) return -1;
-  if (iot_vio_start() < 0) return -1;
-  if (iot_cam_start(camera_idx_) < 0) return -1;
+  std::vector<std::string> vio_cfg_list;
+  vio_cfg_list.push_back(hb_vio_cfg_);
+  VioPipeManager &manager = VioPipeManager::Get();
+  if (-1 == pipe_id_) {
+    pipe_id_ = manager.GetPipeId(vio_cfg_list);
+  }
+  HOBOT_CHECK(pipe_id_ != -1) << "MonoCamera: Get pipe_id failed";
+  if (nullptr == vio_pipeline_) {
+    vio_pipeline_ = std::make_shared<VioPipeLine>(vio_cfg_list, pipe_id_);
+  }
+  HOBOT_CHECK(vio_pipeline_ != nullptr)
+    << "MonoCamera: Create VioPipeLine failed";
+  auto ret = vio_pipeline_->Init();
+  HOBOT_CHECK_EQ(ret, 0) << "vio init failed";
+  ret = vio_pipeline_->Start();
+  HOBOT_CHECK_EQ(ret, 0) << "vio start failed";
   init_ = true;
   return 0;
 #endif
@@ -416,10 +476,10 @@ int HbVioMonoCameraGlobal::DeInit() {
   return 0;
 #endif
 #ifdef X3_IOT_VIO
-  if (iot_vio_stop() < 0) return -1;
-  if (iot_cam_stop(camera_idx_) < 0) return -1;
-  if (iot_vio_deinit() < 0) return -1;
-  if (iot_cam_deinit(camera_idx_) < 0) return -1;
+  if (vio_pipeline_) {
+    vio_pipeline_->Stop();
+    vio_pipeline_->DeInit();
+  }
   init_ = false;
   return 0;
 #endif
@@ -439,8 +499,9 @@ std::shared_ptr<PymImageFrame> HbVioMonoCameraGlobal::GetImage() {
 #endif
 #ifdef X3_IOT_VIO
   pym_buffer_t *pym_img = new pym_buffer_t();
-  if (iot_vio_get_info(HB_VIO_PYM_INFO, pym_img) < 0) {
-    std::cout << "iot_vio_get_info fail!!!" << std::endl;
+  auto ret = vio_pipeline_->GetInfo(IOT_VIO_PYM_INFO, pym_img);
+  if (ret < 0) {
+    LOGE << "vio pipeline get vio pym info failed";
     delete pym_img;
     return nullptr;
   }
@@ -464,7 +525,10 @@ int HbVioMonoCameraGlobal::Free(std::shared_ptr<PymImageFrame> pym_image) {
 #ifdef X3_IOT_VIO
   pym_buffer_t *pym_img = static_cast<pym_buffer_t *>(pym_image->context);
   if (pym_img) {
-    int ret = iot_vio_free_info(HB_VIO_PYM_INFO, pym_img);
+    auto ret = vio_pipeline_->FreeInfo(IOT_VIO_PYM_INFO, pym_img);
+    if (ret) {
+      LOGE << "vio pipeline free vio pym info failed";
+    }
     delete pym_img;
     pym_image->context = nullptr;
     return ret;

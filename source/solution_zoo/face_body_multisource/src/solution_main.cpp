@@ -6,6 +6,7 @@
   */
 
 #include <signal.h>
+#include <malloc.h>
 #include <iostream>
 #include <cstring>
 #include <thread>
@@ -14,6 +15,7 @@
 #include "hobotlog/hobotlog.hpp"
 #include "vioplugin/vioplugin.h"
 #include "smartplugin/smartplugin.h"
+#include "bpu_predict/bpu_predict_extension.h"
 
 using std::chrono::seconds;
 using horizon::vision::xproto::smartplugin::SmartPlugin;
@@ -29,6 +31,8 @@ static void signal_handle(int param) {
 }
 
 int solution_main(int argc, const char **argv) {
+  mallopt(M_TRIM_THRESHOLD, 128 * 1024);
+  HB_BPU_setGlobalConfig(BPU_GLOBAL_ENGINE_TYPE, "native");
   std::string run_mode = "ut";
   std::string vio_config_file = std::string(argv[1]);
   std::string smart_config_file = std::string(argv[2]);

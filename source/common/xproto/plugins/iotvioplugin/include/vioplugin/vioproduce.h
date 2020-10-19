@@ -24,6 +24,8 @@
 #include "json/json.h"
 
 #include "vioplugin/viomessage.h"
+#include "vioplugin/vioprocess.h"
+#include "iotviomanager/viopipeline.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,25 +56,25 @@ enum HorizonVioError {
 class VioConfig {
  public:
   VioConfig() = default;
-  explicit VioConfig(const std::string &path, const Json::Value &json)
-      : path_(path), json_(json) {}
+  explicit VioConfig(const Json::Value &json) : json_(json) {}
   std::string GetValue(const std::string &key) const;
   Json::Value GetJson() const;
-  static VioConfig *GetConfig();
-  bool SetConfig(VioConfig *config);
+  std::vector<std::string> GetArrayItem(std::string key) const;
+  std::shared_ptr<VioConfig> GetSubConfig(std::string key);
+  std::shared_ptr<VioConfig> GetSubConfig(int key);
+  bool HasMember(std::string key);
+  int ItemCount(void);
 
  private:
-  std::string path_;
   Json::Value json_;
-  static VioConfig *config_;
   mutable std::mutex mutex_;
 };
 
 class VioProduce : public std::enable_shared_from_this<VioProduce> {
  public:
   // 根据data_source不同创建不同的图像对象，/camera/jpeg/nv12等
-  static std::shared_ptr<VioProduce>
-  CreateVioProduce(const std::string &data_source);
+  static std::shared_ptr<VioProduce> CreateVioProduce(
+      const std::shared_ptr<VioConfig> config, const std::string &data_source);
   virtual ~VioProduce() {}
 
   // called by vioplugin, add a run job to executor, async invoke, thread pool
@@ -83,7 +85,7 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   // finish producing inputs，common use
   virtual int Finish();
   // set VioConfig
-  int SetConfig(VioConfig *config);
+  int SetConfig(std::shared_ptr<VioConfig> config);
   // viomessage can be base class
   using Listener = std::function<int(const std::shared_ptr<VioMessage> &input)>;
   // set callback function
@@ -99,9 +101,6 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
 
  protected:
   VioProduce() : is_running_{false} {
-    auto config = VioConfig::GetConfig();
-    auto json = config->GetJson();
-    max_vio_buffer_ = json["max_vio_buffer"].asUInt();
     // std::atomic_init(&consumed_vio_buffers_, 0);
   }
   explicit VioProduce(int max_vio_buffer) : is_running_{false} {
@@ -110,7 +109,7 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   }
 
  protected:
-  VioConfig *config_ = nullptr;
+  std::shared_ptr<VioConfig> config_ = nullptr;
   std::function<int(const std::shared_ptr<VioMessage> &input)> push_data_cb_ =
       nullptr;
   std::atomic<bool> is_running_;
@@ -123,7 +122,8 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   enum class TSTYPE {
     RAW_TS,    // 读取pvio_image->timestamp
     FRAME_ID,  // 读取pvio_image->frame_id
-    INPUT_CODED  // 解析金字塔0层y图的前16个字节，其中编码了timestamp。
+    INPUT_CODED,  // 解析金字塔0层y图的前16个字节，其中编码了timestamp。
+    INNER_FRAME_ID  // 内部frame id
   };
   TSTYPE ts_type_ = TSTYPE::RAW_TS;
   static const std::unordered_map<std::string, TSTYPE> str2ts_type_;
@@ -145,6 +145,7 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   // child class can use this api to dec h264, h265 through override
   virtual VDEC_CHN_ATTR_S VdecChnAttrInit();
 
+
  public:
   int InitDecModule();
   int DeInitDecModule();
@@ -153,6 +154,19 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   int InputDecModule(const char* buf, int size);
   int GetOutputDecModule(VIDEO_FRAME_S&);
   int ReleaseOutputDecModule(VIDEO_FRAME_S& pstFrame);
+#if defined(X3_X2_VIO)
+  bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len);
+  bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
+                             int len);
+  bool GetPyramidInfo(mult_img_info_t *pvio_image, char *data, int len);
+#elif defined(X3_IOT_VIO)
+  bool GetPyramidInfo(pym_buffer_t *pvio_image, char *data, int len);
+  bool GetPyramidInfo(std::shared_ptr<VioPipeLine> vio_pipeline,
+      VioFeedbackContext *feed_back_context, char *data, int len);
+  bool GetPyramidInfo(IotMultPymBuffer *pvio_image, char *data, int len);
+  int pipe_id_ = -1;
+  std::shared_ptr<VioPipeLine> vio_pipeline_ = nullptr;
+#endif
 };
 
 class VioCamera : public VioProduce {
@@ -172,7 +186,7 @@ class VioCamera : public VioProduce {
 
 class PanelCamera : public VioCamera {
  public:
-  explicit PanelCamera(const std::string &vio_cfg_file);
+  explicit PanelCamera(const std::vector<std::string> &vio_cfg_list);
   virtual ~PanelCamera();
 
  private:

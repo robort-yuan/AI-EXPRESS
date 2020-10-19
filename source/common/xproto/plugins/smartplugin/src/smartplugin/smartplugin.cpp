@@ -840,6 +840,16 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
         }
       }
     }
+    static bool check_env = false;
+    bool need_check_mask_time = false;
+    if (!check_env) {
+      auto check_mask_time = getenv("check_mask_time");
+      if (check_mask_time && !strcmp(check_mask_time, "ON")) {
+        need_check_mask_time = true;
+      }
+      check_env = true;
+    }
+    auto mask_start_time = std::chrono::system_clock::now();
     if (output->name_ == "mask") {
       mask = dynamic_cast<xstream::BaseDataVector *>(output.get());
       LOGD << "mask size: " << mask->datas_.size();
@@ -848,6 +858,7 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
              << ", body_box size: " << body_box_list.size();
       }
       for (size_t i = 0; i < mask->datas_.size(); ++i) {
+        auto one_mask_start_time = std::chrono::system_clock::now();
         auto one_mask = std::static_pointer_cast<
             xstream::XStreamData<hobot::vision::Segmentation>>(mask->datas_[i]);
         if (one_mask->state_ != xstream::DataState::VALID) {
@@ -877,12 +888,25 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
               *(ptr + w) = (mask.values)[h * h_w + w];
             }
           }
+          float max_ratio = 1;
           int width = x2 - x1;
           int height = y2 - y1;
-          cv::resize(mask_mat, mask_mat, cv::Size(width, height));
 
+          float w_ratio = static_cast<float>(width) / h_w;
+          float h_ratio = static_cast<float>(height) / h_w;
+          if (w_ratio >= 4 && h_ratio >= 4) {
+            max_ratio = w_ratio < h_ratio ? w_ratio : h_ratio;
+            if (max_ratio >= 4) {
+              max_ratio = 4;
+            }
+            width = width / max_ratio;
+            height = height / max_ratio;
+          }
+          cv::resize(mask_mat, mask_mat, cv::Size(width, height));
           cv::Mat mask_gray(height, width, CV_8UC1);
           mask_gray.setTo(0);
+          std::vector<std::vector<cv::Point>> contours;
+
           for (int h = 0; h < height; ++h) {
             uchar *p_gray = mask_gray.ptr<uchar>(h);
             const float *p_mask = mask_mat.ptr<float>(h);
@@ -895,26 +919,42 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
             }
           }
           mask_mat.release();
-          std::vector<std::vector<cv::Point>> contours;
           cv::findContours(mask_gray, contours, cv::noArray(), cv::RETR_CCOMP,
-                           cv::CHAIN_APPROX_NONE);
+                       cv::CHAIN_APPROX_NONE);
+
           mask_gray.release();
           auto target = smart_target[body_box_list[i]->value.id];
           auto Points = target->add_points_();
           Points->set_type_("mask");
           for (size_t i = 0; i < contours.size(); i++) {
             auto one_line = contours[i];
-            for (size_t j = 0; j < one_line.size(); j++) {
+            for (size_t j = 0; j < one_line.size(); j+=4) {
               auto point = Points->add_points_();
-              point->set_x_((contours[i][j].x + x1) * x_ratio);
-              point->set_y_((contours[i][j].y + y1) * y_ratio);
+              point->set_x_((contours[i][j].x * max_ratio + x1) * x_ratio);
+              point->set_y_((contours[i][j].y * max_ratio + y1) * y_ratio);
               point->set_score_(0);
             }
           }
           contours.clear();
           std::vector<std::vector<cv::Point>>(contours).swap(contours);
         }
+        auto one_mask_end_time = std::chrono::system_clock::now();
+        if (need_check_mask_time) {
+          auto duration_time =
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  one_mask_end_time - one_mask_start_time);
+          LOGW << "process one mask used:  " << duration_time.count()
+              << " ms";
+        }
       }
+    }
+    auto mask_end_time = std::chrono::system_clock::now();
+    if (need_check_mask_time) {
+      auto duration_time =
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              mask_end_time - mask_start_time);
+      LOGW << "process one frame, mask total used:  " << duration_time.count()
+           << " ms";
     }
 
     if (output->name_ == "age") {
@@ -1309,6 +1349,7 @@ SmartPlugin::SmartPlugin(const std::string &config_file) {
 void SmartPlugin::ParseConfig() {
   xstream_workflow_cfg_file_ =
       config_->GetSTDStringValue("xstream_workflow_file");
+  sdk_monitor_interval_ = config_->GetIntValue("time_monitor");
   enable_profile_ = config_->GetBoolValue("enable_profile");
   profile_log_file_ = config_->GetSTDStringValue("profile_log_path");
   if (config_->HasMember("enable_result_to_json")) {
@@ -1328,6 +1369,9 @@ int SmartPlugin::Init() {
   sdk_->SetConfig("config_file", xstream_workflow_cfg_file_);
   if (sdk_->Init() != 0) {
     return kHorizonVisionInitFail;
+  }
+  if (sdk_monitor_interval_ != 0) {
+    sdk_->SetConfig("time_monitor", std::to_string(sdk_monitor_interval_));
   }
   if (enable_profile_) {
     sdk_->SetConfig("profiler", "on");
@@ -1350,11 +1394,18 @@ int SmartPlugin::Feed(XProtoMessagePtr msg) {
     valid_frame->profile_->UpdatePluginStartTime(desc());
   }
   xstream::InputDataPtr input = Convertor::ConvertInput(valid_frame.get());
+  auto xstream_input_data =
+      std::static_pointer_cast<xstream::XStreamData<ImageFramePtr>>(
+          input->datas_[0]);
+  auto frame_id = xstream_input_data->value->frame_id;
   SmartInput *input_wrapper = new SmartInput();
   input_wrapper->frame_info = valid_frame;
   input_wrapper->context = input_wrapper;
   monitor_->PushFrame(input_wrapper);
-  if (sdk_->AsyncPredict(input) != 0) {
+  if (sdk_->AsyncPredict(input) < 0) {
+    auto intput_frame = monitor_->PopFrame(frame_id);
+    delete static_cast<SmartInput *>(intput_frame.context);
+    LOGW << "AsyncPredict failed, frame_id = " << frame_id;
     return kHorizonVisionFailure;
   }
   LOGI << "feed one task to xtream workflow";

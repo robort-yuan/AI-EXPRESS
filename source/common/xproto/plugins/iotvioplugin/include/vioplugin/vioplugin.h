@@ -56,12 +56,14 @@ class VioPlugin : public xproto::XPluginAsync {
 #endif
 
  private:
-  VioConfig *GetConfigFromFile(const std::string &path);
+  std::shared_ptr<VioConfig> GetConfigFromFile(const std::string &path);
   int OnGetHbipcResult(const XProtoMessagePtr msg);
+  void GetSubConfigs();
 
  private:
-  VioConfig *config_;
-  std::shared_ptr<VioProduce> VioProduceHandle_;
+  std::shared_ptr<VioConfig> config_;
+  std::vector<std::shared_ptr<VioConfig>> configs_;
+  std::vector<std::shared_ptr<VioProduce>> vio_produce_handles_;
   std::vector<box_t> Shields_;
   bool is_inited_ = false;
   bool is_sync_mode_ = false;

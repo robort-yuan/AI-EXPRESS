@@ -68,7 +68,6 @@ int SSD_Predictor::Init(const std::string &config_file) {
                << " failed : " << HB_BPU_getErrorName(ret_val);
     return -1;
   }
-  // PrintModelInfo(&bpu_handle_);
   out_num_ = bpu_handle_.output_num;
   GetModelInfo(model_name_);
 
@@ -96,7 +95,6 @@ void SSD_Predictor::RunSingleFrame(const std::vector<BaseDataPtr> &frame_input,
       std::static_pointer_cast<XStreamData<ImageFramePtr>>(frame_img_);
 
   std::string img_type = xstream_img->value->type;
-  // BPU_TENSOR_S tensor;
   {
     RUN_PROCESS_TIME_PROFILER("SSD RunModelFromPyramid");
     RUN_FPS_PROFILER("SSD RunModelFromPyramid");

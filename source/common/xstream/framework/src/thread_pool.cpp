@@ -53,12 +53,14 @@ int XThread::PostAsyncTask(const std::string &post_from,
                            const FunctionTask &functask) {
   if (stop_) return 0;
   {
-    std::lock_guard<std::mutex> lck(task_queue_mutex_);
-    if (task_queue_.size() >= max_task_count_) {
-      return -1;
+    {
+      std::lock_guard<std::mutex> lck(task_queue_mutex_);
+      if (task_queue_.size() >= max_task_count_) {
+        return -1;
+      }
+      auto task = std::shared_ptr<Task>(new Task(post_from, functask));
+      task_queue_.push_back(task);
     }
-    auto task = std::shared_ptr<Task>(new Task(post_from, functask));
-    task_queue_.push_back(task);
     condition_.notify_one();
   }
   return 0;
@@ -78,8 +80,10 @@ int XThread::Resume() {
 int XThread::Stop() {
   if (!stop_) {
     {
-      std::lock_guard<std::mutex> lck(task_queue_mutex_);
-      stop_ = true;
+      {
+        std::lock_guard<std::mutex> lck(task_queue_mutex_);
+        stop_ = true;
+      }
       condition_.notify_one();
     }
     if (thread_) {

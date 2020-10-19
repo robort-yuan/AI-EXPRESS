@@ -26,8 +26,8 @@ AIoT 基础库repo：源码依赖
 `bazel test -s //xstream/framework:test_all --define cpu=x86_64 --define os=linux --spawn_strategy=local`
 
 ### 编译框架
-   如果想了解或修改bazel编译框架的封装实现，请参看repo的文档和代码
-  `gitlab.hobot.cc/iot/xsdk/bazel_tools`
+   如果想了解或修改bazel编译框架的封装实现，请参看repo和bazel的文档和代码
+
 
 ## Methods
 在 `//xstream/methods`，目前methods中的method 有：

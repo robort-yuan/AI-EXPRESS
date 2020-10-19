@@ -15,7 +15,6 @@
 #include <memory>
 #include <thread>
 
-// #include "hobotxstream/data_types/bbox.h"
 #include <random>
 #include "hobotlog/hobotlog.hpp"
 #include "hobotxstream/profiler.h"
@@ -37,9 +36,6 @@ int VehiclePlateMatchMethod::Init(const std::string &config_file_path) {
 int VehiclePlateMatchMethod::UpdateParameter(InputParamPtr ptr) { return 0; }
 
 InputParamPtr VehiclePlateMatchMethod::GetParameter() const {
-  // method name is useless here
-  // auto param = std::make_shared<FilterParam>("");
-
   return nullptr;  // param;
 }
 

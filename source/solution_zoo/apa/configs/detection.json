@@ -1,0 +1,47 @@
+{
+    "inputs": [
+      "image"
+    ],
+    "outputs": [
+      "image",
+      "cycle_box",
+      "person_box",
+      "vehicle_box",
+      "rear_box",
+      "parkinglock_box",
+      "drivingarea_mask",
+      "laneline_mask"
+    ],
+    "workflow": [
+      {
+        "thread_count": 1,
+        "method_type": "PredictMethod",
+        "unique_name": "predict",
+        "inputs": [
+          "image"
+        ],
+        "outputs": [
+          "run_data"
+        ],
+        "method_config_file": "predict.json"
+      },
+      {
+        "thread_count": 1,
+        "method_type": "PostProcessMethod",
+        "unique_name": "post",
+        "inputs": [
+          "run_data"
+        ],
+        "outputs": [
+          "cycle_box",
+          "person_box",
+          "vehicle_box",
+          "rear_box",
+          "parkinglock_box",
+          "drivingarea_mask",
+          "laneline_mask"
+        ],
+        "method_config_file": "postprocess.json"
+      }
+    ]
+}

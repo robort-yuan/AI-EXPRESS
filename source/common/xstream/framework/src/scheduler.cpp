@@ -8,12 +8,12 @@
  */
 
 #include "hobotxstream/scheduler.h"
-
+#include <unistd.h>
 #include <future>
 #include <iterator>
 #include <set>
 #include <string>
-
+#include <chrono>
 #include "hobotlog/hobotlog.hpp"
 #include "hobotxstream/json_key.h"
 #include "hobotxstream/method_factory.h"
@@ -45,6 +45,8 @@ int Scheduler::Init(XStreamConfigPtr config,
   thread_->SetMaxTaskCount(scheduler_config_->GetMaxRunningCount());
   comm_node_daemon_.reset(engine_->CreateAutoThread(),
                           [](XThreadRawPtr th) { th->Stop(); });
+  monitor_.reset(engine_->CreateAutoThread(),
+                 [](XThreadRawPtr th) { th->Stop(); });
 
   auto optional_config = scheduler_config_->GetOptionalConfig();
   if (!optional_config.isNull()) {
@@ -118,6 +120,13 @@ int Scheduler::SetFreeMemery(bool is_enable) {
   return 0;
 }
 
+int Scheduler::SetTimeMonitor(int interval) {
+  HOBOT_CHECK(interval > 0 && interval < 15);
+  monitor_time_.first = true;
+  monitor_time_.second = interval;
+  return 0;
+}
+
 int Scheduler::UpdateConfig(std::string unique_name, InputParamPtr param_ptr) {
   auto iter = name2ptr_.find(unique_name);
   if (iter != name2ptr_.end()) {
@@ -179,6 +188,20 @@ int64_t Scheduler::Input(InputDataPtr input, void *sync_context) {
   framework_data->timestamp_ = framework_data->sequence_id_;
 
   int ret = Schedule(framework_data, nullptr);
+  if (monitor_time_.first) {
+    std::chrono::system_clock::duration d =
+        std::chrono::system_clock::now().time_since_epoch();
+    std::chrono::seconds start =
+        std::chrono::duration_cast<std::chrono::seconds>(d);
+    int ret = monitor_->PostAsyncTask("Input FrameData",
+                                      std::bind(&Scheduler::Monitor, this,
+                                                framework_data, start.count(),
+                                                monitor_time_.second));
+    if (ret < 0) {
+      LOGW << "Add Monitor task failed";
+    }
+  }
+
   return (ret >= 0) ? framework_data->sequence_id_ : ret;
 }
 
@@ -503,6 +526,26 @@ std::vector<int> Scheduler::CreateSlot(
     dataSlots.push_back(data_slots_[dataName]);
   }
   return dataSlots;
+}
+
+void Scheduler::Monitor(FrameworkDataPtr framework_data,
+                        int start, int interval) {
+  usleep(10000);  // delay 10ms
+  // 距离1970-01-01 00:00:00
+  std::chrono::system_clock::duration d =
+      std::chrono::system_clock::now().time_since_epoch();
+  std::chrono::seconds sec =
+      std::chrono::duration_cast<std::chrono::seconds>(d);
+  if (!IsFrameDone(framework_data)) {  // 未结束
+    if (sec.count() - start > interval) {  // 超时
+      LOGW << "source_id: " << framework_data->source_id_
+           << ", sequence_id: " << framework_data->sequence_id_
+           << ", not finished in " << interval << " seconds!!";
+    } else {  // 未超时，持续监测
+      monitor_->PostAsyncTask("Input FrameData",
+        std::bind(&Scheduler::Monitor, this, framework_data, start, interval));
+    }
+  }
 }
 
 }  // namespace xstream

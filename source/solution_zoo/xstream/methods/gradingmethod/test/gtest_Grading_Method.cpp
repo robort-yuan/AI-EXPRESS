@@ -73,8 +73,6 @@ TEST_F(XStreamGradingMethodTest, GradingTest) {
           res_.push_back(select_score->value);
         }
       }
-      //      EXPECT_EQ(res_[0], 0.509549975f);
-      //      EXPECT_EQ(res_[1], 0.546308339f);
       EXPECT_EQ(res_[0], 0.447049975f);
       EXPECT_EQ(res_[1], 0.451808333f);
     }
@@ -187,13 +185,9 @@ TEST_F(XStreamGradingMethodTest, GradingTest) {
   quality_list->name_ = "quality_list";
   std::shared_ptr<XStreamQuality> quality1(new XStreamQuality());
   quality1->value.value = 0;
-  //  quality1->value.value = 75;
-  //  quality1->value.value = 0.3125f;
 
   std::shared_ptr<XStreamQuality> quality2(new XStreamQuality());
   quality2->value.value = 0;
-  //  quality2->value.value = 11;
-  //  quality2->value.value = 0.472499996f;
 
   quality_list->datas_.push_back(quality1);
   quality_list->datas_.push_back(quality2);

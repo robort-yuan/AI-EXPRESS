@@ -257,10 +257,12 @@ int WebsocketPlugin::FeedSmart(XProtoMessagePtr msg) {
       return -1;
     }
   }
-  std::lock_guard<std::mutex> smart_lock(map_smart_mutex_);
   auto smart_msg = std::static_pointer_cast<SmartMessage>(msg);
   if (smart_msg) {
-    x3_smart_msg_.push(smart_msg);
+    {
+      std::lock_guard<std::mutex> smart_lock(map_smart_mutex_);
+      x3_smart_msg_.push(smart_msg);
+    }
     map_smart_condition_.notify_one();
   }
 
@@ -421,11 +423,13 @@ void WebsocketPlugin::EncodeJpg(XProtoMessagePtr msg) {
       image->set_type_("jpeg");
       image->set_width_(dst_image_width_);
       image->set_height_(dst_image_height_);
-      std::unique_lock<std::mutex> lock(map_smart_mutex_);
-      x3_frames_.push(x3_frame_msg);
+      {
+        std::lock_guard<std::mutex> lock(map_smart_mutex_);
+        x3_frames_.push(x3_frame_msg);
+        if (x3_frames_.size() > cache_size_)
+          LOGW << "the cache is full, maybe the encode thread is slowly";
+      }
       map_smart_condition_.notify_one();
-      if (x3_frames_.size() > cache_size_)
-        LOGW << "the cache is full, maybe the encode thread is slowly";
       /* dump jpg picture */
       if (config_->dump_jpg_num_-- > 0) {
           static int frame_id = 0;
@@ -441,8 +445,10 @@ void WebsocketPlugin::EncodeJpg(XProtoMessagePtr msg) {
       x3_frame_msg.set_timestamp_(timestamp);
       image->set_width_(0);
       image->set_height_(0);
-      std::unique_lock<std::mutex> lock(map_smart_mutex_);
-      x3_frames_.push(x3_frame_msg);
+      {
+        std::lock_guard<std::mutex> lock(map_smart_mutex_);
+        x3_frames_.push(x3_frame_msg);
+      }
       map_smart_condition_.notify_one();
     }
   }

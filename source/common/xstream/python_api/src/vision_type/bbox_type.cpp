@@ -48,17 +48,19 @@ void bbox_dump(BaseDataWrapper *bbox) {
     std::cout << "pdata size: " << pdata->datas_.size() << std::endl;
     std::cout << "Output BBox " << pdata->name_ << ":" << std::endl;
     for (size_t i = 0; i < pdata->datas_.size(); ++i) {
-      auto xroc_box =
+      auto xstream_box =
           std::static_pointer_cast<xstream::XStreamData<hobot::vision::BBox>>(
               pdata->datas_[i]);
-      if (xroc_box->state_ == xstream::DataState::VALID) {
-        std::cout << "[" << xroc_box->value.x1 << "," << xroc_box->value.y1
-                  << "," << xroc_box->value.x2 << "," << xroc_box->value.y2
+      if (xstream_box->state_ == xstream::DataState::VALID) {
+        std::cout << "[" << xstream_box->value.x1
+                  << "," << xstream_box->value.y1
+                  << "," << xstream_box->value.x2
+                  << "," << xstream_box->value.y2
                   << "]" << std::endl;
         } else {
             printf("pdata->datas_[%d]: state_:%d\n",
                 static_cast<int>(i),
-                static_cast<int>(xroc_box->state_));
+                static_cast<int>(xstream_box->state_));
         }
     }
 }

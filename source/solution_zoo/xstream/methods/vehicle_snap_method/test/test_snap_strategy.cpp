@@ -86,10 +86,6 @@ TEST(VehicleSnapStrategy, TargetBuilder) {
   target_builder.SetBlackArea(black_area);
   target_builder.BuildTarget(image_meta_info, vehicle_list);
 
-  // EXPECT_EQ((*vehicle_list)[0].is_valid, false);
-  // EXPECT_EQ((*vehicle_list)[1].is_valid, true);
-  // EXPECT_EQ((*vehicle_list)[2].is_valid, false);
-
   EXPECT_FLOAT_EQ((*vehicle_list)[0].occ_ratio, 150.0 / (29.0 * 38.0));
   EXPECT_FLOAT_EQ((*vehicle_list)[1].occ_ratio, 0);
 }

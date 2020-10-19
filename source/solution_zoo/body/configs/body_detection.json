@@ -12,7 +12,7 @@
     "lmk",
     "kps",
     "age",
-    "gender"
+	  "gender"
   ],
   "workflow": [
     {
@@ -92,17 +92,17 @@
       "method_config_file": "merge_head_body.json"
     },
     {
-      "method_type": "CNNMethod",
-      "unique_name": "age_gender",
-      "inputs": [
-        "face_final_box",
-        "image"
-      ],
-      "outputs": [
-        "age_list",
-        "gender_list"
-      ],
-      "method_config_file": "age_gender.json"
+        "method_type": "CNNMethod",
+        "unique_name": "age_gender",
+        "inputs": [
+          "face_final_box",
+          "image"
+        ],
+        "outputs": [
+          "age_list",
+          "gender_list"
+        ],
+        "method_config_file": "age_gender.json"
     },
     {
       "method_type": "VoteMethod",

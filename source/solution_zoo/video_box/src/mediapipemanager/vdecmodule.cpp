@@ -14,7 +14,7 @@ namespace horizon {
 namespace vision {
 std::once_flag VdecModule::flag_;
 
-VdecModule::VdecModule() : group_id_(-1), timeout_(40), frameDepth_(-1) {
+VdecModule::VdecModule() : group_id_(-1), timeout_(100), frameDepth_(-1) {
   std::call_once(flag_, []() {
     int ret = HB_VDEC_Module_Init();
     if (ret != 0) {
@@ -32,19 +32,41 @@ int VdecModule::Init(uint32_t group_id, const PipeModuleInfo *module_info) {
   buffers_.resize(frameDepth_);
   VDEC_CHN_ATTR_S vdec_attr;
   memset(&vdec_attr, 0, sizeof(VDEC_CHN_ATTR_S));
-  vdec_attr.enType = PT_H264;
+  if (module_info->input_encode_type == RTSP_Payload_H264) {
+    vdec_attr.enType = PT_H264;
+  } else if (module_info->input_encode_type == RTSP_Payload_H265) {
+    vdec_attr.enType = PT_H265;
+    printf("\nvdec init decoder type is 265\n");
+  } else {
+    LOGE << "VdecModule::Init recv unknow decoder type:"
+         << module_info->input_encode_type << ", channel:" << group_id;
+    return -1;
+  }
+
+  LOGI << "vdec module recv module_info->input_width:"
+       << module_info->input_width
+       << " height:" << module_info->input_height;
+
   vdec_attr.enMode = VIDEO_MODE_FRAME;
-  //vdec_attr.enMode = VIDEO_MODE_STREAM;
+  // vdec_attr.enMode = VIDEO_MODE_STREAM;
   vdec_attr.enPixelFormat = HB_PIXEL_FORMAT_NV12;
   vdec_attr.u32FrameBufCnt = frameDepth_;
   vdec_attr.u32StreamBufCnt = frameDepth_;  // 5;
   LOGI << "vdec_attr.u32StreamBufCnt:" << vdec_attr.u32StreamBufCnt;
-  vdec_attr.u32StreamBufSize = 768 * 1024;  // 1920 * 1088 * 3 / 2;
+  vdec_attr.u32StreamBufSize = module_info->input_width *
+                               module_info->input_height * 3 /
+                               2;  // 768 * 1024;  // 1920 * 1088 * 3 / 2;
   LOGI << "vdec_attr.u32StreamBufSize:" << vdec_attr.u32StreamBufSize;
   vdec_attr.bExternalBitStreamBuf = HB_TRUE;
-  vdec_attr.stAttrH264.bandwidth_Opt = HB_TRUE;
-  vdec_attr.stAttrH264.enDecMode = VIDEO_DEC_MODE_NORMAL;
-  vdec_attr.stAttrH264.enOutputOrder = VIDEO_OUTPUT_ORDER_DISP;
+  if (module_info->input_encode_type == RTSP_Payload_H264) {
+    vdec_attr.stAttrH264.bandwidth_Opt = HB_TRUE;
+    vdec_attr.stAttrH264.enDecMode = VIDEO_DEC_MODE_NORMAL;
+    vdec_attr.stAttrH264.enOutputOrder = VIDEO_OUTPUT_ORDER_DISP;
+  } else {
+    vdec_attr.stAttrH265.bandwidth_Opt = HB_TRUE;
+    vdec_attr.stAttrH265.enDecMode = VIDEO_DEC_MODE_NORMAL;
+    vdec_attr.stAttrH265.enOutputOrder = VIDEO_OUTPUT_ORDER_DISP;
+  }
   ret = HB_VDEC_CreateChn(group_id_, &vdec_attr);
   if (ret != 0) {
     LOGE << "HB_VDEC_CreateChn Failed. ret = " << ret;
@@ -82,7 +104,7 @@ int VdecModule::Output(void **data) {
   int ret = 0;
   // hb_vio_buffer_t *hb_vio_buf = (hb_vio_buffer_t *)data;
   uint32_t index = buffer_index_ % frameDepth_;
-  //ret = HB_VDEC_GetFrame(group_id_, &buffers_[index], -1);
+  // ret = HB_VDEC_GetFrame(group_id_, &buffers_[index], -1);
   ret = HB_VDEC_GetFrame(group_id_, &buffers_[index], timeout_);
   if (ret != 0) {
     data = nullptr;
@@ -115,8 +137,7 @@ int VdecModule::Output(void **data) {
 
 int VdecModule::OutputBufferFree(void *data) {
   int ret = 0;
-  if (data == nullptr)
-    return -1;
+  if (data == nullptr) return -1;
   ret = HB_VDEC_ReleaseFrame(group_id_, (VIDEO_FRAME_S *)data);
   if (ret != 0) {
     LOGE << "HB_VDEC_ReleaseFrame Failed. ret = " << ret;

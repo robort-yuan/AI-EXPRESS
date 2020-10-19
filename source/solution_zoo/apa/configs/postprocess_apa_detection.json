@@ -1,0 +1,13 @@
+{
+    "post_type": "detect",
+    "net_info": {
+      "model_out_sequence": [
+        {
+          "name": "parking_box",
+          "type": "apabbox"
+        }
+      ]
+    },
+    "method_outs": ["parking_box"],
+    "model_file_path": "../../models/apa_detection.hbm"
+}

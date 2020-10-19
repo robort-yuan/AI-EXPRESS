@@ -8,16 +8,11 @@ let ports = [];
 let socketParameter = {};
 let socketParameters = getURLParameter();
 let messageShowSelect = changeCheckboxSelect();
-// let openCVLoad = false;
+
 
 protobufInit();
 wsInit();
 changeCheckboxShow();
-
-// function onOpenCvReady() {
-//   // document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
-//   openCVLoad = true
-// }
 
 function changeCheckboxSelect() {
   let messageShows = Array.from(document.querySelectorAll('.message-show'))
@@ -28,7 +23,6 @@ function changeCheckboxSelect() {
       obj[item.getAttribute('dataType')] = item.checked
     }
   })
-  // console.log(obj)
   return obj
 }
 
@@ -53,8 +47,6 @@ function changeImgShow(width, height) {
   }
   cam.style.width = widths
   cam.style.height = heights
-
-  // img.style.transform = `scale3d(${widths / width}, ${heights / height}, 1)`
 }
 
 function changeCheckboxShow() {
@@ -101,7 +93,6 @@ function protobufInit() {
   protobuf.load('../../protos/x3.proto', function (err, root) {
     if (err) throw err;
     AwesomeMessage = root.lookupType('x3.FrameMessage');
-    // console.log(111, AwesomeMessage)
   });
 }
 
@@ -113,20 +104,6 @@ function wsInit() {
   socketIP = hostport.replace(/_/g, '.');
   socket = new ReconnectingWebSocket('ws://' + socketIP + ':' + '8080', null, { binaryType: 'arraybuffer' });
 
-  // 本地开发用
-  // let ip =
-  //   // '10.31.35.189'
-  //   // '10.31.35.26'
-  //   '10.64.35.114'
-  //   // '10.31.43.133'
-  //   // '10.64.35.11' // 分割
-  //   // '10.31.35.187'
-  //   // '10.31.35.50' // 分割
-  //   // '10.64.35.50'
-  //   // '10.64.35.119'
-  //   // '10.31.35.184'
-  // socket = new ReconnectingWebSocket('ws://' + ip + ':' + '8080', null, { binaryType: 'arraybuffer' });
-
   socket.onopen = function (e) {
     let data = {
       filter_prefix: netId + '/' + cameraId + '/' + id
@@ -137,7 +114,6 @@ function wsInit() {
 
   socket.onclose = function (e) {
     console.log('close:::', e);
-    // clearTimeout(timeout);
   };
 
   socket.onerror = function (e) {
@@ -162,7 +138,6 @@ function wsClose() {
 }
 
 const renderFrame1 = new RenderFrame1({ canvasId: 'canvas-1' }, { canvasId: 'canvas-2' }, 'video-1');
-// const renderFrame2 = new RenderFrame1('video-1'); // socketParameters
 function sendMessage() {
   let frame = frames.shift();
   if (typeof frame !== 'undefined') {
@@ -180,12 +155,10 @@ function sendMessage() {
 function transformData(buffer) {
   console.time('渲染计时器')
   console.time('解析计时器')
-  // let startTime = new Date().valueOf();
   let unit8Array = new Uint8Array(buffer);
   let message = AwesomeMessage.decode(unit8Array);
   let object = AwesomeMessage.toObject(message);
-  // console.log(111, object)
-  // 性能数据
+
   let statisticsMsg = object['StatisticsMsg_'];
   let performance = []
   if (typeof statisticsMsg !== 'undefined') {
@@ -263,8 +236,7 @@ function transformData(buffer) {
               } else if (item['type_'] === 'hand_landmarks') {
                 if (messageShowSelect.handMarks) {
                   let skeletonPoints = [];
-                  item['points_'].map((val) => { // index
-                    // let key = Config.handSkeletonKey[index];
+                  item['points_'].map((val) => {
                     skeletonPoints.push({
                       x: val['x_'],
                       y: val['y_'],
@@ -378,7 +350,7 @@ function transformData(buffer) {
             ? boxes.filter(item => item.type !== 'hand')
             : boxes
           : []
-        // boxes = !messageShowSelect.handBox && boxes.length > 0 ? boxes.filter(item => item.type !== 'hand') : boxes
+
         attributes.attributes = messageShowSelect.attributes ? attributes.attributes : []
         subTargets.boxes = messageShowSelect.boxes ? subTargets.boxes : []
         return {

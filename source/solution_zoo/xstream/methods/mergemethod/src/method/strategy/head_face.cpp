@@ -335,7 +335,6 @@ void HeadFaceStrategy::MergeFaceHeadTrackID(const BaseDataPtr &face_bbox,
     } else {
       // check if main_ids of head_track_i and face_track_i are same
       if (face_iter->second != head_iter->second) {
-        // std::cout << " history no mapped" << std::endl;
         auto conflict_id = id_merge_info->RemoveTrack(Type::Head, head_mot_id);
         if (conflict_id != -1) conflict_ids_.push_back(conflict_id);
         id_merge_info->AddNewTrack(Type::Head, head_mot_id, face_iter->second);

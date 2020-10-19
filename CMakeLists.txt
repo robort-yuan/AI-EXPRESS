@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-
+message("github")
 set(CMAKE_C_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++)
 
@@ -8,7 +8,7 @@ option(RELEASE_LIB "build version of release" ON)
 option(EEPROM_ENABLED "Enable EEPROM Read/Write" OFF)
 option(SUPPORT_RGB_NIR_MERGE "support rgb nir merge" OFF)
 option(SMART_SHARED_LIB "shared_lib" OFF)
-option(XSTREAM_HOBOTSDK_ENGINE "choose hobotsdk engine" ON)
+option(XSTREAM_HOBOTSDK_ENGINE "choose hobotsdk engine" OFF)
 option(PLATFORM_X2 "x2 platform" ON)
 option(PLATFORM_X3 "x3 platform" OFF)
 option(IOT_VIO_API "iot vio api" ON)
@@ -112,7 +112,6 @@ include_directories(
         source/common/xstream/methods/motmethod/include
         source/solution_zoo/xstream/methods/vehicle_snap_method/include
         source/solution_zoo/xstream/methods/vehicle_plate_match_method/include
-#        source/solution_zoo/xstream/methods/vehicle_road_relationship_method/include
         source/solution_zoo/xstream/methods/plate_vote_method/include
         source/solution_zoo/xstream/methods/vote_method/include
         source/solution_zoo/xstream/methods/FilterSkipFrameMethod/include
@@ -130,16 +129,13 @@ include_directories(
         deps/libyuv/include
         deps/hobot/include
         deps/iou_based_mot/include
-#        deps/road_model/include
-#        deps/roadside_perception/include
-#        deps/vehicle_behavior/include
-#        deps/vehicle_road_relation/include
-#        deps/param_calibration/include
+        deps/iou_based_mot/include/include
         deps/zlib/include
         deps/live555/include
         deps/xwarehouse/include
         deps/uWS/include
         deps/openssl/include
+        deps/zeroMQ/include
 )
 
 
@@ -155,16 +151,12 @@ link_directories(
         ${CMAKE_SOURCE_DIR}/deps/libyuv/lib/
         ${CMAKE_SOURCE_DIR}/deps/hobot/lib/
         ${CMAKE_SOURCE_DIR}/deps/iou_based_mot/lib/
-#        ${CMAKE_SOURCE_DIR}/deps/road_model/lib/
-#        ${CMAKE_SOURCE_DIR}/deps/roadside_perception/lib/
-#        ${CMAKE_SOURCE_DIR}/deps/vehicle_behavior/lib/
-#        ${CMAKE_SOURCE_DIR}/deps/vehicle_road_relation/lib/
-#        ${CMAKE_SOURCE_DIR}/deps/param_calibration/lib/
         ${CMAKE_SOURCE_DIR}/deps/zlib/lib/
         ${CMAKE_SOURCE_DIR}/deps/live555/lib/
         ${CMAKE_SOURCE_DIR}/deps/xwarehouse/lib/
         ${CMAKE_SOURCE_DIR}/deps/uWS/lib64/
         ${CMAKE_SOURCE_DIR}/deps/openssl/lib/
+        ${CMAKE_SOURCE_DIR}/deps/zeroMQ/lib/
 )
 
 set(OUTPUT_ROOT ${CMAKE_SOURCE_DIR}/output/)
@@ -212,12 +204,4 @@ add_subdirectory(source/solution_zoo/xstream/methods/ssd_method)
 
 add_subdirectory(source/solution_zoo/face/)
 add_subdirectory(source/solution_zoo/body/)
-#add_subdirectory(source/solution_zoo/vehicle/)
 add_subdirectory(source/solution_zoo/face_body_multisource/)
-if (${PLATFORM_X3})
-    add_subdirectory(source/solution_zoo/video_box/)
-    add_subdirectory(source/solution_zoo/xstream/methods/predictmethod)
-    add_subdirectory(source/solution_zoo/xstream/methods/postprocessmethod)
-endif()
-# sample
-add_subdirectory(source/solution_zoo/tools/xwarehouse/)

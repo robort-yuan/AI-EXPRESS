@@ -202,8 +202,6 @@ void SaveSnapResult(const std::string img_save_prefix, Json::Value &input_line,
     ss << std::setfill('0') << std::setw(6) << itr.bbox->id;
     std::string img_save_name(img_save_prefix + "_" + ss.str() + ".jpg");
 
-    // cv::imwrite(img_save_name, itr.sub_img->img);
-
     if (itr.plate != nullptr) {
       veh["plate_box"] = Json::Value();
       veh["plate_box"]["data"] = Json::Value(Json::arrayValue);
@@ -233,7 +231,6 @@ void SaveSnapResult(const std::string img_save_prefix, Json::Value &input_line,
 }
 
 TEST(VehicleSnapPipeline, MatchAndSnap) {
-  // SetLogLevel(HOBOT_LOG_DEBUG);
   SetLogLevel(HOBOT_LOG_INFO);
 
   std::string match_config_file("./config/config_match.json");
@@ -278,8 +275,6 @@ TEST(VehicleSnapPipeline, MatchAndSnap) {
   while (std::getline(input_fs, line)) {
     LOGD << "Processing " << count << " frames";
     std::istringstream line_ss(line);
-    // bool open_status =
-    //    Json::parseFromStream(reader, line_ss, &input_line, &errs);
     VehicleListPtr vehicle_list = std::make_shared<VehicleList>();
     PlateListPtr plate_list = std::make_shared<PlateList>();
     TrackIdListPtr disappeared_track_ids = std::make_shared<TrackIdList>();
@@ -297,8 +292,6 @@ TEST(VehicleSnapPipeline, MatchAndSnap) {
     // Parsing input disappeared track ids list file
     std::getline(input_disappeared_track_ids_fs, line);
     std::istringstream line_ss_diseppear(line);
-    // open_status =
-    //    Json::parseFromStream(reader, line_ss_diseppear, &input_line, &errs);
     ParsingDisappearedTrackIdsFile(input_line, disappeared_track_ids);
 
     // Reading image

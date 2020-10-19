@@ -220,7 +220,6 @@ int SsdAnchorsGenerator(std::vector<std::vector<Anchor>> &anchors_table,
   return 0;
 }
 float SsdFastExp(float x) {
-    // return std::exp(x);
     union {
         uint32_t i;
         float f;
@@ -291,21 +290,6 @@ int GetBboxFromRawData(BPU_MODEL_S bpu_handle, void *raw_box_data,
         uint32_t res_id_cur_anchor_score =
             (res_id_cur_ww + anchor_id) * class_num;
         if (cls_table[res_id_cur_anchor_score] < 0) continue;
-        // bool skip_flag = true;
-        // int classes_begin = res_id_cur_anchor * 21  + 1;
-        // int classes_end = classes_begin  + 20;
-        // for (int w = classes_begin; w < classes_end; w++) {
-        //     if (cls_table[w] > 0.01) {
-        //         skip_flag = false;
-        //     }
-        // }
-        // if (skip_flag) {
-        //   box_output[res_id_cur_anchor].xmin = 0.0;
-        //   box_output[res_id_cur_anchor].ymin = 0.0;
-        //   box_output[res_id_cur_anchor].xmax = 0.0;
-        //   box_output[res_id_cur_anchor].ymax = 0.0;
-        //   continue;
-        // }
 
         uint32_t cur_c = 4 * anchor_id;
         auto box = box_line_buffer + cur_c;
@@ -512,7 +496,6 @@ int SSDAux(BPU_MODEL_S bpu_handle, BPU_TENSOR_S const *output_base_vaddr,
     auto cls_vaddr =
         reinterpret_cast<void *>(output_base_vaddr[i].data.virAddr);
 
-    //        auto bboxes = (Bbox *) malloc(anchors_num * sizeof(Bbox));
     auto cls_table = reinterpret_cast<double *>(
         malloc(ssd_conf.cls_num * anchors_num * sizeof(double)));
 
@@ -524,17 +507,7 @@ int SSDAux(BPU_MODEL_S bpu_handle, BPU_TENSOR_S const *output_base_vaddr,
                        score_threshold, cls_table, ssd_conf,
                        output_layer_endian, is_tf);
 
-    //        for (int j = 0; j < anchors_num; j++) {
-    //            Bbox bbox = bboxes[j];
-    //            auto cls_all = cls_table + j * SSD_CLASS_NUM_P1;
-    //            for (int w = 1; w < SSD_CLASS_NUM_P1; w++) {
-    //                if (cls_all[w] > score_threshold) {
-    //                    dets.push_back(Detection(w - 1, cls_all[w], bbox));
-    //                }
-    //            }
-    //        }
     free(cls_table);
-    //        free(bboxes);
   }
   Nms(dets, nms_threshold, 200, result, score_threshold, false);
 

@@ -108,10 +108,7 @@ TEST(VehiclePlateMatchMethod_TEST, Basic) {
   // 3. run
   auto xstream_output = vpm_method.DoProcess(input, param);
 
-  // 4. parse output
-  // ASSERT_EQ(xstream_output.size(), static_cast<std::size_t>(1));
-
-  // 5. end
+  // 4. end
   vpm_method.Finalize();
   return;
 }

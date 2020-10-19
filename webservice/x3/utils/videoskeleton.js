@@ -11,20 +11,9 @@ function Renderske(obj) {
   this.canvas.width = obj.width || 1920;
   this.canvas.height = obj.height || 1080;
 
-  // this.csize = {
-  //   w: this.canvas.width,
-  //   h: this.canvas.height
-  // };
-
   this.width = 8;
   this.shortlength = 8;
 }
-
-
-// drawRect
-// drawLine
-// drawCircle
-// drawOuntline
 
 
 Renderske.prototype.drawImage = function(img) {

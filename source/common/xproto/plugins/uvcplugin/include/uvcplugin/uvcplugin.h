@@ -14,7 +14,9 @@
 #include <thread>
 #include <vector>
 
+#include "./smart_manager.h"
 #include "./hid_manager.h"
+#include "./rndis_manager.h"
 #include "./usb_common.h"
 #include "uvc/uvc.h"
 #include "uvc/uvc_gadget.h"
@@ -42,13 +44,17 @@ class UvcPlugin : public xproto::XPluginAsync {
   std::string desc() const { return "uvcPlugin"; }
 
  private:
+  int FeedVideoMsg(XProtoMessagePtr msg);
+  int FeedVideoDropMsg(XProtoMessagePtr msg);
   int FeedVideo(XProtoMessagePtr msg);
   int FeedSmart(XProtoMessagePtr msg);
   int FeedVideoDrop(XProtoMessagePtr msg);
   void ParseConfig();
   int Reset();
+  int ParseConfig(std::string config_file);
 
  private:
+  int smart_transfer_mode_ = 0;  // 0: hid, 1: rndis, default 0
   std::string config_file_;
   bool stop_flag_;
   std::shared_ptr<std::thread> worker_;
@@ -59,13 +65,18 @@ class UvcPlugin : public xproto::XPluginAsync {
   struct uvc_context *uvc_ctx;
   std::shared_ptr<UvcConfig> config_;
 
-  std::shared_ptr<HidManager> hid_manager_;
+  std::shared_ptr<SmartManager> smart_manager_;
 
   int origin_image_width_ = 1920;  // update by FeedVideo
   int origin_image_height_ = 1080;
   int dst_image_width_ = 1920;  // update by FeedVideo
   int dst_image_height_ = 1080;
   VIDEO_STREAM_S h264_sps_frame_;
+
+  std::mutex video_send_mutex_;
+  int video_sended_without_recv_count_;
+  hobot::CThreadPool encode_thread_;
+  bool print_timestamp_ = false;
 };
 }  // namespace Uvcplugin
 }  // namespace xproto

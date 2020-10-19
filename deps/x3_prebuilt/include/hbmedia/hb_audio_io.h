@@ -7,6 +7,12 @@
 #define AUDIO_INCLUDE_HB_AUDIO_IO_H_
 #include <stdbool.h>
 #include <string.h>
+#include "logging.h"
+
+#define aio_err(format, ...) pr_err(format"\n", ##__VA_ARGS__)
+#define aio_info(format, ...) pr_info(format"\n", ##__VA_ARGS__)
+#define aio_dbg(format, ...) pr_debug(format"\n", ##__VA_ARGS__)
+#define aio_warn(format, ...) pr_warn(format"\n", ##__VA_ARGS__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,12 +60,11 @@ extern "C" {
 		uint8_t channels;
 		uint8_t clkSet;
 		enum HB_AUDIIO_I2S_TYPE_E i2sType;
-		uint32_t frameSize;
 	};
 
 	struct HB_AIO_FRAME_S {
 		uint8_t *data;
-		uint32_t count;
+		uint32_t size;
 	};
 
 	struct HB_AIN_AEC_FRAME_S {

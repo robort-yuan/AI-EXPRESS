@@ -259,8 +259,6 @@ TEST_F(XStreamSDKTest, Basic) {
   }
   EXPECT_EQ(face_id.size(), static_cast<size_t>(3));
   EXPECT_EQ(head_id.size(), static_cast<size_t>(2));
-  // EXPECT_EQ(face_id[2], head_id[0]);
-  // EXPECT_EQ(face_id[0], head_id[1]);
 }
 
 TEST_F(XStreamSDKTest, State_Check) {
@@ -444,7 +442,6 @@ TEST_F(XStreamSDKTest, State_Check) {
   }
   EXPECT_EQ(face_id.size(), static_cast<size_t>(3));
   EXPECT_EQ(head_id.size(), static_cast<size_t>(2));
-  // EXPECT_EQ(face_id[2], head_id[0]);
   EXPECT_EQ(-1, head_id[1]);
   EXPECT_EQ(-1, face_id[1]);
 }

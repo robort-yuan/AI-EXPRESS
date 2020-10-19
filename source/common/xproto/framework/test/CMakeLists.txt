@@ -1,21 +1,38 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 2.8)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
 )
 
+# x86 architecture
 if (${X86_ARCH})
-  link_directories(
-    ${PROJECT_SOURCE_DIR}/third_party/hobotlog/lib
-  )
+  # centos release
+  if (${X86_CENTOS})
+    include_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/centos/gtest/include
+    )
+    link_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/centos/hobotlog/lib
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/centos/gtest/lib
+    )
+  else ()
+    include_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/ubuntu/gtest/include
+    )
+    link_directories(
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/ubuntu/hobotlog/lib
+      ${XSTREAM_CURRENT_DIR}/framework/third_party/x86/ubuntu/gtest/lib
+    )
+  endif()
+# arm architecture  
 else ()
   include_directories(
-    ../../../../../deps/gtest/include
+    ${RELEASE_ROOT_DIR}/deps/gtest/include
   )
 
   link_directories(
-    ../../../../../deps/gtest/lib
-    ../../../../../deps/hobotlog/lib
+    ${RELEASE_ROOT_DIR}/deps/gtest/lib
+    ${RELEASE_ROOT_DIR}/deps/hobotlog/lib
   )
 endif()
 

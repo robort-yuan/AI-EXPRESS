@@ -867,6 +867,34 @@ int32_t HB_VENC_SetJpegEncodeMode(VENC_CHN VeChn,
 int32_t HB_VENC_GetJpegEncodeMode(VENC_CHN VeChn,
     HB_VENC_JPEG_ENCODE_MODE_E *enJpegEncodeMode);
 
+/*****************************************************************************
+ * 函数描述:。
+ * 输入参数:
+ *    VeChn:视频编码通道号，[0, VENC_MAX_CHN_NUM)
+ *    
+ * 输出参数:
+ *     无
+ * 返回值：
+ *     0：成功
+ *   非0：失败，参照错误码
+ * 说明: 
+ *****************************************************************************/
+int32_t HB_VENC_SetModParam(VENC_CHN VeChn,
+                            const VENC_PARAM_MOD_S *pstModParam);
+
+/*****************************************************************************
+ * 函数描述:。
+ * 输入参数:
+ *    VeChn:视频编码通道号，[0, VENC_MAX_CHN_NUM)  
+ * 输出参数:
+ *     无
+ * 返回值：
+ *     0：成功
+ *   非0：失败，参照错误码
+ * 说明:
+ *****************************************************************************/
+int32_t HB_VENC_GetModParam(VENC_CHN VeChn, VENC_PARAM_MOD_S *pstModParam);
+
 // int32_t HB_VENC_GetRoiAttrEx(VENC_CHN VeChn, HB_U32 u32Index,
 // VENC_ROI_ATTR_EX_S *pstRoiAttrEx);
 

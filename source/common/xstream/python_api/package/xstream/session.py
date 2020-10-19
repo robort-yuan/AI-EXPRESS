@@ -14,7 +14,6 @@ class Session:
         # 创建json字符串
         json_cfg = xstream.serialize(workflow, *inputs)
         # 保存到文件
-        # XXX 文件保存至何处, method的路径需要?
         cfg_file = open("./%s.json" % workflow.__name__, 'w')
         cfg_file.write(json_cfg)
         cfg_file.close()  # 关闭文件

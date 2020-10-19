@@ -1,0 +1,8 @@
+{
+  "type": "mono",
+  "cam_index": 19,
+  "cam_index_desc": "camera use 19, dts feedback use 43",
+  "data_source_num": 4,
+  "mono_cam_cfg_file": "configs/hb_xj3dev.json",
+  "mono_vio_cfg_file": "configs/ov10635_yuv_1280x720_offline_Pipeline_960_4pipes.json"
+}

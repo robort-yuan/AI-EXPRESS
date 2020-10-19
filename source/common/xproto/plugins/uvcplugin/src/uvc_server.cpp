@@ -107,6 +107,8 @@ int UvcServer::InitCodecManager(vencParam *vencParam) {
   PAYLOAD_TYPE_E format = PT_MJPEG;
   if (vencParam->type == 1) {
     format = PT_MJPEG;
+  } else if (vencParam->type == 2) {
+    format = PT_H265;
   } else if (vencParam->type == 3) {
     format = PT_H264;
   }
@@ -119,7 +121,7 @@ int UvcServer::InitCodecManager(vencParam *vencParam) {
   int pic_width = width;
   int pic_height = height;
   LOGI << "pic_width = "<<pic_width<<" pic_height = "<<pic_height;
-  int frame_buf_depth = 5;
+  int frame_buf_depth = 3;
   int is_cbr = config_->is_cbr_;
   int bitrate = config_->bitrate_;
 
@@ -157,6 +159,9 @@ static int fcc_to_video_format(unsigned int fcc)
   case V4L2_PIX_FMT_MJPEG:
     format = 1;
     break;
+  case V4L2_PIX_FMT_H265:
+    format = 2;
+    break;
   case V4L2_PIX_FMT_H264:
     format = 3;
     break;
@@ -186,39 +191,39 @@ void UvcServer::uvc_streamon_off(struct uvc_context *ctx, int is_on,
   param.bitrate = 5000;
 
   if (is_on) {
-      if (height == RES_1080P_HEIGHT &&
-      -1 != config_->res_1080p_layer_) {
-        config_->layer_ = config_->res_1080p_layer_;
-      } else if (height == RES_2160P_HEIGHT &&
-      -1 != config_->res_2160p_layer_) {
-        config_->layer_ = config_->res_2160p_layer_;
-      } else if (height == RES_720P_HEIGHT &&
-      -1 != config_->res_720p_layer_) {
-        config_->layer_ = config_->res_720p_layer_;
-      } else {
-        config_->layer_ = DEFAULT_1080P_LAYER;
-        param.width = RES_1080P_WIDTH;
-        param.height = RES_1080P_HEIGHT;
-      }
-      SetUvcStreamOn(0);
-      usleep(10000);
+    if (height == RES_1080P_HEIGHT &&
+    -1 != config_->res_1080p_layer_) {
+      config_->layer_ = config_->res_1080p_layer_;
+    } else if (height == RES_2160P_HEIGHT &&
+    -1 != config_->res_2160p_layer_) {
+      config_->layer_ = config_->res_2160p_layer_;
+    } else if (height == RES_720P_HEIGHT &&
+    -1 != config_->res_720p_layer_) {
+      config_->layer_ = config_->res_720p_layer_;
+    } else {
+      config_->layer_ = DEFAULT_1080P_LAYER;
+      param.width = RES_1080P_WIDTH;
+      param.height = RES_1080P_HEIGHT;
+    }
+    SetUvcStreamOn(0);
+    usleep(10000);
 
-      while (true) {
-        if (!IsEncoderRunning()) {
-          break;
-        }
-        usleep(5000);
+    while (true) {
+      if (!IsEncoderRunning()) {
+        break;
       }
-      if (param.type == 0) {
-        SetNv12IsOn(true);
-        SetEncoderRunning(false);
-        SetUvcStreamOn(1);
-      } else {
-        SetNv12IsOn(false);
-        InitCodecManager(&param);
-        usleep(10000);
-        SetUvcStreamOn(1);
-      }
+      usleep(5000);
+    }
+    if (param.type == 0) {
+      SetNv12IsOn(true);
+      SetEncoderRunning(false);
+      SetUvcStreamOn(1);
+    } else {
+      SetNv12IsOn(false);
+      InitCodecManager(&param);
+      usleep(10000);
+      SetUvcStreamOn(1);
+    }
   } else {
       SetUvcStreamOn(0);
       usleep(10000);
@@ -300,6 +305,9 @@ int UvcServer::uvc_init_with_params(venc_type type, int vechn, int width,
     case VENC_H264:
       info.format = UVC_FORMAT_H264;
       break;
+    case VENC_H265:
+      info.format = UVC_FORMAT_H265;
+      break;
     default:
       info.format = UVC_FORMAT_MJPEG;
       break;
@@ -313,7 +321,7 @@ int UvcServer::uvc_init_with_params(venc_type type, int vechn, int width,
   params.height = height;
   params.format = info.format;
   params.bulk_mode = 1; /* isoc mode still hung, use bulk mode instead */
-  params.h264_quirk = 1;
+  params.h264_quirk = 0;
 
   ret = uvc_gadget_init(&uvc_ctx, uvc_devname, v4l2_devname, &params);
   if (ret < 0) {

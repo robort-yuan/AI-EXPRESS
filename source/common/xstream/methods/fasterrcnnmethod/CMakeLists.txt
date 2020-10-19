@@ -17,7 +17,7 @@ set(SOURCE_FILES
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
-set(DYNAMIC_DEPS_LIBS bpu_predict cnn_intf hbrt_bernoulli_aarch64 cam vio)
+set(DYNAMIC_DEPS_LIBS xstream-imagetools libturbojpeg.a libyuv.a bpu_predict cnn_intf hbrt_bernoulli_aarch64 cam vio)
 target_link_libraries(${PROJECT_NAME} ${DYNAMIC_DEPS_LIBS})
 
 set(MY_OUTPUT_ROOT ${OUTPUT_ROOT}/${PROJECT_NAME}/)

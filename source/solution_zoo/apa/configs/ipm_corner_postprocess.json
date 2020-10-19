@@ -1,0 +1,25 @@
+{
+    "in_msg_type": "pyramid_image",
+    "post_type": "detect",
+    "net_info": {
+      "model_name": "detection",
+      "model_out_sequence": [
+        {
+          "name": "corner_box",
+          "type": "bbox"
+        },
+        {
+          "name": "corner_box_anchor",       
+          "type": "invalid"   
+        },
+        {
+          "name": "mask",       
+          "type": "mask"   
+        }
+      ],
+      "model_input_width": 256,
+      "model_input_height": 512
+    },
+    "method_outs": ["corner_box", "mask"],
+    "model_file_path": "../../models/apa_multitask.hbm"
+}

@@ -135,6 +135,7 @@ int CNNMethodForRoiInput(std::string cfg_file,
     auto out = flow->SyncPredict(inputdata);
     fb_handle.FreeImgInfo(&feed_back_info);
   }
+  fb_handle.DeInit();
 #endif
 #ifdef X3
   HbVioFbWrapperGlobal fb_handle(fb_cfg);
@@ -179,6 +180,7 @@ int CNNMethodForRoiInput(std::string cfg_file,
     fb_handle.FreeImgInfo(py_img);
   }
   fb_handle.DeInit();
+  fb_handle.Reset();
 #endif
   delete flow;
   sleep(5);  // avoid pym fb crash
@@ -385,6 +387,7 @@ int CNNMethodForvitest(std::string cfg_file, std::string fb_cfg,
     std::cout << out->datas_.size() << std::endl;
     fb_handle.FreeImgInfo(&feed_back_info);
   }
+  fb_handle.DeInit();
 #endif
 #ifdef X3
   HbVioFbWrapperGlobal fb_handle(fb_cfg);
@@ -431,6 +434,8 @@ int CNNMethodForvitest(std::string cfg_file, std::string fb_cfg,
     std::cout << out->datas_.size() << std::endl;
     fb_handle.FreeImgInfo(py_img);
   }
+  fb_handle.DeInit();
+  fb_handle.Reset();
 #endif
   delete flow;
   return 0;
@@ -760,6 +765,7 @@ int CNNMethodForHandLmk(std::string cfg_file, std::string fb_cfg) {
   auto out = flow->SyncPredict(inputdata);
   std::cout << out->datas_.size() << std::endl;
   fb_handle.FreeImgInfo(&feed_back_info);
+  fb_handle.DeInit();
 #endif
 #ifdef X3
   HbVioFbWrapperGlobal fb_handle(fb_cfg);
@@ -796,6 +802,8 @@ int CNNMethodForHandLmk(std::string cfg_file, std::string fb_cfg) {
   auto out = flow->SyncPredict(inputdata);
   std::cout << out->datas_.size() << std::endl;
   fb_handle.FreeImgInfo(py_image_frame_ptr);
+  fb_handle.DeInit();
+  fb_handle.Reset();
 #endif
   delete flow;
   return 0;
