@@ -1,0 +1,1325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>XProto原型应用开发框架开发指南 &mdash; AI Express用户手册 2.6.0 文档</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="场景参考解决方案" href="solution.html" />
+    <link rel="prev" title="XStream算法SDK编程框架开发指南" href="xstream.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xstream.html">XStream算法SDK编程框架开发指南</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">XProto原型应用开发框架开发指南</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">XProto设计理念</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">XProto组成</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#xproto-framework">XProto-Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#msgtype">Msgtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plugins">plugins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">XProto-Framework用户手册</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">基本概念与运行机制</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">基础数据结构描述</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">消息基础类</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#plugin">Plugin接口描述</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">XProto开发示例</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id8">1、定义消息，此消息是plugins之间交互的数据载体</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">2、实现生成者plugin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">3、实现消费者plugin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#main">4、添加main主函数</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">XProto示例代码说明</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">内置数据类型msgtype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">内置plugin</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#smart-plugin">2、Smart Plugin</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id14">简介</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">定制开发</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id16">智能数据解析说明</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hbipcplugin">4. HbipcPlugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#websocketplugin">5.WebsocketPlugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uvcplugin">6.UvcPlugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#iotvioplugin">7. IoTVioPlugin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="solution.html">场景参考解决方案</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">工具集</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">常见问题</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">版权声明</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AI Express用户手册</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>XProto原型应用开发框架开发指南</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/BuildAll/doc/xproto.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="xproto">
+<h1>XProto原型应用开发框架开发指南<a class="headerlink" href="#xproto" title="永久链接至标题">¶</a></h1>
+<p>通过本文介绍，你可以熟悉XProto Framework原型框架的内部核心概念和使用。</p>
+<div class="section" id="id1">
+<h2>XProto设计理念<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
+<p>XStream聚集算法模型、策略的集成以及最终业务Workflow/SDK生成。而XProto是在XStream基础上，为基于XStream构建算法SDK提供APP的运行环境。它支持快速将XStream Workflow封装成可运行的APP，进行运行在地平线边缘芯片中。</p>
+<p>下图是XProto APP基本架构图：</p>
+<p><img alt="框架" src="../../_images/xproto.png" /></p>
+<p>如上图所示，将app中的输入、预测处理、输出模块化，方便后续系列产品直接复用扩展。</p>
+<p>同时我们开放了XProto应用组件Plugin接口，支持用户对XProto框架进行扩展。</p>
+</div>
+<div class="section" id="id2">
+<h2>XProto组成<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>XProto主要由XProto-Framework， msgtype， plugins等部分组成。其中XProto-Framework为框架本身内容，msgtype与plugins均是实现参考示例时的实现参考；客户基于XProto开发，可以不依赖msgtype与plugins</p>
+<div class="section" id="xproto-framework">
+<h3>XProto-Framework<a class="headerlink" href="#xproto-framework" title="永久链接至标题">¶</a></h3>
+<p>XProto Framework原型框架主要包括Plugin插件管理和消息分发两个部分。Plugin插件是一个任务实体，所有的Plugin插件都连接到XProto消息总线中，当一个Plugin插件产生消息并把消息Push到总线之后，其他订阅该消息的Plugin插件就可以被调用。</p>
+<p>每一个Plugin插件都可以向总线订阅和发布消息，通过消息驱动方式来实现整个原型应用的落地。</p>
+<p><img alt="XProto结构" src="../../_images/xproto_struct.png" /></p>
+<p>XProto Framework简化了用户的开发任务，使其专注实现plugin本身。
+XProto原型应用开发框架，定义了基础的消息类型、Plugin基础类定义以及消息发布订阅的处理逻辑。开发者基于XProto-Framework库+基础消息类型+Plugin基础类完成功能开发。</p>
+</div>
+<div class="section" id="msgtype">
+<h3>Msgtype<a class="headerlink" href="#msgtype" title="永久链接至标题">¶</a></h3>
+<p>定义各个组件使用的数据类型和proto的数据结构定义，方便不同的plugin产生的数据在plugins间传输，在已沉淀的solution中应用较多，比如VioMessage、SmartMessage、RtspMessage等。
+开发者在使用xproto开发时，可以参考Msgtype；如果是开发者自己开发，可以不依赖Msgtype。</p>
+</div>
+<div class="section" id="plugins">
+<h3>plugins<a class="headerlink" href="#plugins" title="永久链接至标题">¶</a></h3>
+<p>xproto实现、沉淀了一些有用的插件供给客户复用，方便客户快速继承app。比如vioplugin用于获取图像输入、Rtspplugin用于把视频流直按照RTSP输出方便实时查看视频、websocketplugin实现了视频和智能数据的同步并支持在web上显示、uvcplugin则实现了uvc协议，方便在智能设备上实时显示视频和智能数据等。
+推荐客户复用或扩展已有的plugin，也可以使用xstream实现自己的app框架。</p>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>XProto-Framework用户手册<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>详细介绍xproto的运行原理及使用方法，方便客户理解xproto后快速构建app。</p>
+<div class="section" id="id4">
+<h3>基本概念与运行机制<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<p>XProto Framework原型框架主要包括Plugin插件管理和消息分发两个部分。Plugin插件是一个任务实体，所有的Plugin插件都连接到XProto消息总线中，当一个Plubin插件产生消息并把消息Push到总线之后，其他订阅该消息的Plugin插件就可以被调用。
+每一个Plugin插件都可以向总线订阅和发布消息，通过消息驱动方式来实现整个原型应用的落地。</p>
+<p><img alt="XProto结构" src="../../_images/xproto_struct.png" /></p>
+</div>
+<div class="section" id="id5">
+<h3>基础数据结构描述<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<div class="section" id="id6">
+<h4>消息基础类<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h4>
+<p>消息基础类XProtoMessage，新的Message类型需要继承XProtoMessage。</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">XProtoMessage</span> <span class="p">:</span> <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">XProtoMessage</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="n">XProtoMessage</span> <span class="o">&amp;</span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">XProtoMessage</span> <span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">XProtoMessage</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type_</span> <span class="o">=</span> <span class="s">&quot;NONE&quot;</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">param_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span>
+
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">type_</span><span class="p">;</span> <span class="p">}</span>
+
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">Serialize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="o">*</span><span class="nf">ConvertData</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// need call delete() to release the output</span>
+    <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">using</span> <span class="n">XProtoMessagePtr</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">XProtoMessage</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>消息的声明与定义：</p>
+<ul class="simple">
+<li><p>使用宏XPLUGIN_REGISTER_MSG_TYPE,自定义消息类型，每个消息名字唯一；</p></li>
+<li><p>监听消息的插件需要：</p>
+<ul>
+<li><p>实现消息处理函数；</p></li>
+<li><p>覆盖Init函数，在其中完成监听消息注册，并绑定对应的消息处理函数，</p></li>
+<li><p>及其他初始化工作，同时在函数返回前需要调用父plugin的Init方法，</p></li>
+<li><p>通常是XPluginAsync::Init()。</p></li>
+</ul>
+</li>
+</ul>
+<p>相关接口定义如下：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// 声明消息类型;每一类消息都有一个字符串形式的消息类型和结构体来表示.</span>
+<span class="c1">// 该接口为一个宏, 参数MSG_TYPE用来表示声明的消息类型, 需要直接使用标识符的格式书写, 宏内部会将其转成字符串.  </span>
+<span class="c1">// 需要在消费者Plugin调用订阅消息接口之前调用该接口声明消息类型,一般将该宏放在全局变量声明的位置.</span>
+<span class="c1">// 参数：MSGTYPE: 消息类型</span>
+<span class="n">XPLUGIN_REGISTER_MSG_TYPE</span><span class="p">(</span><span class="n">MSG_TYPE</span><span class="p">)</span>
+
+<span class="c1">// 初始化Plugin</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. 该接口用来初始化Plugin，自定义Plugin一般在该接口内调用订阅消息接口, 然后继续调用XPluginAsync::Init接口以初始化父类.</span>
+<span class="c1">// 返回值：0: 成功；非0: 失败</span>
+<span class="kt">int</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+
+<span class="c1">// 发布消息</span>
+<span class="c1">// 该接口用来将消息发布到XProto内部总线上. 接收一个类型为XProtoMessage的结构体指针, XProto的所有消息都继承于该类型.</span>
+<span class="c1">// 参数：XProtoMessagePtr msg: 发布到总线的消息. </span>
+<span class="kt">void</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">PushMsg</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">);</span>
+
+<span class="c1">// 订阅消息</span>
+<span class="c1">// 订阅指定类型的消息. 监听总线, 当指定的消息类型发布时, 调用回调函数.  </span>
+<span class="c1">// 自定义的Plugin需要在Init函数中，调用XPluginAsync::Init之前调用该接口完成监听消息注册。</span>
+<span class="c1">// 参数：const std::string&amp; type: 消息类型字符串.</span>
+<span class="c1">// 参数：XProtoMessageFunc callback: 该类型消息的回调函数.</span>
+<span class="kt">void</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">RegisterMsg</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">type</span><span class="p">,</span> <span class="n">XProtoMessageFunc</span> <span class="n">callback</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="plugin">
+<h3>Plugin接口描述<a class="headerlink" href="#plugin" title="永久链接至标题">¶</a></h3>
+<p>一个plugin代表一个单独的功能模块，可以向总线订阅和发布消息，通过消息驱动方式来实现整个原型应用的落地。
+插件可能会生产消息或者向总线注册监听某类消息。如果生产消息需要调用PushMsg()将消息发送到总线分发;如果监听消息，需要实现消息处理函数，并在Init函数中注册需要监听的消息类型，绑定对应的消息处理函数，同时在Init函数返回前调用父plugin的Init方法，通常是XPluginAsync::Init()。
+插件提供了两个基础类XPlugin和XPluginAsync，继承这两个基础类之一可实现一个新的plugin，通过override的函数包括:<code class="docutils literal notranslate"><span class="pre">Init()、Start()、Stop()、Desc();</span></code>等接口来管理插件的生命周期。两个plugin基类功能上有些差异：</p>
+<ul class="simple">
+<li><p>XPlugin类：定义了管理周期的相关接口以及发送接收消息的接口，接收到的消息需要自己管理分发</p></li>
+<li><p>XPluginAsync类：在XPlugin的基础上，增加了消息的分发功能和流量管理，用户只需要实现消息回调函数即可</p></li>
+</ul>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">XPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_shared_from_this</span><span class="o">&lt;</span><span class="n">XPlugin</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">XPlugin</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">XPlugin</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+  <span class="c1">// 完成register msg和workflow的初始化操作</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">DeInit</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">// 处理register的msg类型，如有需要，push自己的msg到总线</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">OnMsg</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="c1">// 用于流量管理</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">GetPluginMsgCount</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">GetPluginMsgLimit</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">SetPluginMsgLimit</span><span class="p">(</span><span class="kt">int</span> <span class="n">msg_limit_count</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">desc</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="s">&quot;XPlugin&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+
+ <span class="k">protected</span><span class="o">:</span>
+  <span class="c1">// 向总线注册监听消息类型</span>
+  <span class="kt">void</span> <span class="n">RegisterMsg</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">type</span><span class="p">);</span>
+  <span class="c1">// 卸载监听消息类型</span>
+  <span class="kt">void</span> <span class="nf">UnRegisterMsg</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">type</span><span class="p">);</span>
+  <span class="c1">// 向总线推送消息</span>
+  <span class="kt">void</span> <span class="nf">PushMsg</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">XPluginAsync</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPlugin</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">XPluginAsync</span><span class="p">();</span>
+  <span class="k">explicit</span> <span class="nf">XPluginAsync</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_num</span><span class="p">);</span>
+  <span class="o">~</span><span class="n">XPluginAsync</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+  <span class="c1">// 注册监听消息类型到总线+plugin的初始化</span>
+  <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">DeInit</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="c1">// 消息处理上半部分，将消息推送该plugin的消息队列 + 流量控制</span>
+  <span class="kt">void</span> <span class="nf">OnMsg</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="nf">GetPluginMsgCount</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="nf">GetPluginMsgLimit</span><span class="p">();</span>
+  <span class="kt">void</span> <span class="nf">SetPluginMsgLimit</span><span class="p">(</span><span class="kt">int</span> <span class="n">msg_limit_count</span><span class="p">);</span>
+  <span class="c1">// 启动Plugin</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Start</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">// 停止Plugin</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="cp">#ifdef PYAPI</span>
+  <span class="kt">void</span> <span class="nf">RegMsg</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">type</span><span class="p">,</span>
+              <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="n">pybind11</span><span class="o">::</span><span class="n">object</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">cb</span><span class="p">);</span>
+<span class="cp">#endif</span>
+
+ <span class="k">protected</span><span class="o">:</span>
+  <span class="k">using</span> <span class="n">XProtoMessageFunc</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="n">XProtoMessagePtr</span><span class="p">)</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="c1">// 重载注册监听消息类型接口，注册时包含异步回调函数</span>
+  <span class="c1">// 该函数中需要调用RegisterMsg(XpluginMessageType type)完成总线注册</span>
+  <span class="c1">// Note: 自定义的plugin需要在Init函数中，</span>
+  <span class="c1">//       调用XPluginAsync::Init之前调用该接口完成监听消息注册。</span>
+  <span class="kt">void</span> <span class="nf">RegisterMsg</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">type</span><span class="p">,</span> <span class="n">XProtoMessageFunc</span> <span class="n">callback</span><span class="p">);</span>
+
+ <span class="k">private</span><span class="o">:</span>
+  <span class="c1">// 消息处理下半部分，分发消息并调用对应的callback函数</span>
+  <span class="kt">void</span> <span class="n">OnMsgDown</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">);</span>
+
+  <span class="n">hobot</span><span class="o">::</span><span class="n">CThreadPool</span> <span class="n">msg_handle_</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">mutex</span> <span class="n">msg_mutex_</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="n">msg_limit_count_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">mutex</span> <span class="n">msg_limit_mutex_</span><span class="p">;</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">XProtoMessageFunc</span><span class="o">&gt;</span> <span class="n">msg_map_</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>相关接口描述如下：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// 初始化Plugin</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. 该接口用来初始化Plugin，自定义Plugin一般在该接口内调用订阅消息接口, 然后继续调用XPluginAsync::Init接口以初始化父类.</span>
+<span class="c1">// 返回值：0: 成功；非0: 失败</span>
+<span class="kt">int</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+
+<span class="c1">// 启动Plugin</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. 该接口用来启动Plugin. </span>
+<span class="c1">// 返回值：0: 成功；非0: 失败</span>
+<span class="kt">int</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Start</span><span class="p">();</span>
+
+<span class="c1">// 停止Plugin</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. 该接口用来停止Plugin. </span>
+<span class="c1">// 返回值：0: 成功；非0: 失败</span>
+<span class="kt">int</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Stop</span><span class="p">();</span>
+
+<span class="c1">// 反初始化Plugin</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. 该接口用来反初始化Plugin.  继承自XPluginAsync子plugin类，在完成自己的反初始化任务后，最后需要调用XPluginAsync::DeInit接口以反初始化父类.</span>
+<span class="c1">// 返回值：0: 成功；非0: 失败</span>
+<span class="kt">int</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">DeInit</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+
+<span class="c1">// 插件描述信息</span>
+<span class="c1">// 该接口需要继承XPluginAsync类的自定义Plugin实现该接口定义. </span>
+<span class="c1">// 返回值：描述当前自定义Plugin的字符串.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">desc</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>XProto开发示例<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>sample程序参考<code class="docutils literal notranslate"><span class="pre">xsdk/common/xproto/framework/sample/sample_plugin.cpp</span></code>
+本示例使用xproto框架实现两个plugin进行数据通信：</p>
+<div class="section" id="id8">
+<h4>1、定义消息，此消息是plugins之间交互的数据载体<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h4>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//定义消息名称</span>
+<span class="cp">#define TYPE_SAMPLE_MESSAGE &quot;XPLUGIN_SAMPLE_MESSAGE&quot;</span>
+<span class="n">XPLUGIN_REGISTER_MSG_TYPE</span><span class="p">(</span><span class="n">XPLUGIN_SAMPLE_MESSAGE</span><span class="p">)</span>
+<span class="c1">//实现一个Message消息类型</span>
+<span class="k">struct</span> <span class="nl">NumberProdMessage</span> <span class="p">:</span> <span class="n">XProtoMessage</span> <span class="p">{</span>
+  <span class="kt">float</span> <span class="n">num_</span><span class="p">;</span>
+  <span class="k">explicit</span> <span class="nf">NumberProdMessage</span><span class="p">(</span><span class="kt">float</span> <span class="n">num</span><span class="p">)</span> <span class="o">:</span><span class="n">num_</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">type_</span> <span class="o">=</span> <span class="n">TYPE_SAMPLE_MESSAGE</span><span class="p">;</span><span class="c1">//指定消息类型</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">Serialize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">ostringstream</span> <span class="n">ss</span><span class="p">;</span>
+    <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="n">num_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id9">
+<h4>2、实现生成者plugin<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h4>
+<p>定义NumberProducerPlugin类，此类继承自XPluginAsync，实现Start和Stop接口；
+Start接口启用一个线程向总线push消息，实现消息发布，框架会把此消息发送给所有订阅了TYPE_SAMPLE_MESSAGE类型消息的plugin
+Stop接口再关闭插件时关闭发送线程</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//定义一个插件，实现各个接口实现生命周期管理功能</span>
+<span class="k">class</span> <span class="nc">NumberProducerPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="c1">//启动插件，并在插件里面管理了一个发送消息线程。</span>
+  <span class="kt">int</span> <span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">prd_thread_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">(){</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">total_cnt_</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">prd_stop_</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">np_msg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">NumberProdMessage</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+        <span class="n">PushMsg</span><span class="p">(</span><span class="n">np_msg</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">40</span><span class="p">));</span>
+      <span class="p">}</span>
+      <span class="n">LOGI</span> <span class="o">&lt;&lt;</span> <span class="n">desc</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; prd exit&quot;</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">//关闭插件，关闭发送消息线程。</span>
+  <span class="kt">int</span> <span class="n">Stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">prd_stop_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">prd_thread_</span><span class="o">-&gt;</span><span class="n">join</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id10">
+<h4>3、实现消费者plugin<a class="headerlink" href="#id10" title="永久链接至标题">¶</a></h4>
+<p>定义SumConsumerPlugin类，此类继承自XPluginAsync，实现Init和Stop接口；
+Init接口：初始化成员数据，向总线注册TYPE_SAMPLE_MESSAGE消息的回调，实现消息订阅，当总线上有此消息时，回调函数将被调用，参数是之前定义的NumberProdMessage；
+Stop接口：数据清零等</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SumConsumerPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="kt">int</span> <span class="n">Init</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">sum_</span> <span class="o">=</span> <span class="mf">0.f</span><span class="p">;</span>
+    <span class="c1">// 注册消息回调函数</span>
+    <span class="n">RegisterMsg</span><span class="p">(</span><span class="n">TYPE_SAMPLE_MESSAGE</span><span class="p">,</span> 
+      <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SumConsumerPlugin</span><span class="o">::</span><span class="n">Sum</span><span class="p">,</span>
+      <span class="k">this</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">));</span>
+    <span class="k">return</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Init</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="c1">// 当生成者向总线push一个消息后，框架会调用Sum回调函数</span>
+  <span class="kt">int</span> <span class="n">Sum</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">np_msg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">static_pointer_cast</span><span class="o">&lt;</span><span class="n">NumberProdMessage</span><span class="o">&gt;</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+    <span class="n">sum_</span> <span class="o">+=</span> <span class="n">np_msg</span><span class="o">-&gt;</span><span class="n">num_</span><span class="p">;</span>
+    <span class="n">LOGI</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;curr sum:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">sum_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">sum_</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="n">Stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+ <span class="k">private</span><span class="o">:</span>
+  <span class="kt">float</span> <span class="n">sum_</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="main">
+<h4>4、添加main主函数<a class="headerlink" href="#main" title="永久链接至标题">¶</a></h4>
+<p>创建SumConsumerPlugin和NumberProducerPlugin对象，调用其Init接口、Start接口运行app，运行结束后调用plugin的Stop和DeInit接口来清理占用的资源，然后退出app</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">np_plg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">NumberProducerPlugin</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="k">auto</span> <span class="n">sc_plg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">SumConsumerPlugin</span><span class="o">&gt;</span><span class="p">();</span>
+
+  <span class="n">np_plg</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+  <span class="n">sc_plg</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+  <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">np_plg</span><span class="p">);</span>
+  <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">sc_plg</span><span class="p">);</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">seconds</span><span class="p">(</span><span class="mi">40</span><span class="p">));</span>
+<span class="cp">#if 0</span><span class="c"></span>
+<span class="c">  while (!g_ctx.exit) {</span>
+<span class="c">    milliseconds(40);</span>
+<span class="c">  }</span>
+<span class="cp">#endif</span>
+
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">Stop</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">DeInit</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id11">
+<h3>XProto示例代码说明<a class="headerlink" href="#id11" title="永久链接至标题">¶</a></h3>
+<p>sample程序参考<code class="docutils literal notranslate"><span class="pre">xsdk/common/xproto/framework/sample/sample_plugin.cpp</span></code>
+本示例实现了两个plugin，一个用于生产数据消息，一个用于接收数据并处理，通过总线进行数据的交互</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">//定义消息名称</span>
+<span class="cp">#define TYPE_SAMPLE_MESSAGE &quot;XPLUGIN_SAMPLE_MESSAGE&quot;</span>
+<span class="c1">//此宏注册一个名称为&quot;XPLUGIN_SAMPLE_MESSAGE&quot;消息类型</span>
+<span class="n">XPLUGIN_REGISTER_MSG_TYPE</span><span class="p">(</span><span class="n">XPLUGIN_SAMPLE_MESSAGE</span><span class="p">)</span>
+<span class="c1">//实现一个Message消息类型</span>
+<span class="k">struct</span> <span class="nl">NumberProdMessage</span> <span class="p">:</span> <span class="n">XProtoMessage</span> <span class="p">{</span>
+  <span class="kt">float</span> <span class="n">num_</span><span class="p">;</span>
+  <span class="k">explicit</span> <span class="nf">NumberProdMessage</span><span class="p">(</span><span class="kt">float</span> <span class="n">num</span><span class="p">)</span> <span class="o">:</span><span class="n">num_</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">type_</span> <span class="o">=</span> <span class="n">TYPE_SAMPLE_MESSAGE</span><span class="p">;</span><span class="c1">//指定消息类型</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">Serialize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">ostringstream</span> <span class="n">ss</span><span class="p">;</span>
+    <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="n">num_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="c1">//定义一个插件，实现各个接口实现生命周期管理功能</span>
+<span class="k">class</span> <span class="nc">NumberProducerPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="c1">//启动插件，并在插件里面管理了一个发送消息线程。</span>
+  <span class="kt">int</span> <span class="n">Start</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">prd_thread_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">(){</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">total_cnt_</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">prd_stop_</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">np_msg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">NumberProdMessage</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+        <span class="n">PushMsg</span><span class="p">(</span><span class="n">np_msg</span><span class="p">);</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">40</span><span class="p">));</span>
+      <span class="p">}</span>
+      <span class="n">LOGI</span> <span class="o">&lt;&lt;</span> <span class="n">desc</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; prd exit&quot;</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="c1">//关闭插件，关闭发送消息线程。</span>
+  <span class="kt">int</span> <span class="n">Stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">prd_stop_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="n">prd_thread_</span><span class="o">-&gt;</span><span class="n">join</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="c1">//定义一个消费plugin，接收总线上生成者push的消息</span>
+<span class="k">class</span> <span class="nc">SumConsumerPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="kt">int</span> <span class="n">Init</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="n">sum_</span> <span class="o">=</span> <span class="mf">0.f</span><span class="p">;</span>
+    <span class="c1">// 注册消息回调函数</span>
+    <span class="n">RegisterMsg</span><span class="p">(</span><span class="n">TYPE_SAMPLE_MESSAGE</span><span class="p">,</span> 
+      <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SumConsumerPlugin</span><span class="o">::</span><span class="n">Sum</span><span class="p">,</span>
+      <span class="k">this</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">));</span>
+    <span class="k">return</span> <span class="n">XPluginAsync</span><span class="o">::</span><span class="n">Init</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="c1">// 当生成者向总线push一个消息后，框架会调用Sum回调函数，并以Message的形式传递数据</span>
+  <span class="kt">int</span> <span class="n">Sum</span><span class="p">(</span><span class="n">XProtoMessagePtr</span> <span class="n">msg</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">np_msg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">static_pointer_cast</span><span class="o">&lt;</span><span class="n">NumberProdMessage</span><span class="o">&gt;</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+    <span class="n">sum_</span> <span class="o">+=</span> <span class="n">np_msg</span><span class="o">-&gt;</span><span class="n">num_</span><span class="p">;</span>
+    <span class="n">LOGI</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;curr sum:&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">sum_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">sum_</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="kt">int</span> <span class="n">Stop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+ <span class="k">private</span><span class="o">:</span>
+  <span class="kt">float</span> <span class="n">sum_</span><span class="p">;</span>
+<span class="p">};</span>
+<span class="c1">// 实现main主函数</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// 设置log级别</span>
+  <span class="n">SetLogLevel</span><span class="p">(</span><span class="n">HOBOT_LOG_DEBUG</span><span class="p">);</span>
+  <span class="c1">// 信号处理</span>
+  <span class="n">signal</span><span class="p">(</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal_handle</span><span class="p">);</span>
+  <span class="n">signal</span><span class="p">(</span><span class="n">SIGPIPE</span><span class="p">,</span> <span class="n">signal_handle</span><span class="p">);</span>
+  <span class="n">signal</span><span class="p">(</span><span class="n">SIGSEGV</span><span class="p">,</span> <span class="n">signal_handle</span><span class="p">);</span>
+  <span class="c1">// 创建plugin</span>
+  <span class="k">auto</span> <span class="n">np_plg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">NumberProducerPlugin</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="k">auto</span> <span class="n">sc_plg</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">SumConsumerPlugin</span><span class="o">&gt;</span><span class="p">();</span>
+  <span class="c1">// 初始化plugin</span>
+  <span class="n">np_plg</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+  <span class="n">sc_plg</span><span class="o">-&gt;</span><span class="n">Init</span><span class="p">();</span>
+  <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">np_plg</span><span class="p">);</span>
+  <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">sc_plg</span><span class="p">);</span>
+  <span class="c1">// 启动所有的plugin，app开始运行</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">Start</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">seconds</span><span class="p">(</span><span class="mi">40</span><span class="p">));</span>
+  <span class="c1">// 停止所有的plugin</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">Stop</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="c1">// 清理plugin占用的资源，然后退出app</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">plugin</span> <span class="p">:</span> <span class="n">g_ctx</span><span class="p">.</span><span class="n">plugins</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">plugin</span><span class="o">-&gt;</span><span class="n">DeInit</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id12">
+<h2>内置数据类型msgtype<a class="headerlink" href="#id12" title="永久链接至标题">¶</a></h2>
+<ul class="simple">
+<li><p>protobuf：用于序列化智能数据，便于不同平台间交互，详细请参考x3.proto文件</p></li>
+<li><p>can_bus_data：用于存放接收来自MCU或发送到MCU的消息</p></li>
+<li><p>gdcplugin_data：用于存放俯视图</p></li>
+<li><p>hbipcplugin_data：hbipcplugin交互的数据载体</p></li>
+<li><p>reorderplugin_data：reorderplugin交互的数据载体</p></li>
+<li><p>rtspplugin_data：rtspplugin对外输出视频的数据载体</p></li>
+<li><p>smartplugin_data：智能数据的载体</p></li>
+<li><p>vioplugin_data：vio图像数据载体</p></li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h2>内置plugin<a class="headerlink" href="#id13" title="永久链接至标题">¶</a></h2>
+<div class="section" id="smart-plugin">
+<h3>2、Smart Plugin<a class="headerlink" href="#smart-plugin" title="永久链接至标题">¶</a></h3>
+<p>Getting Started with smartplugin</p>
+<div class="section" id="id14">
+<h4>简介<a class="headerlink" href="#id14" title="永久链接至标题">¶</a></h4>
+<p>Smartplugin是基于XStream通用sdk接口开发的通用智能化sdk运行框架。
+Smartplugin监听viomessage，调用XStream通用sdk接口得到智能化结果，并把智能化结果以protobuf的方式序列化之后以smartmessage的消息格式发送到总线(xproto)。</p>
+</div>
+<div class="section" id="id15">
+<h4>定制开发<a class="headerlink" href="#id15" title="永久链接至标题">¶</a></h4>
+<p>定制开发需要三步：</p>
+<ol class="simple">
+<li><p>根据自己的智能化应用需要依赖的XStream method更新build.properties文件及src/xstream/method_factory.cpp;</p></li>
+<li><p>根据自己的智能化应用需要输出的智能化结果重写protobuf串行化，即重新实现SmartMessage的Serialize方法。
+master分支提供了串行化输出的人脸检测框的sample程序，标准化的protobuf协议在repo xproto_msgtype/include/xproto_msgtype/protobuf/proto/x2.proto。</p></li>
+</ol>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">CustomSmartMessage</span><span class="o">::</span><span class="n">Serialize</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// serialize smart message using defined smart protobuf.</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">proto_str</span><span class="p">;</span>
+  <span class="n">x2</span><span class="o">::</span><span class="n">FrameMessage</span> <span class="n">proto_frame_message</span><span class="p">;</span>
+  <span class="k">auto</span> <span class="n">smart_msg</span> <span class="o">=</span> <span class="n">proto_frame_message</span><span class="p">.</span><span class="n">mutable_smart_msg_</span><span class="p">();</span>
+  <span class="n">smart_msg</span><span class="o">-&gt;</span><span class="n">set_timestamp_</span><span class="p">(</span><span class="n">time_stamp</span><span class="p">);</span>
+  <span class="n">smart_msg</span><span class="o">-&gt;</span><span class="n">set_error_code_</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="c1">// user-defined output parsing declaration.</span>
+  <span class="n">HobotXStream</span><span class="o">::</span><span class="n">BaseDataVector</span> <span class="o">*</span><span class="n">face_boxes</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span> <span class="o">&amp;</span><span class="nl">output</span> <span class="p">:</span> <span class="n">smart_result</span><span class="o">-&gt;</span><span class="n">datas_</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">output</span><span class="o">-&gt;</span><span class="n">name_</span> <span class="o">==</span> <span class="s">&quot;face_bbox_list&quot;</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">face_boxes</span> <span class="o">=</span> <span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">HobotXStream</span><span class="o">::</span><span class="n">BaseDataVector</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+      <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">face_boxes</span><span class="o">-&gt;</span><span class="n">datas_</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">face_box</span> <span class="o">=</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">static_pointer_cast</span><span class="o">&lt;</span><span class="n">HobotXStream</span><span class="o">::</span><span class="n">XStreamData</span><span class="o">&lt;</span><span class="n">hobot</span><span class="o">::</span><span class="n">vision</span><span class="o">::</span><span class="n">BBox</span><span class="o">&gt;&gt;</span><span class="p">(</span>
+                <span class="n">face_boxes</span><span class="o">-&gt;</span><span class="n">datas_</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+        <span class="n">LOGD</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;x1: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">x1</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; y1: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">y1</span>
+             <span class="o">&lt;&lt;</span> <span class="s">&quot; x2: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">x2</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; y2: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">y2</span>
+             <span class="o">&lt;&lt;</span> <span class="s">&quot; track_id: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">id</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+        <span class="k">auto</span> <span class="n">target</span> <span class="o">=</span> <span class="n">smart_msg</span><span class="o">-&gt;</span><span class="n">add_targets_</span><span class="p">();</span>
+        <span class="n">target</span><span class="o">-&gt;</span><span class="n">set_type_</span><span class="p">(</span><span class="s">&quot;face&quot;</span><span class="p">);</span>
+        <span class="n">target</span><span class="o">-&gt;</span><span class="n">set_track_id_</span><span class="p">(</span><span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">id</span><span class="p">);</span>
+        <span class="k">auto</span> <span class="n">proto_box</span> <span class="o">=</span> <span class="n">target</span><span class="o">-&gt;</span><span class="n">add_boxes_</span><span class="p">();</span>
+        <span class="n">proto_box</span><span class="o">-&gt;</span><span class="n">set_type_</span><span class="p">(</span><span class="s">&quot;face&quot;</span><span class="p">);</span>
+        <span class="k">auto</span> <span class="n">point1</span> <span class="o">=</span> <span class="n">proto_box</span><span class="o">-&gt;</span><span class="n">mutable_top_left_</span><span class="p">();</span>
+        <span class="n">point1</span><span class="o">-&gt;</span><span class="n">set_x_</span><span class="p">(</span><span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">x1</span><span class="p">);</span>
+        <span class="n">point1</span><span class="o">-&gt;</span><span class="n">set_y_</span><span class="p">(</span><span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">y1</span><span class="p">);</span>
+        <span class="k">auto</span> <span class="n">point2</span> <span class="o">=</span> <span class="n">proto_box</span><span class="o">-&gt;</span><span class="n">mutable_bottom_right_</span><span class="p">();</span>
+        <span class="n">point2</span><span class="o">-&gt;</span><span class="n">set_x_</span><span class="p">(</span><span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">x2</span><span class="p">);</span>
+        <span class="n">point2</span><span class="o">-&gt;</span><span class="n">set_y_</span><span class="p">(</span><span class="n">face_box</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">.</span><span class="n">y2</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="n">proto_frame_message</span><span class="p">.</span><span class="n">SerializeToString</span><span class="p">(</span><span class="o">&amp;</span><span class="n">proto_str</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">proto_str</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>将编译完成的库替换deploy/xprotocp_smart/lib/下的libsmartplugin.so。
+更新xstream workflow配置文件，默认为deploy/configs/smart_config.json</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>  <span class="p">{</span>
+      <span class="nt">&quot;xstream_workflow_file&quot;</span><span class="p">:</span> <span class="s2">&quot;configs/det_mot.json&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;enable_profile&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="nt">&quot;profile_log_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/userdata/log/profile.txt&quot;</span>
+  <span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>xstream_workflow_file: 指定xstream workflow配置文件;</p></li>
+<li><p>enable_profile: 是否使能online profile，该feature是xstream支持的feature，如果method开发中包括了profile信息可通过该开关online使能;</p></li>
+<li><p>profile_log_path: online profile 日志输出路径。</p></li>
+</ul>
+<p>将xprotocp_smart部署包放在真机上，运行xproto_start.sh 即可启动智能化应用;</p>
+<p>其中，sample/smart_main.cpp即是主程序源码，主程序启动方式为：</p>
+<p><code class="docutils literal notranslate"><span class="pre">smart_main</span>&#160; <span class="pre">[-i/-d/-w/-f]</span> <span class="pre">xstream_config_file</span></code></p>
+<p>-i/-d/-w/-f 分别指定对应info、debug、warning、fatal日志等级。</p>
+</div>
+<div class="section" id="id16">
+<h4>智能数据解析说明<a class="headerlink" href="#id16" title="永久链接至标题">¶</a></h4>
+<p>Protobuf数据格式定义见<code class="docutils literal notranslate"><span class="pre">common/xproto/msgtype/include/xproto_msgtype/protobuf/proto/x3.proto</span></code></p>
+<p>解析ProtoBuf智能数据FrameMessage，FrameMessage包括SmartFrameMessage、CaptureFrameMessage、StatisticsMessage、Image、Timestamp</p>
+<div class="section" id="smartframemessage">
+<h5>SmartFrameMessage<a class="headerlink" href="#smartframemessage" title="永久链接至标题">¶</a></h5>
+<p>SmartFrameMessage包括Timestamp、Error_Code和Target</p>
+<ol class="simple">
+<li><p>人体智能信息</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Target {
+  string type_;             // &quot;person&quot;
+  uint64 track_id_;         // track_id
+  repeated Box boxes_ = [{
+    string type_;           //  &quot;body&quot;、&quot;head&quot; 或 &quot;face&quot;，分别表示人脸框、人头框、人体框
+    Point top_left_;        // 框左上点坐标
+    Point bottom_right_;    // 框右下点坐标
+    float score;
+  }];
+  repeated Points points_ = [Points {
+    string type_;           // &quot;body_landmarks&quot;，表示人体骨骼点集合
+    repeated Point points_;
+  }];
+  repeated Attributes attributes_ = [{
+    string type_;           // &quot;age&quot;、&quot;gender&quot;、&quot;face_mask&quot;, 分别表示年龄、性别、口罩
+                            // &quot;fall&quot;、&quot;raise_hand&quot;、&quot;stand&quot;、&quot;squat&quot;, 分别表示摔倒、举手、站立和蹲下
+                            // &quot;action&quot;表示体感游戏
+
+    float value_;           // 属性对应的值
+    string value_string_;   // reserved
+    float score_;           // 置信度
+  }];
+}
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>车辆信息</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Target {
+  string type_;               // &quot;vehicle&quot;、&quot;vehicle_capture&quot;、&quot;vehicle_anomaly&quot;，分别表示车辆信息、抓拍车辆信息、抓拍车辆违法信息
+  uint64 track_id_;           // track_id
+  repeated Box boxes_ = [{
+    string type_;             // &quot;vehicle_box&quot; 表示车体框
+    Point top_left_;
+    Point bottom_right_;
+    float score;
+  }];
+
+  repeated Image imgs_ = [{   // 抓拍图像，仅抓拍车辆、抓拍违法车辆包含该信息
+    bytes buf_;               // 二进制图
+    string type_;             // &quot;jpg&quot;，图片类型
+    uint32 width_;            // 图像宽度
+    uint32 height_;           // 图像高度
+  }];
+
+  repeated Attributes attributes_ = [{
+    string type_;             // &quot;vehicle_type&quot;、&quot;vehicle_color&quot;、&quot;vehicle_lane_id&quot;、&quot;vehicle_speed&quot;，分别表示车辆类型、颜色、所在车道、车速
+                              // &quot;vehicle_anomalys_type&quot;，表示车辆违法类型，仅抓拍违法车辆包含该信息           
+
+    float value_;             // 属性对应的值
+    string value_string_;     // reserved
+    float score_;             // 置信度
+  }];
+
+  repeated Points points_ = [Points {
+    string type_;             // &quot;vehicle_key_points&quot;，表示车辆关键点
+                              // &quot;vehicle_location&quot;，表示车辆物理位置
+    repeated Point points_;
+  }];
+
+  repeated FloatArray float_arrays_ = [{
+    string type_;             // &quot;vehicle_gis&quot;，表示车辆gis信息
+    repeated float value_;
+  }];
+
+  repeated Target sub_targets_ = [{
+    string type_;             // &quot;plate&quot; 表示车牌
+    repeated Box boxes_ = [{
+      string type_;           // &quot;plate_box&quot; 表示车排框
+      Point top_left_;
+      Point bottom_right_;
+      float score;
+    }];
+
+    repeated Attributes attributes_ = [{
+      string type_;           // &quot;is_double_plate&quot;，表示双车牌
+                              // &quot;plate_num&quot;，表示车牌号
+                              // &quot;plate_color&quot;，表示车牌颜色
+                              // &quot;plate_type&quot;，表示车牌类型
+
+      float value_;           // 属性对应的值
+      string value_string_;   // reserved
+      float score_;           // 置信度
+    }];
+
+    repeated Points points_ = [Points {
+      string type_;           // &quot;plate_key_points&quot;，表示车排关键点
+      repeated Point points_;
+    }];
+  }];
+}
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>行人、非机动车信息</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Target {
+  string type_;           // &quot;person&quot;或&quot;no-motor&quot;
+  uint64 track_id_;       // track_id
+  repeated Box boxes_ = [{
+    string type_;         // &quot;person_box&quot;、&quot;no-motor_box&quot;，分别表示人体框、非机动车框
+    Point top_left_;
+    Point bottom_right_;
+    float score;
+  }];
+
+  repeated FloatArray float_arrays_ = [{
+    string type_;           // &quot;person_gis&quot;、&quot;no-motor_gis&quot;，分别表示行人、非机动车gis信息
+    repeated float value_;
+  }];
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="statisticsmessage">
+<h5>StatisticsMessage<a class="headerlink" href="#statisticsmessage" title="永久链接至标题">¶</a></h5>
+<ol class="simple">
+<li><p>车流统计信息</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>StatisticsMessage {
+   repeated Attributes attributes_ = [{
+      string type_;           // &quot;trafficflow_hour_index&quot;，表示时段
+                              // &quot;trafficflow_cycle_count&quot;，表示每个时段周期数
+                              // &quot;trafficflow_cycle_minute&quot;，表示第几个周期
+                              // &quot;trafficflow_vehicle_sum&quot;，表示总过车数
+                              // &quot;trafficflow_big_vehicle_sum&quot;，表示大车过车数
+                              // &quot;trafficflow_small_vehicle_sum&quot;，表示小车过车数
+                              // &quot;trafficflow_mean_speed&quot;，表示平均过车速度
+
+      float value_;           // 属性对应的值
+      string value_string_;   // reserved
+      float score_;           // 置信度
+    }];
+}
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="hbipcplugin">
+<h3>4. HbipcPlugin<a class="headerlink" href="#hbipcplugin" title="永久链接至标题">¶</a></h3>
+<p>HbipcPlugin为跨板传输插件，主要负责实现AP与地平线CP端的双向通信功能，CP端通过HbipcPlugin将智能帧等数据发送到AP端，或者通过HbipcPlugin接收AP端发过来的配置数据与命令数据。</p>
+<p>HbipcPlugin是基于地平线HBIPC框架实现，使用之前需要先提供一个HBIPC的配置参数：</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;domain_name&quot;</span><span class="p">:</span> <span class="s2">&quot;X2SD001&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;server_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">domain_name</span></code>表示HBIPC通信域， 可选的值有<code class="docutils literal notranslate"><span class="pre">X2SD001</span></code>和<code class="docutils literal notranslate"><span class="pre">X2BIF001</span></code>， 分别对应bifsd和bifspi两种物理通路。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">server_id</span></code>表示CP侧的服务ID，UUID格式。AP侧在建立连接的时候会用到该UUID。</p></li>
+</ul>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>server_id</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xe</td>
+<td>XProto通信服务</td>
+</tr>
+</tbody>
+</table><p>HBIPC框架的库与使用示例请参考系统软件bsp发布包。</p>
+<p>当HBIPCPlugin收到AP侧发来的配置数据和命令数据时，会将其以<code class="docutils literal notranslate"><span class="pre">XPLUGIN_HBIPC_MESSAGE</span></code>类型的消息发送到XProto内部总线。消息对应的结构体定义如下：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">HbipcMessage</span> <span class="p">:</span> <span class="n">XProtoMessage</span> <span class="p">{</span>
+  <span class="n">HbipcMessage</span><span class="p">()</span> <span class="p">{</span> <span class="n">type_</span> <span class="o">=</span> <span class="s">&quot;XPLUGIN_HBIPC_MESSAGE&quot;</span><span class="p">;</span> <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">Serialize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;Default hbipc message&quot;</span><span class="p">;</span> <span class="p">}</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">HbipcMessage</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nl">CustomHbipcMessage</span> <span class="p">:</span> <span class="n">HbipcMessage</span> <span class="p">{</span>
+  <span class="k">explicit</span> <span class="n">CustomHbipcMessage</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">proto</span><span class="p">)</span> <span class="o">:</span> <span class="n">proto_</span><span class="p">(</span><span class="n">proto</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">type_</span> <span class="o">=</span> <span class="s">&quot;XPLUGIN_HBIPC_MESSAGE&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">Serialize</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+
+ <span class="k">private</span><span class="o">:</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">proto_</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>HBIPCPlugin负责将VioPlugin和SmartPlugin产生的消息发送到AP侧，所以它需要监听总线上面的<code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>、<code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>和<code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>: 智能数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>：图像数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>：报告VIOPlugin丢弃的帧。</p></li>
+</ul>
+<p>同时，HbipcPlugin也提供了以下公共接口，支持客户在业务逻辑中进行集成：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HbipcPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">HbipcPlugin</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+  <span class="c1">// 构造HbipcPlugin对象, 并指定VIO配置文件.</span>
+  <span class="k">explicit</span> <span class="nf">HbipcPlugin</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">config_file</span><span class="p">);</span>
+  <span class="c1">// 初始化Plugin.</span>
+  <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="c1">// 反初始化plugin</span>
+  <span class="kt">int</span> <span class="nf">Deinit</span><span class="p">();</span>
+  <span class="c1">// 启动Plugin.</span>
+  <span class="kt">int</span> <span class="nf">Start</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="c1">// 停止VioPlugin。</span>
+  <span class="kt">int</span> <span class="nf">Stop</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>关于HBIPCPlugin，详细参考<a class="reference internal" href="../../xsdk/common/xproto/plugins/hbipcplugin/README.html"><span class="doc">README</span></a>。</p>
+</div>
+<div class="section" id="websocketplugin">
+<h3>5.WebsocketPlugin<a class="headerlink" href="#websocketplugin" title="永久链接至标题">¶</a></h3>
+<p>WebsocketPlugin为web多媒体传输方式插件，基于开源项目uwebsocket开发，用于通过web浏览器展示视频和算法效果。</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>{
+  &quot;auth_mode&quot;: 0,
+  &quot;display_mode&quot;: 1,
+  &quot;user&quot;: &quot;admin&quot;,
+  &quot;password&quot;: &quot;123456&quot;,
+  &quot;smart_type&quot;: 1,
+  &quot;video_type&quot;: 1,
+  &quot;image_width&quot;: 1920,
+  &quot;image_height&quot;: 1080,
+  &quot;layer&quot;: 0,
+  &quot;720p_layer&quot;: 5,
+  &quot;1080p_layer&quot;: 4,
+  &quot;2160p_layer&quot;: 0,
+  &quot;data_buf_size&quot;: 3110400,
+  &quot;packet_size&quot;: 102400,
+  &quot;jpeg_quality&quot;: 80,
+  &quot;frame_buf_depth&quot;: 3,
+  &quot;dump_jpg_num&quot;: 0,
+  &quot;jpg_encode_time&quot;: 0,
+  &quot;use_vb&quot;:0,
+  &quot;attribute_description_path&quot;: &quot;configs/websocketplugin_attribute.json&quot;,
+  &quot;vlc_support&quot;: 1,
+  &quot;is_cbr&quot;: 1,
+  &quot;bitrate&quot;: 6000,
+  &quot;h264_encode_time&quot;: 0,
+  &quot;smart_transfer_mode&quot;: 0, // 0: hid, 1: rndis
+  &quot;rndis_port&quot;: 9999
+}
+</pre></div>
+</div>
+<p>采用websocket方案时display_mode为1。</p>
+<p>WebsocketPlugin负责将VioPlugin和SmartPlugin产生的消息发送到web端，所以它需要监听总线上面的<code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>、<code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>和<code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>: 智能数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>：图像数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>：报告VIOPlugin丢弃的帧。</p></li>
+</ul>
+<p>同时，WebsocketPlugin也提供了以下公共接口，支持客户在业务逻辑中进行集成：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WebsocketPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">xproto</span><span class="o">::</span><span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">WebsocketPlugin</span><span class="p">()</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+  <span class="k">explicit</span> <span class="nf">WebsocketPlugin</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">config_path</span><span class="p">);</span>
+  <span class="o">~</span><span class="n">WebsocketPlugin</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Start</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Stop</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="uvcplugin">
+<h3>6.UvcPlugin<a class="headerlink" href="#uvcplugin" title="永久链接至标题">¶</a></h3>
+<p>UvcPlugin为usb传输插件，基于uvc 1.0和hid 1.01协议开发，用于通过usb向客户端播放器发送视频和智能数据。可通过PC端potplayer,amcap等或者android端usb camera等第三方app预览视频，或通过地平线自研的安卓app预览视频和智能效果。</p>
+<p>UvcPlugin负责将VioPlugin和SmartPlugin产生的消息发送到web端，所以它需要监听总线上面的<code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>、<code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>和<code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_SMART_MESSAGE</span></code>: 智能数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_IMAGE_MESSAGE</span></code>：图像数据帧。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XPLUGIN_DROP_MESSAGE</span></code>：报告VIOPlugin丢弃的帧。</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>{
+  &quot;auth_mode&quot;: 0,
+  &quot;display_mode&quot;: 1,
+  &quot;user&quot;: &quot;admin&quot;,
+  &quot;password&quot;: &quot;123456&quot;,
+  &quot;smart_type&quot;: 1,
+  &quot;video_type&quot;: 1,
+  &quot;image_width&quot;: 1920,
+  &quot;image_height&quot;: 1080,
+  &quot;layer&quot;: 0,
+  &quot;720p_layer&quot;: 5,
+  &quot;1080p_layer&quot;: 4,
+  &quot;2160p_layer&quot;: 0,
+  &quot;data_buf_size&quot;: 3110400,
+  &quot;packet_size&quot;: 102400,
+  &quot;jpeg_quality&quot;: 80,
+  &quot;frame_buf_depth&quot;: 3,
+  &quot;dump_jpg_num&quot;: 0,
+  &quot;jpg_encode_time&quot;: 0,
+  &quot;use_vb&quot;:0,
+  &quot;attribute_description_path&quot;: &quot;configs/websocketplugin_attribute.json&quot;,
+  &quot;vlc_support&quot;: 1,
+  &quot;is_cbr&quot;: 1,
+  &quot;bitrate&quot;: 6000,
+  &quot;h264_encode_time&quot;: 0,
+  &quot;smart_transfer_mode&quot;: 0, // 0: hid, 1: rndis
+  &quot;rndis_port&quot;: 9999
+}
+</pre></div>
+</div>
+<p>采用uvc方式时，display_mode为2。</p>
+<p>同时，UvcPlugin也提供了以下公共接口，支持客户在业务逻辑中进行集成：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UvcPlugin</span> <span class="o">:</span> <span class="k">public</span> <span class="n">xproto</span><span class="o">::</span><span class="n">XPluginAsync</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">UvcPlugin</span><span class="p">()</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+  <span class="k">explicit</span> <span class="nf">UvcPlugin</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">config_path</span><span class="p">);</span>
+  <span class="o">~</span><span class="n">UvcPlugin</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Start</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+  <span class="kt">int</span> <span class="nf">Stop</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="iotvioplugin">
+<h3>7. IoTVioPlugin<a class="headerlink" href="#iotvioplugin" title="永久链接至标题">¶</a></h3>
+<p>IoTVioPlugin的的应用场景是用于X3系统，整体框架、消息总线传输机制实际是和X2 VIOPlugin的功能类似。主要功能负责获取、转换图像数据并控制图像数据获取速率，然后将图像数据或丢帧消息推送给消息总线。针对于接口层，最主要的区别是IoTVioPlugin不仅支持与X2 VioPlugin相同的原生接口，还是支持与海思一样类似的接口。IoTVioPlugin同样分为两个部分：</p>
+<ul class="simple">
+<li><p>图像数据的获取：图像来源可以分为SIF（摄像头）、JPEG回灌图片和NV12回灌图片。</p></li>
+<li><p>控制图像数据获取速率：VioPlugin中通过定长buffer来实现速率控制。buffer大小可以通过JSON文件进行配置。单输入图像源的情况下理论最多可达6个，当智能帧产生速率过慢，buffer耗尽时，VioPlugin产生主动丢帧数据</p></li>
+<li><p>消息的产生和推送：消息分为图像数据消息与主动丢帧数据消息，由第一部分产生后推送至消息总线。</p></li>
+<li><p>支持单路camera、单路回灌、多路camera不同步运行、多路camera同步运行、一路cam+一路回灌同时运行 (目前可支持的多路理论最多达6路)</p>
+<ul>
+<li><p>多路camera不同步运行，顾名思义就是获取上来的camera数据是独立的，每个camera就分别占用一路pipeID。例如两路camera，就会分别获取到两路不同的图像数据结果</p></li>
+<li><p>多路camera同步运行，顾名思义就是上层每帧只能获取一次结果，该结果中包含了多路camera的图像数据，并且多路的图像数据的时间戳是同步过的，如果多路中有任意一路发生丢帧，则用户也无法获取到其他路的图像结果数据。</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span>{
+  &quot;pipeline&quot;: {
+    &quot;cam_en&quot;: 1,
+    &quot;vin_vps_mode&quot;: 1,
+    &quot;vin&quot;: {
+      &quot;sensor&quot;: {
+        &quot;sensor_id&quot;: 5,
+        &quot;sensor_port&quot;: 0,
+        &quot;i2c_bus&quot;: 5,
+        &quot;need_clk&quot;: 1,
+        &quot;serdes_index&quot;: 0,
+        &quot;serdes_port&quot;: 0
+      },
+      &quot;mipi&quot;: {
+        &quot;host_index&quot;: 1,
+        ...
+      }
+      ....
+    &quot;vps&quot;: {
+      &quot;vps_dump_num&quot;: 0,
+      &quot;vps_layer_dump&quot;: 4,
+      &quot;feedback&quot;: {
+		&quot;fb_width&quot;: 1920,
+		&quot;fb_height&quot;: 1080,
+        &quot;fb_buf_num&quot;: 8
+      },
+        &quot;chn0&quot;: {
+          &quot;ipu_chn_en&quot;: 0,
+          &quot;pym_chn_en&quot;: 0,
+          &quot;roi_en&quot;: 0,
+          &quot;roi_x&quot;: 0,
+          &quot;roi_y&quot;: 0,
+          &quot;roi_w&quot;: 3840,
+          &quot;roi_h&quot;: 2160,
+          &quot;scale_w&quot;: 3840,
+          &quot;scale_h&quot;: 2160,
+          &quot;frame_depth&quot;: 8,
+		  &quot;timeout&quot;: 2000
+        }
+      ....
+        &quot;chn6&quot;: {
+          &quot;ipu_chn_en&quot;: 1,
+          &quot;pym_chn_en&quot;: 1,
+          &quot;roi_en&quot;: 0,
+          &quot;roi_x&quot;: 0,
+          &quot;roi_y&quot;: 0,
+          &quot;roi_w&quot;: 3840,
+          &quot;roi_h&quot;: 2160,
+          &quot;scale_w&quot;: 3840,
+          &quot;scale_h&quot;: 2160,
+          &quot;frame_depth&quot;: 8,
+		  &quot;timeout&quot;: 2000
+        }
+      },
+      &quot;pym&quot;: {
+          &quot;pym_ctrl_config&quot;: {
+              &quot;frame_id&quot;: 1,
+              &quot;ds_layer_en&quot;: 23,
+              &quot;ds_uv_bypass&quot;: 0,
+              &quot;us_layer_en&quot;: 0,
+              &quot;us_uv_bypass&quot;: 0,
+              &quot;frame_depth&quot;: 8,
+              &quot;timeout&quot;: 2000
+          },
+          &quot;pym_ds_config&quot;: {
+              &quot;roi_x_1&quot;: 0,
+              &quot;roi_y_1&quot;: 0,
+              &quot;roi_w_1&quot;: 0,
+              &quot;roi_h_1&quot;: 0,
+              &quot;factor_1&quot;: 0,
+              ...
+              &quot;roi_x_23&quot;: 0,
+              &quot;roi_y_23&quot;: 0,
+              &quot;roi_w_23&quot;: 0,
+              &quot;roi_h_23&quot;: 0,
+              &quot;factor_23&quot;: 0
+          },
+          &quot;pym_us_config&quot;: {
+              &quot;roi_x_0&quot;: 0,
+              &quot;roi_y_0&quot;: 0,
+              &quot;roi_w_0&quot;: 0,
+              &quot;roi_h_0&quot;: 0,
+              ...
+              &quot;roi_x_5&quot;: 0,
+              &quot;roi_y_5&quot;: 0,
+              &quot;roi_w_5&quot;: 0,
+              &quot;roi_h_5&quot;: 0,
+              &quot;factor_5&quot;: 0
+          }
+      }
+	}
+  }
+}
+
+各个字段的含义:
+* pipeline: 一个配置文件表示一路pipeline, 目前最大同时支持6路pipeline
+* cam_en: 等于1是使用实时camera；等于0是回灌模式
+* vin_vps_mode: vin和vps模块内部和模块之间的模式，0为全部是在线模式，1为vin-&gt;vps模块之间是离线模式(vin和vps模块内部是online模式)
+  * sensor: 说明以下是sensor的配置属性
+    * sensor_id: sensor的型号。其中imx327是1, os8a10是5, s5kgm1sp是14
+    * sensor_port: sensor端口。根据具体硬件，一般默认为0
+    * i2c_bus: i2c总线号。根据具体硬件，对于x3开发板推荐imx327和os8a10是I2C5，s5kgm使用I2C4, x3sdb生态板os8a10默认使用I2C2
+    * serdex_index: 加解串的索引。根据具体硬件，一般为0
+    * serdex_port: 加解串的端口。根据具体硬件，一般为0
+  * mipi: 说明以下是mipi模块的配置属性
+    * host_index: mipi host索引。根据具体硬件，一般如果是接入I2C0，则为0；如果是I2C4或者I2C5，则为1
+  * vps: 说明以下是vps模块的配置属性
+    * vps_dump: 使能vps功能dump pym基础层的nv12图像，用于调试
+    * vps_dump_layer: 使能vps功能dump pym任意层(包括roi层)的nv12图像，用于调试
+    * feedback: 说明以下是回灌的配置属性
+      * fb_width: 回灌图片的宽度
+      * fb_height: 回灌图片的高度
+      * fb_buf_num: 回灌的轮转buffer数量
+    * chn0: 说明以下是chn0的配置属性，该通道是离线通道
+      * ipu_chn_en: 是否使能chn0的ipu通道, 1是使能，0是disable
+      * pym_chn_en: 是否使能chn0的pym通道, 1是使能，0是disalbe
+      * roi_en: 是否使能chn0的roi裁剪功能, 1是使能，0是disalbe
+	  * roi_x: roi区域的左上角x坐标值
+	  * roi_y: roi区域的左上角y坐标值
+	  * roi_w: roi区域的宽度
+	  * roi_h: roi区域的高度
+      * scale_w: 缩放后的宽度
+      * scale_h: 缩放后的高度
+      * frame_depth: 申请的vio buffe该通道的最大frame buffer数量，如果设置为8，留给应用的就是8个vio buffer，frame_depth最大值为32
+    * chn6: 说明以下是chn6的配置属性，该通道在线通道
+      * ipu_chn_en: 是否使能chn0的ipu通道，1是使能，0是disable，注意：ipu和pym的通道必须同时为1或者为0
+      * pym_chn_en: 是否使能chn0的pym通道，1是使能，0是disalbe，注意：ipu和pym的通道必须同时为1或者为0
+      * 其余配置参数与chn0是相同的含义
+    * pym: 说明以下是pym的配置属性
+      * pym_ctrl_config: 说明以下是pym控制配置属性
+        * frame_id: frame id的起始号，一般为1
+        * ds_layer_en: downscale一共使能多少层，一般为23 (0~23层)
+        * ds_uv_bypass: 是否bypass ds uv层，一般为0
+        * us_layer_en: upscale一共使能多少层，根据需用设置，最大为6层
+        * us_uv_bypass: 是否bypass us uv层，一般为0
+        * frame_depth: 申请的pym通道最大frame buffer数量，默认为8，底层会默认使用5个buffer，留给应用的就是8-5 = 3个vio buffer，frame_depth最大值为32
+        * timeout: 上层阻塞获取pym frame的超时时间，单位为ms，默认为2000ms
+      * pym_ds_config: 说明以下是pym downscale的roi层配置属性
+        * roi_x_1: 金字塔第1层roi区域相对于对应基本层左顶点坐标x
+        * roi_y_1: 金字塔第1层roi区域相对于对应基本层左顶点坐标y
+        * roi_w_1: 金字塔第1层roi区域宽度，不能超过其基础层宽度
+        * roi_h_1: 金字塔第1层roi区域高度，不能超过其基础层高度
+        * factor_1: 金字塔第1层roi缩放系数，整体计算缩放为基础层的64/(64 + factor)的倍数。factor 为0时，表示disable 该层缩放，factor 取值范围 0--63
+      * pym_us_config:说明以下是pym upscale的roi层配置属性
+        * roi_x_0: 金字塔第0层roi区域相对于对应基本层左顶点坐标x
+        * roi_y_0: 金字塔第0层roi区域相对于对应基本层左顶点坐标y
+        * roi_w_0: 金字塔第0层roi区域宽度，不能超过其基础层宽度
+        * roi_h_0: 金字塔第0层roi区域高度，不能超过其基础层高度
+        * factor_0: 金字塔第0层roi放大系数，factor 为0时，表示disable 该层缩放，factor 取值为固定值，即：
+          * factor_0: 50 放大1.28倍
+          * factor_1: 40 放大1.6倍
+          * factor_2: 32 放大2倍
+          * factor_3: 25 放大2倍
+          * factor_4: 20 放大3.2倍
+          * factor_5: 16 放大4倍
+*
+</pre></div>
+</div>
+<p>IotVioPlugin是以VioPipeLine为每路接口，每路必须要有一个pipe_id，该pipe_id通过调用VioPipeManager::GetPipeId()接口的返回值来获取。
+pipe_id的取值范围为(0~5),即最多存在6路camera的pipeline同时运行(受限于mipi host的硬件限制以及ddr带宽限制)</p>
+<p>如下是VioPipeLine的接口，支持单路和多路同步接口，并支持客户在业务逻辑中进行集成。主要包括单路和多路同步2个部分：</p>
+<ul class="simple">
+<li><p>单路camera和单路回灌</p>
+<ul>
+<li><p>单路camera获取原始帧信息(GetIpuInfo)、金字塔的处理结果帧(GetPymInfo)</p></li>
+<li><p>单路回灌获取回灌图像存储信息(GetFbSrcInfo)、回灌图像处理(SetFbPymProcess)</p></li>
+<li><p>单路释放原始帧释放接口(FreeIpuInfo)、金字塔结果帧释放接口(FreePymInfo)</p></li>
+</ul>
+</li>
+<li><p>多路camera同步</p>
+<ul>
+<li><p>多路camera获取原始帧信息(GetMultIpuInfo)、金字塔的处理结果帧(GetMultPymInfo)</p></li>
+<li><p>多路camera释放原始帧释放接口(FreeMultIpuInfo)、金字塔结果帧释放接口(FreeMultPymInfo)</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">VioPipeLine</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">VioPipeLine</span><span class="p">()</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+  <span class="n">VioPipeLine</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">pipe_file</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">pipe_id</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">pipe_file_</span><span class="p">(</span><span class="n">pipe_file</span><span class="p">),</span> <span class="n">pipe_start_idx_</span><span class="p">(</span><span class="n">pipe_id</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="o">~</span><span class="n">VioPipeLine</span><span class="p">()</span> <span class="p">{}</span>
+
+  <span class="kt">int</span> <span class="n">Init</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="nf">DeInit</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="nf">Start</span><span class="p">();</span>
+  <span class="kt">int</span> <span class="nf">Stop</span><span class="p">();</span>
+  <span class="cm">/**</span>
+<span class="cm">   * single pipeline info</span>
+<span class="cm">   * 1.GetInfo: GetPymInfo, GetIpuInfo, GetFbSrcInfo</span>
+<span class="cm">   * 2.SetInfo: SetFbPymProcess</span>
+<span class="cm">   * 3.FreeInfo: FreeIpuInfo, FreePymInfo</span>
+<span class="cm">   *</span>
+<span class="cm">   *  info_type is defined in vio_data_type.h</span>
+<span class="cm">   */</span>
+  <span class="kt">int</span> <span class="nf">GetInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="nf">SetInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="nf">FreeInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+  <span class="cm">/**</span>
+<span class="cm">   * multi pipeline sync info, general two camera source</span>
+<span class="cm">   * 1.GetMultInfo: GetMultPymInfo, GetMultIpuInfo</span>
+<span class="cm">   * 2.SetMultInfo: SetMultFbPymProcess</span>
+<span class="cm">   * 3.FreeMultInfo: FreeMultIpuInfo, FreeMultPymInfo</span>
+<span class="cm">   *</span>
+<span class="cm">   *  info_type is defined in vio_data_type.h</span>
+<span class="cm">   */</span>
+  <span class="kt">int</span> <span class="nf">GetMultInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="nf">SetMultInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="nf">FreeMultInfo</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">info_type</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Horizon Robotics
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

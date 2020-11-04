@@ -1,0 +1,12 @@
+# UpdateGPUModelVersionReq
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**name** | **str** | gpu model dir&#39;s name in: body | 
+**stages** | [**list[CreateGPUModelStage]**](CreateGPUModelStage.md) | gpu model&#39;s file and attachment of each stage in: body | 
+**version** | **str** | gpu model&#39;s version, if not set, it will the lastest in: body | [optional] 
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

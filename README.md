@@ -45,7 +45,7 @@ set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 ```
 **b. Windows开发机环境准备**
 
-* 下载开发板系统镜像及烧录工具：[开发板系统镜像及烧录工具下载地址](https://developer.horizon.ai/forum/id=5f8d53b7bec8bc98cb72d963)
+* 下载开发板系统镜像及烧录工具：[开发板系统镜像及烧录工具下载地址](https://developer.horizon.ai/forum/id=5f156192740aaf0beb3119dd)
 
 各文件说明如下：
 
