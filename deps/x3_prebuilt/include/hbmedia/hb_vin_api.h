@@ -14,35 +14,71 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "hb_errno.h"
+
 #define HB_VIN_PIPE_NAME_LENGTH  16
 #define HB_VIN_PIPE_CALIB_PATH_LEGNTH 64
 #define RET_OK 0
 #define RET_ERROR 1
 
 enum HB_VIN_ERROR_CODE {
-	HB_VIN_SIF_INIT_FAIL = 1,
-	HB_VIN_PARAM_INIT_FAIL,
-	HB_VIN_DEV_START_FAIL,
-	HB_VIN_PIPE_START_FAIL,
-	HB_VIN_CHN_UNEXIST,
-	HB_VIN_INVALID_PARAM,
-	HB_VIN_ISP_INIT_FAIL,
-	HB_VIN_ISP_MODULE_INIT_FAIL,
-	HB_VIN_ISP_FRAME_CORRUPTED,
-	HB_VIN_CHANNEL_INIT_FAIL,
-	HB_VIN_MALLOC_BUFMGR_FAIL,
-	HB_VIN_DWE_INIT_FAIL,
-	HB_VIN_BIND_FAIL,
-	HB_VIN_SET_DEV_ATTREX_FAIL,
-	HB_VIN_LENS_INIT_FAIL,
-	HB_VIN_SEND_PIPERAW_FAIL,
-	HB_VIN_NULL_POINT,
-	HB_VIN_GET_CHNFRAME_FAIL,
-	HB_VIN_GET_DEVFRAME_FAIL,
-	HB_VIN_MD_ENABLE_FAIL,
-	HB_VIN_MD_DISABLE_FAIL,
-	HB_VIN_SWITCH_SNS_TABLE_FAIL,
+	ERR_VIN_CREATE_PIPE_FAIL = 1,
+	ERR_VIN_SIF_INIT_FAIL = 2,
+	ERR_VIN_DEV_START_FAIL = 3,
+	ERR_VIN_PIPE_START_FAIL = 4,
+	ERR_VIN_CHN_UNEXIST = 5,
+	ERR_VIN_INVALID_PARAM = 6,
+	ERR_VIN_ISP_INIT_FAIL = 7,
+	ERR_VIN_ISP_FRAME_CORRUPTED = 8,
+	ERR_VIN_DWE_INIT_FAIL = 9,
+	ERR_VIN_SET_DEV_ATTREX_FAIL = 10,
+	ERR_VIN_LENS_INIT_FAIL = 11,
+	ERR_VIN_SEND_PIPERAW_FAIL = 12,
+	ERR_VIN_NULL_POINT = 13,
+	ERR_VIN_GET_CHNFRAME_FAIL = 14,
+	ERR_VIN_GET_DEVFRAME_FAIL = 15,
+	ERR_VIN_MD_ENABLE_FAIL = 16,
+	ERR_VIN_MD_DISABLE_FAIL = 17,
+	ERR_VIN_SWITCH_SNS_TABLE_FAIL = 18,
 };
+
+/*VIN  1000FC00  1001FC00----268565504*/
+#define HB_ERR_VIN_CREATE_PIPE_FAIL		                             \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_CREATE_PIPE_FAIL)
+#define HB_ERR_VIN_SIF_INIT_FAIL		                             \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_SIF_INIT_FAIL)
+#define HB_ERR_VIN_DEV_START_FAIL                                    \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_DEV_START_FAIL)
+#define HB_ERR_VIN_PIPE_START_FAIL                                   \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_PIPE_START_FAIL)
+#define HB_ERR_VIN_CHN_UNEXIST                                       \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_CHN_UNEXIST)
+#define HB_ERR_VIN_INVALID_PARAM                                     \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_INVALID_PARAM)
+#define HB_ERR_VIN_ISP_INIT_FAIL                                     \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_ISP_INIT_FAIL)
+#define HB_ERR_VIN_ISP_FRAME_CORRUPTED                               \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_ISP_FRAME_CORRUPTED)
+#define HB_ERR_VIN_DWE_INIT_FAIL                                     \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_DWE_INIT_FAIL)
+#define HB_ERR_VIN_SET_DEV_ATTREX_FAIL                               \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_SET_DEV_ATTREX_FAIL)
+#define HB_ERR_VIN_LENS_INIT_FAIL                                    \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_LENS_INIT_FAIL)
+#define HB_ERR_VIN_SEND_PIPERAW_FAIL                                 \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_SEND_PIPERAW_FAIL)
+#define HB_ERR_VIN_NULL_POINT                                        \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_NULL_POINT)
+#define HB_ERR_VIN_GET_CHNFRAME_FAIL                                 \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_GET_CHNFRAME_FAIL)
+#define HB_ERR_VIN_GET_DEVFRAME_FAIL                                 \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_GET_DEVFRAME_FAIL)
+#define HB_ERR_VIN_MD_ENABLE_FAIL                                    \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_MD_ENABLE_FAIL)
+#define HB_ERR_VIN_MD_DISABLE_FAIL                                    \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_MD_DISABLE_FAIL)
+#define HB_ERR_VIN_SWITCH_SNS_TABLE_FAIL                              \
+		HB_DEF_ERR(HB_ID_VIN, ERR_VIN_SWITCH_SNS_TABLE_FAIL)
 
 typedef enum HB_VIN_DEV_INTF_MODE_E {
     VIN_MODE_MIPI,                   /* MIPI RAW mode */
@@ -389,6 +425,7 @@ extern int HB_VIN_RegisterDisCallback(uint32_t pipeId,
 extern int HB_VIN_SwPipeSnstable(uint32_t pipeId,
 	VIN_PIPE_SNS_TABLE_S *snsTable);
 
+extern int HB_VIN_CtrlPipeMirror(uint32_t pipeId, uint8_t on);
 #ifdef __cplusplus
 }
 #endif

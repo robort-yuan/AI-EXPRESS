@@ -21,7 +21,7 @@ include_directories(
         include
 )
 
-set(BASE_LIBRARIES xstream-framework hobotlog jsoncpp.a rt dl pthread)
+set(BASE_LIBRARIES xstream hobotlog jsoncpp.a rt dl pthread)
 
 set(SOURCE_FILES
         src/method/GradingMethod.cpp

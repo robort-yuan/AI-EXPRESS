@@ -43,6 +43,8 @@ typedef struct hb_BPU_DATA_SHAPE_S {
 
 typedef struct hb_BPU_RUN_CTRL_S {
   int core_id;
+  int resize_type;  // 1: resize input data if input shape is not same with
+                    // model input shape; other value: no resize
 } BPU_RUN_CTRL_S;
 
 typedef enum hb_BPU_DATA_TYPE_E {
@@ -91,12 +93,14 @@ typedef struct hb_BPU_TENSOR_S {
 
 typedef enum hb_BPU_GLOBAL_CONFIG_E {
   BPU_GLOBAL_CONFIG_MAX_TASK_NUM,
-  BPU_GLOBAL_CONFIG_MAX_MEM_POOL_SIZE,
+  BPU_GLOBAL_CONFIG_MAX_MEM_POOL_SIZE,  // This config is discarded.
   BPU_GLOBAL_CONFIG_DEBUG,
   BPU_GLOBAL_CONV_MAPPING_FILE,
   BPU_GLOBAL_CONV_DUMP_PATH,
   BPU_GLOBAL_CONFIG_ACCOUNT_MEMORY_USAGE,
   BPU_GLOBAL_ENGINE_TYPE,
+  BPU_GLOBAL_CUSTOM_OP_LIB_PATH,
+  BPU_GLOBAL_FREE_MEM_CACHE_AFTER_UNUSED_TIMES,
 } BPU_GLOBAL_CONFIG_E;
 
 /*

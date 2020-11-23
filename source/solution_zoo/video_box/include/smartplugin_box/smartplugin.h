@@ -28,6 +28,7 @@
 #include "smartplugin_box/traffic_info.h"
 #include "votmodule.h"
 #include "xproto_msgtype/smartplugin_data.h"
+#include "vencmodule.h"
 
 namespace horizon {
 namespace vision {
@@ -74,40 +75,32 @@ private:
 };
 
 class SmartPlugin : public XPluginAsync {
-public:
+ public:
   SmartPlugin() = default;
-  explicit SmartPlugin(const std::string &config_file);
+  explicit SmartPlugin(const std::string &smart_config_file);
 
-  void SetConfig(const std::string &config_file) { config_file_ = config_file; }
+  void SetConfig(const std::string &config_file) {
+    smart_config_file_ = config_file;
+  }
 
   ~SmartPlugin() = default;
   int Init() override;
   int Start() override;
   int Stop() override;
 
-private:
+ private:
   int Feed(XProtoMessagePtr msg);
   void OnCallback(xstream::OutputDataPtr out);
-  void OnCallback2(xstream::OutputDataPtr out);
-  void OnCallback3(xstream::OutputDataPtr out);
-  void OnCallback4(xstream::OutputDataPtr out);
-  void OnCallback5(xstream::OutputDataPtr out);
-  void OnCallback6(xstream::OutputDataPtr out);
-  void OnCallback7(xstream::OutputDataPtr out);
-  void OnCallback8(xstream::OutputDataPtr out);
 
   void ParseConfig();
-  void GetConfigFromFile(const std::string &path);
+  void GetRtspConfigFromFile(const std::string &path);
+  void GetDisplayConfigFromFile(const std::string &path);
 
-  std::shared_ptr<XStreamSDK> sdk_;
-  std::shared_ptr<XStreamSDK> sdk2_;
-  std::shared_ptr<XStreamSDK> sdk3_;
-  std::shared_ptr<XStreamSDK> sdk4_;
-  std::shared_ptr<XStreamSDK> sdk5_;
-  std::shared_ptr<XStreamSDK> sdk6_;
-  std::shared_ptr<XStreamSDK> sdk7_;
-  std::shared_ptr<XStreamSDK> sdk8_;
-  std::string config_file_;
+  std::vector<std::shared_ptr<XStreamSDK>> sdk_;
+
+  std::string smart_config_file_;
+  std::string rtsp_config_file_;
+  std::string display_config_file_;
   std::shared_ptr<RuntimeMonitor> monitor_;
   std::shared_ptr<JsonConfigWrapper> config_;
   std::string xstream_workflow_cfg_file_;
@@ -116,13 +109,21 @@ private:
   bool result_to_json{false};
   Json::Value root;
   std::shared_ptr<VotModule> vot_module_;
-  //char *buffer_[8];
-  int channel_num = 0;
+  std::shared_ptr<VencModule> venc_module_1080p_;
+  std::shared_ptr<VencModule> venc_module_720p_;
+  bool running_venc_1080p_;
+  bool running_venc_720p_;
+  bool running_vot_;
+
+  int channel_num_ = 0;
+  int display_mode_ = 0;
+
   smart_vo_cfg_t smart_vo_cfg_;
+  VencConfig smart_venc_cfg_;
 
   //for test fps
   static void ComputeFpsThread(void *param);
-  unsigned long smartframe = 0;
+  uint64_t smartframe_ = 0;
   std::thread read_thread_;
   bool running_;
 };

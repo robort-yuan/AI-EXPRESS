@@ -15,8 +15,9 @@
 #include <string>
 #include <memory>
 #include <numeric>
-
-using hobot::vision::Feature;
+#include <vector>
+#include <algorithm>
+#include "opencv2/core/core.hpp"
 
 namespace xstream {
 
@@ -33,7 +34,12 @@ inline float SigMoid(const float &input) {
 }
 
 inline float GetFloatByInt(int32_t value, uint32_t shift) {
-  return (static_cast<float>(value)) / (static_cast<float>(1 << shift));
+  float ret_x = value;
+  if (value != 0) {
+    int *ix = reinterpret_cast<int *>(&ret_x);
+    (*ix) -= shift * 0x00800000;
+  }
+  return ret_x;
 }
 
 // coordinate transform.
@@ -46,6 +52,39 @@ inline void CoordinateTransform(
     int model_input_width, int model_input_hight) {
   x = x * 1.0 * src_image_width / model_input_width;
   y = y * 1.0 * src_image_height / model_input_hight;
+}
+
+// numpy arange
+template<typename T>
+inline std::vector<T> Arange(T start, T stop, T step = 1) {
+    std::vector<T> values;
+    for (T value = start; value < stop; value += step)
+        values.push_back(value);
+    return values;
+}
+
+// numpy meshgrid
+inline void MeshGrid(const cv::Mat &xgv, const cv::Mat &ygv,
+              cv::Mat &X, cv::Mat &Y)
+{
+  cv::repeat(xgv.reshape(1, 1), ygv.total(), 1, X);
+  cv::repeat(ygv.reshape(1, 1).t(), 1, xgv.total(), Y);
+}
+
+// 返回vector排序的索引值
+template <typename T>
+inline std::vector<size_t> SortIndexes(const std::vector<T> &v, bool cmp)
+{
+  std::vector<size_t> idx(v.size());
+  iota(idx.begin(), idx.end(), 0);
+  if (cmp) {
+    sort(idx.begin(), idx.end(),
+         [&v](size_t i1, size_t i2) {return v[i1] < v[i2]; });
+  } else {
+    sort(idx.begin(), idx.end(),
+         [&v](size_t i1, size_t i2) {return v[i1] > v[i2]; });
+  }
+  return idx;
 }
 
 inline std::string GetParentPath(const std::string &path) {

@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>XStream算法SDK编程框架开发指南 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>XStream算法SDK编程框架开发指南 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../genindex.html" />
     <link rel="search" title="搜索" href="../../search.html" />
     <link rel="next" title="XProto原型应用开发框架开发指南" href="xproto.html" />
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -65,7 +66,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -136,7 +138,18 @@
 <li class="toctree-l4"><a class="reference internal" href="#id36">数据流可视化工具</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#xstream-tutorials">XStream tutorials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xstream-tutorials">XStream tutorials</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#stage1-workflow">stage1 构造简单workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage2">stage2 多线程示例</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage3">stage3 运行时进行参数更新</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage4">stage4 多路输入</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage5">stage5 超时告警</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage6-profile">stage6 Profile功能</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage7-node">stage7 Node输出回调</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage8-workflow">stage8 子workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stage9-method">stage9 关闭指定的method实例</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#vision-type">内置数据结构vision_type</a><ul>
@@ -193,6 +206,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -231,7 +245,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>XStream算法SDK编程框架开发指南</li>
     
@@ -239,7 +253,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/BuildAll/doc/xstream.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/BuildAll/doc/xstream.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -314,7 +328,7 @@
 <h4>1.BaseData<a class="headerlink" href="#basedata" title="永久链接至标题">¶</a></h4>
 <p>Workflow中的每个Node之间流转的数据都是从BaseData继承而来，它定义如下：</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span>  <span class="n">xstream</span> <span class="p">{</span>
-<span class="k">struct</span> <span class="n">BaseData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">BaseData</span> <span class="p">{</span>
   <span class="n">BaseData</span><span class="p">();</span>
   <span class="k">virtual</span> <span class="o">~</span><span class="n">BaseData</span><span class="p">();</span>
   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span><span class="c1">// 类型</span>
@@ -333,13 +347,13 @@
 <span class="p">};</span>
 
 <span class="c1">// 还预定义了数组和从普通数据类型快速转化为XStream数据表示的模板：</span>
-<span class="k">struct</span> <span class="nl">BaseDataVector</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">BaseDataVector</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
   <span class="n">BaseDataVector</span><span class="p">();</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;</span> <span class="n">datas_</span><span class="p">;</span>
 <span class="p">};</span>
 <span class="c1">// 类模板，value可以为任意类型的数据</span>
-<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dtype</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="nl">XStreamData</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dtype</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">XStreamData</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
   <span class="n">Dtype</span> <span class="n">value</span><span class="p">;</span>
   <span class="n">XStreamData</span><span class="p">()</span> <span class="p">{}</span>
   <span class="k">explicit</span> <span class="n">XStreamData</span><span class="p">(</span><span class="k">const</span> <span class="n">Dtype</span><span class="o">&amp;</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
@@ -349,7 +363,7 @@
 </pre></div>
 </div>
 <p>实例：定义XStream框架BBox数据结构【推荐方法】</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">BBox</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">BBox</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
   <span class="kt">float</span> <span class="n">x1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="kt">float</span> <span class="n">y1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="kt">float</span> <span class="n">x2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -358,7 +372,7 @@
 </pre></div>
 </div>
 <p>实例：将一个已有的BBox数据结构包装为可以输入到XStream中数据表示。</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">BBox_</span> <span class="p">{</span>  <span class="c1">// 已有数据结构</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">BBox_</span> <span class="p">{</span>  <span class="c1">// 已有数据结构</span>
   <span class="kt">float</span> <span class="n">x1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="kt">float</span> <span class="n">y1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="kt">float</span> <span class="n">x2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -395,7 +409,7 @@
 <h4>3.InputData<a class="headerlink" href="#inputdata" title="永久链接至标题">¶</a></h4>
 <p>InputData定义了workflow的输入数据，整体结构表现为一帧一帧的数据流。</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// 输入数据类型</span>
-<span class="k">struct</span> <span class="n">InputData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">InputData</span> <span class="p">{</span>
   <span class="c1">// 用户输入的数据，比如图片、channel、框等等</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;</span> <span class="n">datas_</span><span class="p">;</span>
   <span class="c1">// 当前请求自定义的参数</span>
@@ -412,7 +426,7 @@
 <h4>4.OutputData<a class="headerlink" href="#outputdata" title="永久链接至标题">¶</a></h4>
 <p>OutputData定义了workflow的输出数据，整体结构表现为一帧一帧的数据流。</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// 输出数据类型</span>
-<span class="k">struct</span> <span class="n">OutputData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">OutputData</span> <span class="p">{</span>
   <span class="kt">int</span> <span class="n">error_code_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="c1">// 错误码</span>
   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">error_detail_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span><span class="c1">// 错误信息</span>
   <span class="c1">// 当该OutputData为给某个Method的定向回调结果时，该字段用于指示Method名称</span>
@@ -441,19 +455,19 @@
  <span class="k">public</span><span class="o">:</span>
   <span class="k">virtual</span> <span class="o">~</span><span class="n">Method</span><span class="p">();</span>
   <span class="c1">/// 初始化</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">config_file_path</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">Json</span><span class="o">::</span><span class="n">Value</span> <span class="o">&amp;</span><span class="n">config</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">config_file_path</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">Json</span><span class="o">::</span><span class="n">Value</span> <span class="o">&amp;</span><span class="n">config</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span> <span class="p">}</span>
 
   <span class="c1">/// 获取Method运行参数配置</span>
-  <span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="nf">GetParameter</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="n">GetParameter</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">// 动态改变Method运行参数配置</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">UpdateParameter</span><span class="p">(</span><span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">UpdateParameter</span><span class="p">(</span><span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// 获取Method版本号，比如 metric_v0.4.0 或者 MD112 等</span>
   <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">GetVersion</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// 获取Method基本信息</span>
-  <span class="k">virtual</span> <span class="n">MethodInfo</span> <span class="nf">GetMethodInfo</span><span class="p">();</span>
+  <span class="k">virtual</span> <span class="n">MethodInfo</span> <span class="n">GetMethodInfo</span><span class="p">();</span>
   <span class="c1">/// 用于告知Method整个SDK的Profiler状态更改</span>
-  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">OnProfilerChanged</span><span class="p">(</span><span class="kt">bool</span> <span class="n">on</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">OnProfilerChanged</span><span class="p">(</span><span class="kt">bool</span> <span class="n">on</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">// 数据处理函数，第一个参数是输入数据（双重vector，外层vector表示batch是多帧的输入</span>
   <span class="c1">// 内层的vector表示单帧的数据列表），</span>
@@ -462,7 +476,7 @@
       <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;&gt;</span> <span class="o">&amp;</span><span class="n">input</span><span class="p">,</span>
       <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">InputParamPtr</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">param</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// 析构</span>
-  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Finalize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="n">Finalize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Method</span><span class="o">&gt;</span> <span class="n">MethodPtr</span><span class="p">;</span>
@@ -552,7 +566,7 @@
 <p>实现具体的CreateMethod：</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">xstream</span> <span class="p">{</span>
 <span class="k">namespace</span> <span class="n">method_factory</span> <span class="p">{</span>
-<span class="n">MethodPtr</span> <span class="n">CreateMethod</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">MethodPtr</span> <span class="nf">CreateMethod</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="s">&quot;FasterRCNNMethod&quot;</span> <span class="o">==</span> <span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">MethodPtr</span><span class="p">(</span><span class="k">new</span> <span class="n">FasterRCNNMethod</span><span class="p">());</span>
   <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="s">&quot;CNNMethod&quot;</span> <span class="o">==</span> <span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
@@ -570,7 +584,7 @@
 <h4>3.Method属性<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h4>
 <p>自定义Method，可以通过实现<code class="docutils literal notranslate"><span class="pre">virtual</span> <span class="pre">MethodInfo</span> <span class="pre">GetMethodInfo();</span></code>函数来对Method的一些属性进行配置。</p>
 <p>MethidInfo定义如下：</p>
-<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">MethodInfo</span> <span class="p">{</span>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">MethodInfo</span> <span class="p">{</span>
   <span class="c1">// 是否线程安全</span>
   <span class="kt">bool</span> <span class="n">is_thread_safe_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
   <span class="c1">// 是否需要做reorder，也就是让每一帧结果的返回顺序同请求顺序。</span>
@@ -618,42 +632,45 @@
   <span class="c1">// 通过此方法构造SDK实例</span>
   <span class="k">static</span> <span class="n">XStreamSDK</span> <span class="o">*</span><span class="n">CreateSDK</span><span class="p">();</span>
 
-  <span class="c1">//说明：用于设置整个workflow的配置，目前支持的功能有：  </span>
+  <span class="c1">//说明：用于设置整个workflow的配置，接口返回0表示设置成功，返回-1表示暂不支持此配置；目前支持的功能有：  </span>
   <span class="c1">//1）key为&quot;config_file&quot;，value设置为workflow的配置路径，它定义整个workflow数据流。   </span>
   <span class="c1">//2）key为&quot;profiler&quot;，value为&quot;on&quot;，表示打开性能统计功能。&quot;off&quot;表示关闭, 默认为关闭。   </span>
   <span class="c1">//3）key为&quot;profiler_file&quot;,value为性能统计输出文件路径，用于设置性能统计文件的路径名称，默认为./profiler.txt   </span>
   <span class="c1">//4）key为&quot;free_framedata&quot;, value为&quot;on&quot;, 表示尽早地释放掉在后面node节点中不再需要使用的Framework Data中的某项数据。   </span>
   <span class="c1">//打开此项配置,可以减少峰值内存使用。&quot;off&quot;表示关闭, 默认为关闭。 </span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">SetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">SetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
 
-  <span class="c1">//用于初始化xstream句柄，必须在调用SetConfig之后执行Init()</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">Init</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="c1">//用于初始化xstream句柄，必须在调用SetConfig之后执行Init();Init接口返回0表示初始化成功，否则失败。</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">Init</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">// 用于设置node的参数，最终会通过调用对应的node管理的method实例的UpdateParameter(InputParamPtr ptr)接口，完成参数的更新。</span>
   <span class="c1">// 形参unique_name传入node的名字；形参ptr为该node对应的配置信息</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">UpdateConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">,</span> <span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="c1">// UpdateConfig接口返回0表示参数更新成功，否则失败。</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">UpdateConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">,</span> <span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">//获取某个node的参数，最终会调用对应的node管理的method实例的GetParameter()返回配置信息。</span>
-  <span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="nf">GetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="n">GetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">// 获取node对应method的版本信息。</span>
   <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">GetVersion</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
-  <span class="c1">// 同步运行接口，传⼊数据，接口会阻塞住，直到整个workflow处理完成，将workflow的结果通过函数返回值返回为止。</span>
+  <span class="c1">// 同步运行接口，传⼊数据，接口会阻塞住，直到整个workflow处理完成，将workflow的结果通过函数返回值返回，可以通过返回值中OutputData的output_type_字段信息判断输出类型。</span>
   <span class="c1">// 该接口需要在Init()之后执行才有效。</span>
-  <span class="k">virtual</span> <span class="n">OutputDataPtr</span> <span class="nf">SyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="n">OutputDataPtr</span> <span class="n">SyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
-  <span class="c1">// 同步多路输出的场景下， 输出接口可以通过output_type_信息判断输出类型。</span>
-  <span class="k">virtual</span> <span class="n">OutputDataPtr</span> <span class="nf">SyncPredict2</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="c1">// 同步运行接口，用法同SyncPredict接口，返回接口为多路输出。</span>
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">OutputDataPtr</span><span class="o">&gt;</span> <span class="n">SyncPredict2</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 
   <span class="c1">// 使用异步运行接口时，设置SetCallback才有效。</span>
   <span class="c1">// 将name设置为默认值，通过该接口可以设置整个workflow处理完成后的回调函数；</span>
   <span class="c1">// 将name设置为某个node的unique名字，通过该接口可以设置该node处理数据完成后的回调函数。</span>
-  <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">SetCallback</span><span class="p">(</span><span class="n">XStreamCallback</span> <span class="n">callback</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+  <span class="c1">// 接口返回0表示设置成功，否则设置失败。</span>
+  <span class="k">virtual</span> <span class="kt">int</span> <span class="n">SetCallback</span><span class="p">(</span><span class="n">XStreamCallback</span> <span class="n">callback</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
 
   <span class="c1">// 异步运行接口，结果通过SetCallback设置的回调函数捕获。AsyncPredict接口调用后立即返回。</span>
   <span class="c1">// 该接口需要在Init()之后执行才有效。</span>
-  <span class="k">virtual</span> <span class="kt">int64_t</span> <span class="nf">AsyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+  <span class="c1">// 接口返回值大于等于0，则表示该任务成功加入队列，且返回码表示该路输入源的sequence_id，结果通过SetCallback设置的回调函数捕获；若接口返回值小于0，表示任务队列已满，添加任务失败。</span>
+  <span class="k">virtual</span> <span class="kt">int64_t</span> <span class="n">AsyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
 <span class="p">};</span>
 </pre></div>
 </div>
@@ -669,7 +686,7 @@
 <h4>2.XStream SDK接口使用<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h4>
 <p><strong>同步运行模式</strong>：通过<code class="docutils literal notranslate"><span class="pre">SyncPredict</span></code>函数堵塞进行调用。</p>
 <p>实例代码如下:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/sync_main.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/sync_main.cc</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseData</span><span class="p">;</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataPtr</span><span class="p">;</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataVector</span><span class="p">;</span>
@@ -708,7 +725,7 @@
 </div>
 <p><strong>异步运行模式</strong>：通过<code class="docutils literal notranslate"><span class="pre">SetCallback</span></code>设置回调函数，实现<code class="docutils literal notranslate"><span class="pre">AsyncPredict</span></code>非堵塞调用。</p>
 <p>实例代码所示:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/async_main.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/async_main.cc</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseData</span><span class="p">;</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataPtr</span><span class="p">;</span>
 <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataVector</span><span class="p">;</span>
@@ -883,14 +900,14 @@
 <div class="section" id="id13">
 <h5>2.1定义数据类型<a class="headerlink" href="#id13" title="永久链接至标题">¶</a></h5>
 <p>BBoxFilter Method需要输入一组BBox，输出一组BBox，因此需要定义的数据类型为BBox。</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box.h</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box.h</span>
 <span class="k">namespace</span> <span class="n">hobot</span> <span class="p">{</span>
 <span class="k">namespace</span> <span class="n">vision</span> <span class="p">{</span>
-<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dtype</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">BBox_</span> <span class="p">{</span>
-  <span class="kr">inline</span> <span class="n">BBox_</span><span class="p">()</span> <span class="p">{}</span>
-  <span class="kr">inline</span> <span class="n">BBox_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">x2_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y2_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">,</span>
-               <span class="kt">int32_t</span> <span class="n">id_</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">category_name_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dtype</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">BBox_</span> <span class="p">{</span>
+  <span class="kr">inline</span> <span class="nf">BBox_</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="kr">inline</span> <span class="nf">BBox_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">x2_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y2_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">,</span>
+               <span class="kt">int32_t</span> <span class="n">id_</span> <span class="o">=</span> <span class="mi">-1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">category_name_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="n">x1_</span><span class="p">;</span>
     <span class="n">y1</span> <span class="o">=</span> <span class="n">y1_</span><span class="p">;</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="n">x2_</span><span class="p">;</span>
@@ -920,7 +937,7 @@
 <div class="section" id="id14">
 <h5>2.2数据类型封装<a class="headerlink" href="#id14" title="永久链接至标题">¶</a></h5>
 <p>基于<code class="docutils literal notranslate"><span class="pre">XStreamData</span></code>将自定义数据类型需要封装为在XStream数据表示，从而支持在XStream中流转。</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box.h</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box.h</span>
 <span class="k">typedef</span> <span class="n">XStreamData</span><span class="o">&lt;</span><span class="n">hobot</span><span class="o">::</span><span class="n">vision</span><span class="o">::</span><span class="n">BBox</span><span class="o">&gt;</span> <span class="n">BBox</span><span class="p">;</span>
 </pre></div>
 </div>
@@ -938,7 +955,7 @@
 <div class="section" id="id15">
 <h5>2.3Method实现<a class="headerlink" href="#id15" title="永久链接至标题">¶</a></h5>
 <p>继承Method基类，实现BBoxFilter Method</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box_filter.h</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box_filter.h</span>
 <span class="cp">#include</span> <span class="cpf">&quot;hobotxstream/method.h&quot;</span><span class="cp"></span>
 
 <span class="k">namespace</span> <span class="n">xstream</span> <span class="p">{</span>
@@ -973,7 +990,7 @@
 </pre></div>
 </div>
 <p>DoProcess：根据面积过滤框，这里没有直接过滤掉框，而是设置了Filter状态，最终输出可以通过检查状态位得到剩余框（未被过滤的框状态应为VALID）：</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box_filter.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box_filter.cc</span>
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;&gt;</span> <span class="n">BBoxFilter</span><span class="o">::</span><span class="n">DoProcess</span><span class="p">(</span>
     <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;&gt;</span> <span class="o">&amp;</span><span class="n">input</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">InputParamPtr</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">param</span><span class="p">)</span> <span class="p">{</span>
@@ -1035,7 +1052,7 @@
 </pre></div>
 </div>
 <p>需要注意的是Init输入参数为Json config文件路径，并不是json配置文件本身，需要先load文件然后完成json解析:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box_filter.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box_filter.cc</span>
 <span class="kt">int</span> <span class="n">BBoxFilter</span><span class="o">::</span><span class="n">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">config_file_path</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">std</span><span class="o">::</span><span class="n">ifstream</span> <span class="n">infile</span><span class="p">(</span><span class="n">file_path</span><span class="p">);</span>
   <span class="n">Json</span><span class="o">::</span><span class="n">Value</span> <span class="n">cfg_jv</span><span class="p">;</span>
@@ -1047,7 +1064,7 @@
 </pre></div>
 </div>
 <p>如果需要运行时更新阈值，需要实现UpdateParameter</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method/b_box_filter.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method/b_box_filter.cc</span>
 <span class="kt">int</span> <span class="n">BBoxFilter</span><span class="o">::</span><span class="n">UpdateParameter</span><span class="p">(</span><span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">auto</span> <span class="n">real_ptr</span> <span class="o">=</span> <span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">xstream</span><span class="o">::</span><span class="n">FilterParam</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">ptr</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">real_ptr</span><span class="o">-&gt;</span><span class="n">HasThreshold</span><span class="p">())</span> <span class="p">{</span>
@@ -1058,10 +1075,10 @@
 </pre></div>
 </div>
 <p>UpdateParameter的输入参数类型是InputParamPtr，这是XStream定义的参数类型的基类，用户需要继承该基类实现自定义的输入参数类FilterParam：</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/filter_param.h</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/filter_param.h</span>
 <span class="cp">#include</span> <span class="cpf">&quot;hobotxsdk/xstream_data.h&quot;</span><span class="cp"></span>
 <span class="k">namespace</span> <span class="n">xstream</span> <span class="p">{</span>
-<span class="k">typedef</span> <span class="k">struct</span> <span class="n">_FilterParam__isset</span> <span class="p">{</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">_FilterParam__isset</span> <span class="p">{</span>
   <span class="n">_FilterParam__isset</span><span class="p">()</span> <span class="o">:</span> <span class="n">threshold</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span> <span class="p">{}</span>
   <span class="kt">bool</span> <span class="nl">threshold</span> <span class="p">:</span> <span class="mi">1</span><span class="p">;</span>
 <span class="p">}</span> <span class="n">_FilterParam__isset</span><span class="p">;</span>
@@ -1205,7 +1222,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 </div>
 <p>XStream输入数据的数据结构为：</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// 输入数据类型</span>
-<span class="k">struct</span> <span class="n">InputData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">InputData</span> <span class="p">{</span>
   <span class="c1">// 用户输入的数据，比如图片channel、时间戳、框等等</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">BaseDataPtr</span><span class="o">&gt;</span> <span class="n">datas_</span><span class="p">;</span>
   <span class="c1">// 当前请求自定义的参数</span>
@@ -1226,12 +1243,12 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 <div class="section" id="id19">
 <h5>4.2Method注册<a class="headerlink" href="#id19" title="永久链接至标题">¶</a></h5>
 <p>XStream框架构建workflow时，调用全局MethodFactory创建对应Method实例，在使用BBoxFilter之前需要注册到MethodFactory中;</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/tutorials/stage1/method_factory.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/tutorials/stage1/method_factory.cc</span>
 <span class="cp">#include</span> <span class="cpf">&quot;hobotxstream/method_factory.h&quot;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&quot;method/bbox_filter.h&quot;</span><span class="cp"></span>
 <span class="k">namespace</span> <span class="n">xstream</span> <span class="p">{</span>
 <span class="k">namespace</span> <span class="n">method_factory</span> <span class="p">{</span>
-<span class="n">MethodPtr</span> <span class="n">CreateMethod</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">MethodPtr</span> <span class="nf">CreateMethod</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="s">&quot;BBoxFilter&quot;</span> <span class="o">==</span> <span class="n">method_name</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">MethodPtr</span><span class="p">(</span><span class="k">new</span> <span class="n">BBoxFilter</span><span class="p">());</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -1246,9 +1263,9 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 </div>
 <div class="section" id="id20">
 <h5>4.3同步预测<a class="headerlink" href="#id20" title="永久链接至标题">¶</a></h5>
-<p>调用XStreamSDK的class静态接口CreateSDK, 创建一个XStreamSDK的对象，并使用SyncPredict进行同步预测。</p>
+<p>调用XStreamSDK的class静态接口CreateSDK, 创建一个XStreamSDK的对象，并使用SyncPredict进行同步预测。SyncPredict接口直接返回workflow的输出结果。</p>
 <p>构建SDK代码如下：</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// xstream/tutorials/stage1/sync_main.cc文件对输入数据稍作改动，改成了循环输入10次数据。</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// xstream/framework/tutorials/stage1/sync_main.cc文件对输入数据稍作改动，改成了循环输入10次数据。</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseData</span><span class="p">;</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataPtr</span><span class="p">;</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataVector</span><span class="p">;</span>
@@ -1259,7 +1276,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
               <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Example : ./bbox_filter_main ./filter_workflow.json&quot;</span>
               <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
   <span class="p">}</span>
   <span class="k">auto</span> <span class="n">config</span> <span class="o">=</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
   <span class="n">xstream</span><span class="o">::</span><span class="n">XStreamSDK</span> <span class="o">*</span><span class="n">flow</span> <span class="o">=</span> <span class="n">xstream</span><span class="o">::</span><span class="n">XStreamSDK</span><span class="o">::</span><span class="n">CreateSDK</span><span class="p">();</span>
@@ -1308,21 +1325,22 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 <ul class="simple">
 <li><p>接口：</p></li>
 </ul>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int64_t</span> <span class="nf">AsyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int64_t</span> <span class="n">AsyncPredict</span><span class="p">(</span><span class="n">InputDataPtr</span> <span class="n">input</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </pre></div>
 </div>
-<p>说明：异步预测接口，AsyncPredict接⼝调⽤后立即返回，结果通过SetCallback设置的回调函数捕获。<br />Note:该接⼝需要在Init()之后执⾏才有效。</p>
+<p>说明：异步预测接口，AsyncPredict接⼝调⽤后立即返回，若AsyncPredict接口返回值大于等于0，则表示该任务成功加入队列，且返回码表示该路输入源的sequence_id，结果通过SetCallback设置的回调函数捕获；若接口返回小于0，表示任务队列已满，添加任务失败。</p>
+<p>Note:该接⼝需要在Init()之后执⾏才有效。</p>
 <ul class="simple">
 <li><p>设置异步回调接口</p></li>
 </ul>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int</span> <span class="nf">SetCallback</span><span class="p">(</span><span class="n">XStreamCallback</span> <span class="n">callback</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int</span> <span class="n">SetCallback</span><span class="p">(</span><span class="n">XStreamCallback</span> <span class="n">callback</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>说明：使⽤异步分析接口时，设置SetCallback才有效。
 将name设置为默认值，通过该接口可以设置整个workflow处理完成后的回调函数；
 将name设置为某个Node的unique名字，通过该接口可以设置某个method实例处理完成后的回调函数。</p>
 <p>基于异步接口创建sdk的方式：</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// xstream/tutorials/stage1/async_main.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>  <span class="c1">// xstream/framework/tutorials/stage1/async_main.cc</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseData</span><span class="p">;</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataPtr</span><span class="p">;</span>
   <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataVector</span><span class="p">;</span>
@@ -1334,7 +1352,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
               <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Example : ./bbox_filter_main ./filter_workflow.json&quot;</span>
               <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">-1</span><span class="p">;</span>
   <span class="p">}</span>
   <span class="k">auto</span> <span class="n">config</span> <span class="o">=</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
   <span class="n">xstream</span><span class="o">::</span><span class="n">XStreamSDK</span> <span class="o">*</span><span class="n">flow</span> <span class="o">=</span> <span class="n">xstream</span><span class="o">::</span><span class="n">XStreamSDK</span><span class="o">::</span><span class="n">CreateSDK</span><span class="p">();</span>
@@ -1415,7 +1433,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 </div>
 <div class="section" id="id22">
 <h5>4.5预测结果解析<a class="headerlink" href="#id22" title="永久链接至标题">¶</a></h5>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span> <span class="c1">// xstream/tutorials/stage1/sync_main.cc</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span> <span class="c1">// xstream/framework/tutorials/stage1/sync_main.cc</span>
   <span class="kt">void</span> <span class="nf">ParseOutput</span><span class="p">(</span><span class="n">xstream</span><span class="o">::</span><span class="n">OutputDataPtr</span> <span class="n">output</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">using</span> <span class="n">xstream</span><span class="o">::</span><span class="n">BaseDataVector</span><span class="p">;</span>
     <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;=====================&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
@@ -1452,7 +1470,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 <p>输出数据结构为：</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// xstream/framework/include/hobotxsdk/xstream_data.h</span>
 <span class="c1">// 输出数据类型</span>
-<span class="k">struct</span> <span class="n">OutputData</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">OutputData</span> <span class="p">{</span>
   <span class="c1">// 错误码</span>
   <span class="kt">int</span> <span class="n">error_code_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">// 错误信息</span>
@@ -1496,7 +1514,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 <ul class="simple">
 <li><p>接口</p></li>
 </ul>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int</span> <span class="nf">UpdateConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">,</span> <span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="kt">int</span> <span class="n">UpdateConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">,</span> <span class="n">InputParamPtr</span> <span class="n">ptr</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>说明：用于设置method的参数，最终会通过调用对应的Method-&gt;UpdateParameter(InputParamPtr ptr)接口，完成Method参数的更新。<br />&#64;unique_name：指定需要更新配置的node的unique name;<br />&#64;ptr：需要更新配置信息</p>
@@ -1504,7 +1522,7 @@ BaseData的数组表示为BaseDataVector， BaseDataVector已经是BaseData的�
 <ul class="simple">
 <li><p>接口</p></li>
 </ul>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="nf">GetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">virtual</span> <span class="n">InputParamPtr</span> <span class="n">GetConfig</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">unique_name</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>说明：获取某个method的参数，最终会调用对应的Method-&gt;GetParameter()返回method配置信息。</p>
@@ -2184,6 +2202,52 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 </div>
 <div class="section" id="xstream-tutorials">
 <h3>XStream tutorials<a class="headerlink" href="#xstream-tutorials" title="永久链接至标题">¶</a></h3>
+<p>XStream Framework提供了一系列的开发示例，基于Framework实现一系列独立的功能，由简至难，逐步介绍XStream的基础功能和高阶功能。</p>
+<div class="section" id="stage1-workflow">
+<h4>stage1 构造简单workflow<a class="headerlink" href="#stage1-workflow" title="永久链接至标题">¶</a></h4>
+<p>本节将介绍如何搭建一个简单的workflow，实现过滤Box的功能。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage1/README.html">tutorials_stage1 构造简单workflow</a></p>
+</div>
+<div class="section" id="stage2">
+<h4>stage2 多线程示例<a class="headerlink" href="#stage2" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何创建多线程。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage2/README.html">tutorials_stage2 多线程示例</a></p>
+</div>
+<div class="section" id="stage3">
+<h4>stage3 运行时进行参数更新<a class="headerlink" href="#stage3" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何在运行时进行参数更新。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage3/README.html">tutorials_stage3 运行时进行参数更新</a></p>
+</div>
+<div class="section" id="stage4">
+<h4>stage4 多路输入<a class="headerlink" href="#stage4" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何使用多路输入。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage4/README.html">tutorials_stage4 多路输入</a></p>
+</div>
+<div class="section" id="stage5">
+<h4>stage5 超时告警<a class="headerlink" href="#stage5" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何使用超时告警。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage5/README.html">tutorials_stage5 超时告警</a></p>
+</div>
+<div class="section" id="stage6-profile">
+<h4>stage6 Profile功能<a class="headerlink" href="#stage6-profile" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何使用Profile性能统计功能。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage6/README.html">tutorials_stage6 Profile功能</a></p>
+</div>
+<div class="section" id="stage7-node">
+<h4>stage7 Node输出回调<a class="headerlink" href="#stage7-node" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何进行Node输出回调。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage7/README.html">tutorials_stage7 Node输出回调</a></p>
+</div>
+<div class="section" id="stage8-workflow">
+<h4>stage8 子workflow<a class="headerlink" href="#stage8-workflow" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何使用子workflow。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage8/README.html">tutorials_stage8 子workflow</a></p>
+</div>
+<div class="section" id="stage9-method">
+<h4>stage9 关闭指定的method实例<a class="headerlink" href="#stage9-method" title="永久链接至标题">¶</a></h4>
+<p>本节介绍如何关闭指定的method实例。
+详细参见<a class="reference external" href="../../xsdk/common/xstream/framework/tutorials/stage9/README.html">tutorials_stage9 关闭指定的method实例</a></p>
+</div>
 </div>
 </div>
 <div class="section" id="vision-type">
@@ -2196,7 +2260,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
 <span class="cm"> * \~Chinese @brief 基础图像帧</span>
 <span class="cm"> */</span>
-<span class="k">struct</span> <span class="n">ImageFrame</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">ImageFrame</span> <span class="p">{</span>
   <span class="k">virtual</span> <span class="o">~</span><span class="n">ImageFrame</span><span class="p">()</span> <span class="p">{}</span>
   <span class="c1">/// \~Chinese 图片编码方式</span>
   <span class="n">HorizonVisionPixelFormat</span> <span class="n">pixel_format</span> <span class="o">=</span>
@@ -2206,27 +2270,27 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
   <span class="kt">uint64_t</span> <span class="n">frame_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 图像数据</span>
-  <span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="nf">Data</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="n">Data</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese UV分量数据</span>
-  <span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="nf">DataUV</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="n">DataUV</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 图片大小</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">DataSize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">DataSize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese UV分量大小</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">DataUVSize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">DataUVSize</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 宽度</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">Width</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">Width</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 高度</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">Height</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">Height</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 长度</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">Stride</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">Stride</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese uv长度</span>
-  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">StrideUV</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="n">StrideUV</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">};</span>
 </pre></div>
 </div>
 <p>基于ImageFrame接口类，派生出CVImageFrame、PymImageFrame等具体数据类型，分别用于表示一帧图像数据以及一个金字塔图像数据。金字塔图像数据用得更多些，目前图像金字塔用于表示地平线芯片输出的NV12格式的图像金字塔。相关的数据结构表示如下：</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">/// 图像金字塔每层图像的表示</span>
-<span class="k">struct</span> <span class="n">ImageLevelInfo</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">ImageLevelInfo</span> <span class="p">{</span>
   <span class="kt">uint16_t</span> <span class="n">width</span><span class="p">;</span>  <span class="c1">// 当前金字塔层图像的宽</span>
   <span class="kt">uint16_t</span> <span class="n">height</span><span class="p">;</span>  <span class="c1">// 当前金字塔层图像的高</span>
   <span class="kt">uint16_t</span> <span class="n">stride</span><span class="p">;</span>  <span class="c1">// 图像每行的stride</span>
@@ -2236,7 +2300,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
   <span class="kt">uint64_t</span> <span class="n">c_vaddr</span><span class="p">;</span>  <span class="c1">// 图像uv分类的虚拟地址</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="nl">PymImageFrame</span> <span class="p">:</span> <span class="k">public</span> <span class="n">ImageFrame</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">PymImageFrame</span> <span class="o">:</span> <span class="k">public</span> <span class="n">ImageFrame</span> <span class="p">{</span>
   <span class="n">PymImageFrame</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">type</span> <span class="o">=</span> <span class="s">&quot;PymImageFrame&quot;</span><span class="p">;</span>
     <span class="n">pixel_format</span> <span class="o">=</span> <span class="n">HorizonVisionPixelFormat</span><span class="o">::</span><span class="n">kHorizonVisionPixelFormatPYM</span><span class="p">;</span>
@@ -2290,10 +2354,10 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
 <span class="cm"> * \~Chinese @brief 2D坐标点</span>
 <span class="cm"> */</span>
-<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dtype</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">Point_</span> <span class="p">{</span>
-  <span class="kr">inline</span> <span class="n">Point_</span><span class="p">()</span> <span class="p">{}</span>
-  <span class="kr">inline</span> <span class="n">Point_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dtype</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">Point_</span> <span class="p">{</span>
+  <span class="kr">inline</span> <span class="nf">Point_</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="kr">inline</span> <span class="nf">Point_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
       <span class="o">:</span> <span class="n">x</span><span class="p">(</span><span class="n">x_</span><span class="p">),</span> <span class="n">y</span><span class="p">(</span><span class="n">y_</span><span class="p">),</span> <span class="n">score</span><span class="p">(</span><span class="n">score_</span><span class="p">)</span> <span class="p">{}</span>
 
   <span class="n">Dtype</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -2305,7 +2369,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <span class="cm">/**</span>
 <span class="cm"> * \~Chinese @brief 2D坐标点集合，可用于存储关键点等结果</span>
 <span class="cm"> */</span>
-<span class="k">struct</span> <span class="n">Points</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">Points</span> <span class="p">{</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Point</span><span class="o">&gt;</span> <span class="n">values</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 置信度</span>
   <span class="kt">float</span> <span class="n">score</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
@@ -2319,11 +2383,11 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
 <span class="cm"> * \~Chinese @brief 检测框</span>
 <span class="cm"> */</span>
-<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dtype</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">BBox_</span> <span class="p">{</span>
-  <span class="kr">inline</span> <span class="n">BBox_</span><span class="p">()</span> <span class="p">{}</span>
-  <span class="kr">inline</span> <span class="n">BBox_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">x2_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y2_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">,</span>
-               <span class="kt">int32_t</span> <span class="n">id_</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">category_name_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dtype</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">BBox_</span> <span class="p">{</span>
+  <span class="kr">inline</span> <span class="nf">BBox_</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="kr">inline</span> <span class="nf">BBox_</span><span class="p">(</span><span class="n">Dtype</span> <span class="n">x1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y1_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">x2_</span><span class="p">,</span> <span class="n">Dtype</span> <span class="n">y2_</span><span class="p">,</span> <span class="kt">float</span> <span class="n">score_</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">,</span>
+               <span class="kt">int32_t</span> <span class="n">id_</span> <span class="o">=</span> <span class="mi">-1</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">category_name_</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="n">x1_</span><span class="p">;</span>
     <span class="n">y1</span> <span class="o">=</span> <span class="n">y1_</span><span class="p">;</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="n">x2_</span><span class="p">;</span>
@@ -2356,7 +2420,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
 <span class="cm"> * \~Chinese @brief 单精度浮点数组，可用于存储特征值、质量结果等</span>
 <span class="cm"> */</span>
-<span class="k">struct</span> <span class="n">FloatArray</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">FloatArray</span> <span class="p">{</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">values</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 置信度</span>
   <span class="kt">float</span> <span class="n">score</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
@@ -2367,7 +2431,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 </div>
 <div class="section" id="id40">
 <h3>分割<a class="headerlink" href="#id40" title="永久链接至标题">¶</a></h3>
-<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Segmentation</span> <span class="p">{</span>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Segmentation</span> <span class="p">{</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">values</span><span class="p">;</span>  <span class="c1">// 分割的结果，可以将整形保持至float数组中</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="n">pixel_score</span><span class="p">;</span>  <span class="c1">// 每个像素的分类得分</span>
   <span class="kt">int32_t</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>  <span class="c1">// 分割输出的宽</span>
@@ -2381,7 +2445,7 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="section" id="id41">
 <h3>3D姿态<a class="headerlink" href="#id41" title="永久链接至标题">¶</a></h3>
 <p>用于描述pitch、yaw、roll的角度。</p>
-<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Pose3D</span> <span class="p">{</span>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Pose3D</span> <span class="p">{</span>
   <span class="c1">/// \~Chinese 俯仰角度</span>
   <span class="kt">float</span> <span class="n">pitch</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 左右摇头角度</span>
@@ -2397,8 +2461,8 @@ Workflow配置文件中通过字段”source_number”表示输入源数目，�
 <div class="section" id="id42">
 <h3>通用属性类<a class="headerlink" href="#id42" title="永久链接至标题">¶</a></h3>
 <p>用于描述分类类属性结果。</p>
-<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">DType</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="n">Attribute</span> <span class="p">{</span>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">DType</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">Attribute</span> <span class="p">{</span>
   <span class="n">DType</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
   <span class="c1">/// \~Chinese 置信度</span>
   <span class="kt">float</span> <span class="n">score</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
@@ -2461,14 +2525,14 @@ struct SnapshotInfo {
 <div class="section" id="id45">
 <h3>XStream-Framework使用这些数据结构<a class="headerlink" href="#id45" title="永久链接至标题">¶</a></h3>
 <p>定义的这些数据结构不是继承自XStream-Framework中定义的BaseData基类，故不能直接在XStream-Framework框架中使用，需要借助XStream-Framework提供的包装类模块进行封装：</p>
-<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Dtype</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="nl">XStreamData</span> <span class="p">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">Dtype</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nc">XStreamData</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BaseData</span> <span class="p">{</span>
   <span class="n">Dtype</span> <span class="n">value</span><span class="p">;</span>
   <span class="n">XStreamData</span><span class="p">()</span> <span class="p">{}</span>
   <span class="k">explicit</span> <span class="n">XStreamData</span><span class="p">(</span><span class="k">const</span> <span class="n">Dtype</span> <span class="o">&amp;</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span> <span class="n">value</span> <span class="o">=</span> <span class="n">val</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="n">XStreamData</span><span class="o">&lt;</span><span class="n">BBox</span><span class="o">&gt;</span> <span class="n">box</span><span class="p">;</span>  <span class="c1">// 则XStreamData&lt;BBox&gt;继承自BaseData，里面包含一个数据成员value，类型为BBox。</span>
+<span class="k">struct</span> <span class="nc">XStreamData</span><span class="o">&lt;</span><span class="n">BBox</span><span class="o">&gt;</span> <span class="n">box</span><span class="p">;</span>  <span class="c1">// 则XStreamData&lt;BBox&gt;继承自BaseData，里面包含一个数据成员value，类型为BBox。</span>
 </pre></div>
 </div>
 </div>
@@ -3021,7 +3085,7 @@ struct SnapshotInfo {
 <span class="cm">* @param output_image 分配的图像区域，要求output_image != NULl</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamAllocImage</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">image_size</span><span class="p">,</span>
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamAllocImage</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">image_size</span><span class="p">,</span>
 <span class="kt">uint8_t</span><span class="o">**</span> <span class="n">output_image</span><span class="p">);</span>
 
 <span class="cm">/**</span>
@@ -3032,7 +3096,7 @@ struct SnapshotInfo {
 <span class="cm">* /HobotXStreamPadImage等接口返回的输出数据的地址。</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamFreeImage</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">input</span><span class="p">);</span>
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamFreeImage</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">input</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm">* @brief 解码图片至dst_fmt格式。接口内部分配输出的内存空间\</span>
@@ -3049,10 +3113,10 @@ struct SnapshotInfo {
 <span class="cm">* @param second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamDecodeImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamDecodeImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">dst_fmt</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">dst_fmt</span><span class="p">,</span>
 <span class="kt">uint8_t</span> <span class="o">**</span><span class="n">output</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">width</span><span class="p">,</span>
@@ -3078,15 +3142,15 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamConvertImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamConvertImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">input_fmt</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">output_fmt</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">input_fmt</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">output_fmt</span><span class="p">,</span>
 <span class="kt">uint8_t</span> <span class="o">**</span><span class="n">output</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_first_stride</span><span class="p">,</span>
@@ -3113,15 +3177,15 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">*/</span>
 
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamConvertYuvImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamConvertYuvImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input_yuv_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_yuv_size</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">input_fmt</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">output_fmt</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">input_fmt</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">output_fmt</span><span class="p">,</span>
 <span class="kt">uint8_t</span> <span class="o">**</span><span class="n">output</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_first_stride</span><span class="p">,</span>
@@ -3150,14 +3214,14 @@ struct SnapshotInfo {
 <span class="cm">* @param resize_info: 缩放参数</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamResizeImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamResizeImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">fix_aspect_ratio</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">dst_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">dst_height</span><span class="p">,</span>
@@ -3165,7 +3229,7 @@ struct SnapshotInfo {
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_first_stride</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_second_stride</span><span class="p">,</span>
-<span class="k">struct</span> <span class="n">HobotXStreamImageToolsResizeInfo</span> <span class="o">*</span><span class="n">resize_info</span><span class="p">);</span>
+<span class="k">struct</span> <span class="nc">HobotXStreamImageToolsResizeInfo</span> <span class="o">*</span><span class="n">resize_info</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm">* @brief 根据缩放因子缩放图像\</span>
@@ -3190,14 +3254,14 @@ struct SnapshotInfo {
 <span class="cm">* @param resize_info: 缩放参数</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamResizeImageByRatio</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamResizeImageByRatio</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">fix_aspect_ratio</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">float</span> <span class="n">width_ratio</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">float</span> <span class="n">height_ratio</span><span class="p">,</span>
@@ -3205,7 +3269,7 @@ struct SnapshotInfo {
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_first_stride</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_second_stride</span><span class="p">,</span>
-<span class="k">struct</span> <span class="n">HobotXStreamImageToolsResizeInfo</span> <span class="o">*</span><span class="n">resize_info</span><span class="p">);</span>
+<span class="k">struct</span> <span class="nc">HobotXStreamImageToolsResizeInfo</span> <span class="o">*</span><span class="n">resize_info</span><span class="p">);</span>
 
 <span class="cm">/**</span>
 <span class="cm">* @brief 抠图\</span>
@@ -3231,14 +3295,14 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamCropImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamCropImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_y</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_x</span><span class="p">,</span>
@@ -3277,14 +3341,14 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamCropYUVImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamCropYUVImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input_yuv_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_yuv_size</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_y</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_x</span><span class="p">,</span>
@@ -3321,14 +3385,14 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamCropImageWithPaddingBlack</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamCropImageWithPaddingBlack</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_y</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_x</span><span class="p">,</span>
@@ -3368,14 +3432,14 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamCropYuvImageWithPaddingBlack</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamCropYuvImageWithPaddingBlack</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input_yuv_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_yuv_size</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_y</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_x</span><span class="p">,</span>
@@ -3405,13 +3469,13 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride:</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamCropImageFrameWithPaddingBlack</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamCropImageFrameWithPaddingBlack</span><span class="p">(</span>\
 <span class="kt">void</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">top_left_y</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_x</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">bottom_right_y</span><span class="p">,</span>
-<span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="o">*</span><span class="n">output_format</span><span class="p">,</span>
+<span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="o">*</span><span class="n">output_format</span><span class="p">,</span>
 <span class="kt">uint8_t</span> <span class="o">**</span><span class="n">output</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_width</span><span class="p">,</span>
@@ -3448,14 +3512,14 @@ struct SnapshotInfo {
 <span class="cm">* @param output_second_stride: uv的stride</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamPadImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamPadImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">padding_left_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">padding_right_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">padding_top_height</span><span class="p">,</span>
@@ -3488,14 +3552,14 @@ struct SnapshotInfo {
 <span class="cm">* @param resize_info: 缩放参数</span>
 <span class="cm">* @return: 成功返回0，失败返回-1</span>
 <span class="cm">*/</span>
-<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="nf">HobotXStreamRotateImage</span><span class="p">(</span>\
+<span class="n">XSTREAM_API</span> <span class="kt">int</span> <span class="n">HobotXStreamRotateImage</span><span class="p">(</span>\
 <span class="k">const</span> <span class="kt">uint8_t</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_size</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_width</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_height</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_first_stride</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">input_second_stride</span><span class="p">,</span>
-<span class="k">const</span> <span class="k">enum</span> <span class="n">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
+<span class="k">const</span> <span class="k">enum</span> <span class="nc">HobotXStreamImageToolsPixelFormat</span> <span class="n">format</span><span class="p">,</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">degree</span><span class="p">,</span>
 <span class="kt">uint8_t</span> <span class="o">**</span><span class="n">output</span><span class="p">,</span>
 <span class="kt">int</span> <span class="o">*</span><span class="n">output_size</span><span class="p">,</span>
@@ -3522,11 +3586,19 @@ struct SnapshotInfo {
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -3537,7 +3609,6 @@ struct SnapshotInfo {
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

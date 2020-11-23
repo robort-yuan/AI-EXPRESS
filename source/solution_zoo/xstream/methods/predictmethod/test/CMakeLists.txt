@@ -13,7 +13,7 @@ set(COMMON_DEPS
 
 set(BASE_LIBRARIES jsoncpp pthread dl rt)
 set(OpenCVLib opencv_world)
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream -Wl,--no-whole-archive)
 set(X2_PREBUILT_LIB bpu_predict libcam.so libvio.so libcnn_intf.so)
 set(VioWrapperLib viowrapper)
 add_executable(apa_test ${SOURCE_FILES})

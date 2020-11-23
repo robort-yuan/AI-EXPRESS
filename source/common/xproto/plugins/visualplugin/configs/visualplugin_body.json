@@ -25,5 +25,8 @@
   "h264_encode_time": 0,
   "smart_transfer_mode": 0,
   "rndis_port": 9999,
-  "smart_transfer_mode_desc": "0: hid, 1: rndis"
+  "smart_transfer_mode_desc": "0: hid, 1: rndis",
+  "ap_mode": false,
+  "input_h264_filename": "test.264",
+  "local_forward": 0
 }

@@ -12,7 +12,6 @@
 #include <sstream>
 
 namespace hobot {
-
 std::chrono::time_point<std::chrono::system_clock> Timer::tic() {
   return std::chrono::system_clock::now();
 }
@@ -36,5 +35,4 @@ time_t Timer::current_time_stamp() {
              std::chrono::system_clock::now().time_since_epoch())
       .count();
 }
-
 }  // namespace hobot

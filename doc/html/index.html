@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>AI Express用户文档(V2.6.0) &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>AI Express用户文档(V2.7.0) &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="搜索" href="search.html" />
     <link rel="next" title="概述" href="BuildAll/doc/overview.html" /> 
@@ -50,7 +51,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> AI Express用户手册
+            <a href="#" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -64,7 +65,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -95,6 +97,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -133,15 +136,15 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
-      <li>AI Express用户文档(V2.6.0)</li>
+      <li>AI Express用户文档(V2.7.0)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/index.rst.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -154,8 +157,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="ai-express-v2-6-0">
-<h1>AI Express用户文档(V2.6.0)<a class="headerlink" href="#ai-express-v2-6-0" title="永久链接至标题">¶</a></h1>
+  <div class="section" id="ai-express-v2-7-0">
+<h1>AI Express用户文档(V2.7.0)<a class="headerlink" href="#ai-express-v2-7-0" title="永久链接至标题">¶</a></h1>
 </div>
 <div class="section" id="id1">
 <h1>目录结构<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
@@ -166,6 +169,7 @@
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#xstreamsdk">XStream算法SDK编程框架</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#xproto">XProto原型应用开发框架</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#id2">场景参考解决方案</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#ai-expressbpu-predict">AI Express与bpu_predict的区别</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#id3">定位与优势</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/overview.html#id4">开源仓库</a></li>
 </ul>
@@ -193,8 +197,8 @@
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id1">XProto设计理念</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id2">XProto组成</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id3">XProto-Framework用户手册</a></li>
-<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id12">内置数据类型msgtype</a></li>
-<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id13">内置plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id8">内置数据类型msgtype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/xproto.html#id9">内置plugin</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="BuildAll/doc/solution.html">场景参考解决方案</a><ul>
@@ -207,6 +211,7 @@
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/solution.html#usb-camera">usb camera</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/solution.html#apa">apa自动泊车</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/solution.html#id12">车辆结构化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/solution.html#camera">多路camera</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="BuildAll/doc/tools.html">工具集</a><ul>
@@ -222,9 +227,11 @@
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/faq.html#id8">回灌模式</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/faq.html#usb-uvcweb">usb智慧电视场景，切换uvc与web模式</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/faq.html#hdmi">视频盒子使用HDMI显示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/faq.html#id11">视频盒子本地转发</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="BuildAll/doc/version.html">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/version.html#v2-7-0">V2.7.0版本</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/version.html#v2-6-0">V2.6.0版本</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/version.html#v2-5-0">V2.5.0版本</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildAll/doc/version.html#v2-4-0">V2.4.0版本</a></li>
@@ -258,11 +265,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -273,7 +288,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -22,7 +22,7 @@ set(SOURCE_FILES
 
 add_library(MergeMethod STATIC ${SOURCE_FILES})
 
-set(BASE_LIBRARIES xstream-framework hobotlog jsoncpp opencv_world)
+set(BASE_LIBRARIES xstream hobotlog jsoncpp opencv_world)
 if (${SUPPORT_RGB_NIR_MERGE})
     set(BASE_LIBRARIES ${BASE_LIBRARIES} dual_camera_algo vio cam)
 endif ()

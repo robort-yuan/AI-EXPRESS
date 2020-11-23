@@ -333,7 +333,7 @@ int VpsModule::VpsInit() {
             << " crop y: " << crop_info.cropRect.y;
           ret = HB_VPS_SetChnCrop(pipe_id, crop_chn, &crop_info);
           if (ret) {
-            pr_err("HB_VPS_SetChnCrop error!!!\n");
+            LOGE << "HB_VPS_SetChnCrop error!!!";
             return ret;
           } else {
             LOGI << "vps set ipu crop ok: GrpId: " << pipe_id
@@ -408,11 +408,51 @@ int VpsModule::VpsDeInit() {
   return 0;
 }
 
+int VpsModule::VpsCreateFbThread() {
+  LOGD << "Enter VpsCreateFbThread, pipe_id: " << pipe_id_
+    << " fb_start_flag: " << fb_start_flag_;
+
+  if (fb_start_flag_ == true) {
+    LOGE << "Vps fb thread has been create";
+    return -1;
+  }
+
+  if (fb_thread_ == nullptr) {
+    fb_thread_ = std::make_shared<std::thread>(
+        &VpsModule::HbGetFbDataThread, this);
+    fb_start_flag_ = true;
+  }
+
+  return 0;
+}
+
+int VpsModule::VpsDestoryFbThread() {
+  LOGI << "Enter VpsDestoryFbThread, pipe_id: " << pipe_id_
+    << " fb_start_flag: " << fb_start_flag_;
+
+  if (fb_start_flag_ == false) {
+    LOGE << "Vps fb thread has been destory";
+    return -1;
+  }
+
+  if (fb_thread_ != nullptr) {
+    fb_start_flag_ = false;
+    fb_thread_->join();
+  } else {
+    LOGE << "feedback thread is nullptr!!!";
+    return -1;
+  }
+
+  LOGI << "Quit VpsDestoryFbThread, pipe_id: " << pipe_id_
+    << " start_flag: " << fb_start_flag_;
+  return 0;
+}
+
 int VpsModule::VpsCreatePymThread() {
   LOGD << "Enter VpsCreatePymThread, pipe_id: " << pipe_id_
-    << " start_flag: " << start_flag_;
+    << " start_flag: " << pym_start_flag_;
 
-  if (start_flag_ == true) {
+  if (pym_start_flag_ == true) {
     LOGE << "Vps module has been create";
     return -1;
   }
@@ -420,7 +460,7 @@ int VpsModule::VpsCreatePymThread() {
   if (pym_thread_ == nullptr) {
     pym_thread_ = std::make_shared<std::thread>(
         &VpsModule::HbGetPymDataThread, this);
-    start_flag_ = true;
+    pym_start_flag_ = true;
   }
 
   return 0;
@@ -428,29 +468,31 @@ int VpsModule::VpsCreatePymThread() {
 
 int VpsModule::VpsDestoryPymThread() {
   LOGI << "Enter VpsDestoryPymThread, pipe_id: " << pipe_id_
-    << " start_flag: " << start_flag_;
+    << " start_flag: " << pym_start_flag_;
 
-  if (start_flag_ == false) {
+  if (pym_start_flag_ == false) {
     LOGE << "Vps module has been destory";
     return -1;
   }
 
   if (pym_thread_ != nullptr) {
-    start_flag_ = false;
+    pym_start_flag_ = false;
     pym_thread_->join();
+    pym_thread_ = nullptr;
   } else {
     LOGE << "pym thread is nullptr!!!";
     return -1;
   }
 
   LOGI << "Quit VpsDestoryPymThread, pipe_id: " << pipe_id_
-    << " start_flag: " << start_flag_;
+    << " start_flag: " << pym_start_flag_;
   return 0;
 }
 
 int VpsModule::VpsStart() {
   int ret = -1;
   int pipe_id = pipe_id_;
+  int inner_buf_en = vio_cfg_.vps_cfg.fb_info.inner_buf_en;
 
   LOGD << "Enter Vps Start, pipe_id: " << pipe_id;
   ret = HB_VPS_StartGrp(pipe_id);
@@ -458,6 +500,13 @@ int VpsModule::VpsStart() {
     LOGE << "pipe_id: " <<  pipe_id
       << " HB_VPS_StartGrp error, ret: " << ret;
     return ret;
+  }
+  if (inner_buf_en == 1) {
+    ret = VpsCreateFbThread();
+    if (ret) {
+      LOGE << "Vps create pym thread failed!!!";
+      return ret;
+    }
   }
   ret = VpsCreatePymThread();
   if (ret) {
@@ -471,12 +520,20 @@ int VpsModule::VpsStart() {
 int VpsModule::VpsStop() {
   int ret = -1;
   int pipe_id = pipe_id_;
+  int inner_buf_en = vio_cfg_.vps_cfg.fb_info.inner_buf_en;
 
   LOGI << "Enter vps module stop, pipe_id: " << pipe_id;
   ret = VpsDestoryPymThread();
   if (ret) {
     LOGE << "Vps destory pym thread failed!!!";
     return ret;
+  }
+  if (inner_buf_en == 1) {
+    ret = VpsDestoryFbThread();
+    if (ret) {
+      LOGE << "Vps destory feedback thread failed!!!";
+      return ret;
+    }
   }
   LOGI << "HB_VPS_StopGrp, pipe_id: " << pipe_id;
   ret = HB_VPS_StopGrp(pipe_id);
@@ -891,6 +948,96 @@ int VpsModule::HbPymTimeoutWait(uint64_t timeout_ms) {
   return ret;
 }
 
+void *VpsModule::VpsCreatePymAddrInfo() {
+  auto *pvio_image = reinterpret_cast<void*>(
+      std::calloc(1, sizeof(pym_buffer_t)));
+  if (nullptr == pvio_image) {
+    LOGE << "std::calloc pym buffer failed";
+    return nullptr;
+  }
+
+  return pvio_image;
+}
+
+void *VpsModule::VpsCreateSrcAddrInfo() {
+  auto *pvio_image = reinterpret_cast<void*>(
+      std::calloc(1, sizeof(hb_vio_buffer_t)));
+  if (nullptr == pvio_image) {
+    LOGE << "std::calloc pym buffer failed";
+    return nullptr;
+  }
+
+  return pvio_image;
+}
+
+void VpsModule::VpsConvertPymInfo(void *pym_buf, PymImageFrame &pym_img) {
+  auto pym_buffer = static_cast<pym_buffer_t*>(pym_buf);
+  if (nullptr == pym_buffer) {
+    return;
+  }
+  pym_img.ds_pym_total_layer = DOWN_SCALE_MAX;
+  pym_img.us_pym_total_layer = UP_SCALE_MAX;
+  pym_img.frame_id = pym_buffer->pym_img_info.frame_id;
+  pym_img.time_stamp = pym_buffer->pym_img_info.time_stamp;
+  pym_img.context = pym_buf;
+  for (int i = 0; i < DOWN_SCALE_MAX; ++i) {
+    address_info_t *pym_addr = NULL;
+    if (i % 4 == 0) {
+      pym_addr = reinterpret_cast<address_info_t *>(&pym_buffer->pym[i / 4]);
+    } else {
+      pym_addr = reinterpret_cast<address_info_t *>(
+          &pym_buffer->pym_roi[i / 4][i % 4 - 1]);
+    }
+    pym_img.down_scale[i].width = pym_addr->width;
+    pym_img.down_scale[i].height = pym_addr->height;
+    pym_img.down_scale[i].stride = pym_addr->stride_size;
+    pym_img.down_scale[i].y_paddr = pym_addr->paddr[0];
+    pym_img.down_scale[i].c_paddr = pym_addr->paddr[1];
+    pym_img.down_scale[i].y_vaddr =
+        reinterpret_cast<uint64_t>(pym_addr->addr[0]);
+    pym_img.down_scale[i].c_vaddr =
+        reinterpret_cast<uint64_t>(pym_addr->addr[1]);
+  }
+  for (int i = 0; i < UP_SCALE_MAX; ++i) {
+    pym_img.up_scale[i].width = pym_buffer->us[i].width;
+    pym_img.up_scale[i].height = pym_buffer->us[i].height;
+    pym_img.up_scale[i].stride = pym_buffer->us[i].stride_size;
+    pym_img.up_scale[i].y_paddr = pym_buffer->us[i].paddr[0];
+    pym_img.up_scale[i].c_paddr = pym_buffer->us[i].paddr[1];
+    pym_img.up_scale[i].y_vaddr =
+        reinterpret_cast<uint64_t>(pym_buffer->us[i].addr[0]);
+    pym_img.up_scale[i].c_vaddr =
+        reinterpret_cast<uint64_t>(pym_buffer->us[i].addr[1]);
+  }
+  for (int i = 0; i < DOWN_SCALE_MAIN_MAX; ++i) {
+    pym_img.down_scale_main[i].width = pym_buffer->pym[i].width;
+    pym_img.down_scale_main[i].height = pym_buffer->pym[i].height;
+    pym_img.down_scale_main[i].stride = pym_buffer->pym[i].stride_size;
+    pym_img.down_scale_main[i].y_paddr = pym_buffer->pym[i].paddr[0];
+    pym_img.down_scale_main[i].c_paddr = pym_buffer->pym[i].paddr[1];
+    pym_img.down_scale_main[i].y_vaddr =
+        reinterpret_cast<uint64_t>(pym_buffer->pym[i].addr[0]);
+    pym_img.down_scale_main[i].c_vaddr =
+        reinterpret_cast<uint64_t>(pym_buffer->pym[i].addr[1]);
+  }
+}
+
+void VpsModule::VpsConvertSrcInfo(void *src_buf, SrcImageFrame &src_img) {
+  auto src_buffer = static_cast<hb_vio_buffer_t*>(src_buf);
+  if (nullptr == src_buffer) {
+    return;
+  }
+  src_img.src_info.width = src_buffer->img_addr.width;
+  src_img.src_info.height = src_buffer->img_addr.height;
+  src_img.src_info.stride = src_buffer->img_addr.stride_size;
+  src_img.src_info.y_paddr = src_buffer->img_addr.paddr[0];
+  src_img.src_info.c_paddr = src_buffer->img_addr.paddr[1];
+  src_img.src_info.y_vaddr =
+    reinterpret_cast<uint64_t>(src_buffer->img_addr.addr[0]);
+  src_img.src_info.c_vaddr =
+    reinterpret_cast<uint64_t>(src_buffer->img_addr.addr[1]);
+}
+
 int VpsModule::VpsGetInfo(int info_type, void *buf) {
   int ret = -1;
   int chret = -1;
@@ -958,12 +1105,12 @@ int VpsModule::VpsGetInfo(int info_type, void *buf) {
 
       ret = HbPymTimeoutWait(timeout);
       if (ret < 0) {
-        LOGE << "Wait Pym Data Timeout!!!";
+        LOGE << "Wait Pym Data Timeout!!!" << " pipe_id: " << pipe_id_;
         return ret;
       }
       auto rv = pym_rq_->Pop(pym_info);
       if (!rv) {
-        LOGE << "No Pym info in RingQueue!";
+        LOGE << "No Pym info in RingQueue!" << " pipe_id: " << pipe_id_;
         return -1;
       }
       *pym_buf = pym_info.pym_buf;
@@ -1078,10 +1225,10 @@ int VpsModule::HbManagerPymBuffer(int max_buf_num) {
   /* queue_size = RingQueue<IotPymInfo>::Instance().Size(); */
   queue_size = pym_rq_->Size();
   total_buf_num = queue_size + consumed_pym_buffers_;
-  pr_info("pipe_id:%d total_buf_num:%d queue_size:%d"
-      " consumed_pym_buffers:%d max_buf_num:%d\n",
-      pipe_id_, total_buf_num, queue_size,
-      consumed_pym_buffers_, max_buf_num);
+  pr_info("pipe_id:%d max_buf_num:%d queue_size:%d"
+      " consumed_pym_buffers:%d total_buf_num:%d\n",
+      pipe_id_, max_buf_num, queue_size,
+      consumed_pym_buffers_, total_buf_num);
   if (total_buf_num >= max_buf_num) {
   /**
    * Attention:
@@ -1099,7 +1246,6 @@ int VpsModule::HbManagerPymBuffer(int max_buf_num) {
     if (queue_size >= max_buf_num) {
       LOGW << "pipe_id: " << pipe_id_
         << " PYM RingQueue will discard first frame data!";
-      /* RingQueue<IotPymInfo>::Instance().DeleteOne(); */
       ret = sem_trywait(&pym_sem_);
       if (ret) {
         LOGE << "sem try wait failure, ret: " << ret;
@@ -1191,7 +1337,7 @@ void VpsModule::HbGetPymDataThread() {
   int frame_count = 0;
 
   LOGI << "Enter Get PYM Data Thread, pipe_id: " << pipe_id_
-    << " start_flag: " << start_flag_
+    << " start_flag: " << pym_start_flag_
     << " max_pym_buffer is: " << max_pym_buffer;
   pym_rq_ = std::make_shared<VioRingQueue<IotPymInfo>>();
   pym_rq_->Init(max_pym_buffer, [](IotPymInfo &elem) {
@@ -1203,7 +1349,7 @@ void VpsModule::HbGetPymDataThread() {
       });
 
   auto start_time = std::chrono::system_clock::now();
-  while (start_flag_) {
+  while (pym_start_flag_) {
     memset(&pym_info, 0, sizeof(IotPymInfo));
 
     ret = HbManagerPymBuffer(max_pym_buffer);
@@ -1230,7 +1376,7 @@ void VpsModule::HbGetPymDataThread() {
         std::chrono::duration_cast<std::chrono::milliseconds>(
             curr_time - start_time);
       if (cost_time.count() >= 1000) {
-        pr_warn("pipe_id: %d vio_fps: %d\n", grp_id, frame_count);
+        LOGW << "pipe_id:" << grp_id << " vio_fps:" << frame_count;
         start_time = std::chrono::system_clock::now();
         frame_count = 0;
       }
@@ -1247,25 +1393,82 @@ void VpsModule::HbGetPymDataThread() {
       /* pym frame ts diff value */
       ts_diff = ts_cur - ts_pre;
       frame_id_diff = frame_id - frame_id_pre;
-      pr_info("pipe_id:%d buf_index[%d] pym_chn:%d "
+      pr_warn("pipe_id:%d buf_index[%d] pym_chn:%d "
           "frame_id:%d, frame_id_pre:%d "
           "frame_id_diff:%d ts_diff:%lu "
-          "pym_base0_width:%d pym_base1_width:%d\n",
+          "width:%d height:%d\n",
           pym_info.grp_id,
           pym_info.buf_index,
           pym_info.pym_chn,
           frame_id, frame_id_pre, frame_id_diff, ts_diff,
           pym_info.pym_buf.pym[0].width,
-          pym_info.pym_buf.pym[1].width);
+          pym_info.pym_buf.pym[0].height);
     }
     /* store last pym info */
     vio_pym_info_ = pym_info;
     pym_rq_->Push(pym_info);
     sem_post(&pym_sem_);
   }
-  /* RingQueue<IotPymInfo>::Instance().Clear(); */
   pym_rq_->Clear();
   LOGD << "Quit get pym data thread, pipe_id: " << pipe_id_;
+}
+
+void VpsModule::HbGetFbDataThread() {
+  // start get feedback src data
+  int ret = -1;
+  int pipe_id = pipe_id_;
+  int timeout = 2000;
+  int src_chn = 0;
+  IotVioInfo vio_info;
+  int fb_src_type = vio_cfg_.vps_cfg.fb_info.inner_buf_type;
+  int fb_src_pipe_id = vio_cfg_.vps_cfg.fb_info.bind_pipe_id;
+
+  LOGI << "Enter Get Feedback Data Thread, pipe_id: " << pipe_id_
+    << " start_flag: " << fb_start_flag_
+    << " fb_src_type: " << fb_src_type
+    << " fb_src_pipe_id: " << fb_src_pipe_id;
+
+  while (fb_start_flag_) {
+    memset(&vio_info, 0, sizeof(IotVioInfo));
+
+    // 1.get inner source data
+    if (fb_src_type == kSIF_BUF_SOURCE) {
+      ret = HB_VIN_GetDevFrame(fb_src_pipe_id, src_chn, &vio_info.vio_buf,
+          timeout);
+      if (ret) {
+        LOGE << "fb_src_pipe_id: " << fb_src_pipe_id
+          << " HB_VIN_GetDevFrame error, ret: " << ret;
+        continue;
+      }
+    } else if (fb_src_type == kISP_BUF_SOURCE) {
+      LOGW << "isp buffer source is not support...";
+      fb_start_flag_ = false;
+      continue;
+    } else {
+      LOGE << "error feedback source type!!!";
+      fb_start_flag_ = false;
+      continue;
+    }
+
+    // 2.send inner source data
+    ret = HB_VPS_SendFrame(pipe_id, &vio_info.vio_buf, timeout);
+    if (ret) {
+      LOGE << "pipe_id: " << pipe_id
+        << " HB_VPS_SendFrame error, ret: " << ret;
+    }
+
+    // 3.free inner source data
+    if (fb_src_type == kSIF_BUF_SOURCE) {
+      ret = HB_VIN_ReleaseDevFrame(fb_src_pipe_id, src_chn, &vio_info.vio_buf);
+      if (ret) {
+        LOGE << "pipe_id: " << pipe_id
+          << " HB_VIN_ReleaseDevFrame error, ret: " << ret;
+        continue;
+      }
+    }
+  }
+
+  LOGD << "Quit get feedback data thread, pipe_id: " << pipe_id_;
 }
 
 }  // namespace vioplugin

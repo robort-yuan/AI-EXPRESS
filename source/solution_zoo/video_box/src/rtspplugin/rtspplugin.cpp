@@ -27,6 +27,7 @@
 #include "liveMedia.hh"
 #include "mediapipemanager/mediapipemanager.h"
 #include "mediapipemanager/meidapipeline.h"
+#include "rtspclient/SPSInfoMgr.h"
 #include "rtspplugin/rtspmessage.h"
 #include "unistd.h"
 #include "xproto/message/pluginflow/flowmsg.h"
@@ -122,13 +123,14 @@ char eventLoopWatchVariable = 0;
 
 int RtspPlugin::Init() {
   running_ = false;
-  GetConfigFromFile("./video_box/configs/rtsp.json");
+  GetConfigFromFile(config_file_);
+  SPSInfoMgr::GetInstance().Init();
   MediaPipeManager::GetInstance().Init();
   for (int i = 0; i < channel_number_; ++i) {
     std::shared_ptr<horizon::vision::MediaPipeLine> pipeline =
         std::make_shared<horizon::vision::MediaPipeLine>(i, i);
-    // pipeline->Init();
-    //    pipeline->Start();
+    pipeline->SetFrameDropFlag(drop_frame_);
+    pipeline->SetFrameDropInterval(drop_frame_interval_);
     MediaPipeManager::GetInstance().AddPipeLine(pipeline);
   }
   return XPluginAsync::Init();
@@ -138,11 +140,9 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
                                 int channel) {
   pym_buffer_t *out_pym_buf = nullptr;
   int ret = 0;
-  printf("Enter get decode frame thread000000\n");
+
   while (running_) {
-    //    usleep(1000*40);
     ret = pipeline->Output((void **)(&out_pym_buf));
-    // LOGW << "pipeline out grp:" << pipeline->GetGrpId() << " ret:" << ret;
     if (ret != 0) {
       if (ret == -5) {  // not ready
         usleep(500 * 200);
@@ -157,7 +157,6 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
       continue;
     }
 
-#if 1
     std::vector<std::shared_ptr<PymImageFrame>> pym_images;
     auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
     if (pym_image_frame_ptr == NULL) {
@@ -165,7 +164,7 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
       continue;
     }
     Convert(out_pym_buf, *pym_image_frame_ptr);
-    pym_image_frame_ptr->channel_id = 0;
+    pym_image_frame_ptr->channel_id = channel;
     {
       std::lock_guard<std::mutex> lg(framecnt_mtx_);
       pym_image_frame_ptr->frame_id = frame_count_++;
@@ -176,195 +175,36 @@ void RtspPlugin::GetDeocdeFrame(std::shared_ptr<MediaPipeLine> pipeline,
         [&](ImageVioMessage *p) {
           if (p) {
             if (p->pipeline_ != nullptr) {
-              // LOGI << "channel:" << channel
-              //      << "image vio message destrct  grp:"
-              //      << p->pipeline_->GetGrpId()
-              //      << "  frame_id:" << pym_image_frame_ptr->frame_id;
               p->pipeline_->OutputBufferFree(p->slot_data_);
             }
-            // p->FreeImage();
-            // FreeBuffer();
+
             delete p;
-            // ret = HB_VPS_ReleaseChnFrame(1, 0, &out_pym_buf);
           }
           p = nullptr;
         });
 
-    LOGI << "channel:" << channel
+    LOGD << "channel:" << channel
          << "image vio message construct  grp:" << pipeline->GetGrpId()
          << "  frame_id:" << pym_image_frame_ptr->frame_id;
     PushMsg(input);
-#endif
-    LOGI << "Get pipeline: " << channel << " output.";
   }
-}
-
-void RtspPlugin::GetDecodeFrame0() {
-  static int count = 1;
-  int ret = 0;
-  VIDEO_FRAME_S pstFrame;
-  pym_buffer_t out_pym_buf;
-  hb_vio_buffer_t hb_vio_buf;
-  hb_vio_buffer_t out_buf;
-  int channel = 3;
-  printf("Enter get decode frame thread\n");
-  while (1) {
-    ret = HB_VDEC_GetFrame(0, &pstFrame, 1000);
-    if (ret != 0) {
-      printf("HB_VDEC_GetFrame failed %d\n", ret);
-      continue;
-    }
-
-    printf("[pstFrame]vir_ptr:%lld, %lld frame_size:[%d %d, %d]\n",
-           (long long int)(pstFrame.stVFrame.vir_ptr[0]),
-           (long long int)(pstFrame.stVFrame.vir_ptr[1]),
-           pstFrame.stVFrame.width, pstFrame.stVFrame.height,
-           pstFrame.stVFrame.size);
-
-    std::ofstream outfile;
-    // outfile.open("image_raw" + std::to_string(++count) + ".yuv",
-    // std::ios::ate | std::ios::out | std::ios::binary);
-    // outfile.write(reinterpret_cast<char *>(pstFrame.stVFrame.vir_ptr[0]),
-    // pstFrame.stVFrame.width*pstFrame.stVFrame.height);
-    // outfile.write(reinterpret_cast<char *>(pstFrame.stVFrame.vir_ptr[1]),
-    // pstFrame.stVFrame.width*pstFrame.stVFrame.height/2); outfile.close();
-
-    memset(&hb_vio_buf, 0, sizeof(hb_vio_buffer_t));
-    hb_vio_buf.img_addr.addr[0] = pstFrame.stVFrame.vir_ptr[0];
-    hb_vio_buf.img_addr.paddr[0] = pstFrame.stVFrame.phy_ptr[0];
-    hb_vio_buf.img_addr.addr[1] = pstFrame.stVFrame.vir_ptr[1];
-    hb_vio_buf.img_addr.paddr[1] = pstFrame.stVFrame.phy_ptr[1];
-    hb_vio_buf.img_addr.width = pstFrame.stVFrame.width;
-    hb_vio_buf.img_addr.height = pstFrame.stVFrame.height;
-    hb_vio_buf.img_addr.stride_size = pstFrame.stVFrame.width;
-    hb_vio_buf.img_info.planeCount = 2;
-    hb_vio_buf.img_info.img_format = 8;
-    hb_vio_buf.img_info.fd[0] = pstFrame.stVFrame.fd[0];
-    hb_vio_buf.img_info.fd[1] = pstFrame.stVFrame.fd[1];
-    hb_vio_buf.img_info.sensor_id = channel;
-    hb_vio_buf.img_info.frame_id = channel;
-    ret = HB_VPS_SendFrame(0, &hb_vio_buf, 1000);
-
-    // memcpy(hb_vio_buf_2.img_addr.addr[0], pstFrame.stVFrame.vir_ptr[0],
-    // 1920*1088); memcpy(hb_vio_buf_2.img_addr.addr[1],
-    // pstFrame.stVFrame.vir_ptr[1], 1920*1088/2); ret = HB_VPS_SendFrame(0,
-    // &hb_vio_buf_2, 1000);
-    if (ret != 0) {
-      printf("HB_VPS_SendFrame failed %d\n", ret);
-    }
-    ret = HB_VPS_GetChnFrame(0, 0, &out_buf, 1000);
-    if (ret != 0) {
-      printf("HB_VPS_GetChnFrame error!!!\n");
-    }
-    printf("image crop h:%d  w:%d id:%d\n", out_buf.img_addr.height,
-           out_buf.img_addr.width, out_buf.img_info.pipeline_id);
-    // outfile.open("image_crop" + std::to_string(count++) + ".yuv",
-    // std::ios::ate | std::ios::out | std::ios::binary); printf("image crop
-    // h:%d  w:%d\n", out_buf.img_addr.height, out_buf.img_addr.width);
-    // outfile.write(reinterpret_cast<char *>(out_buf.img_addr.addr[0]),
-    // out_buf.img_addr.height*out_buf.img_addr.width);
-    // outfile.write(reinterpret_cast<char *>(out_buf.img_addr.addr[1]),
-    // out_buf.img_addr.height*out_buf.img_addr.width/2); outfile.close();
-    ret = HB_VDEC_ReleaseFrame(0, &pstFrame);
-    if (ret != 0) {
-      printf("HB_VDEC_ReleaseFrame failed %d\n", ret);
-    }
-    ret = HB_VPS_ReleaseChnFrame(0, 0, &out_buf);
-    if (ret != 0) {
-      printf("HB_VPS_ReleaseChnFrame error!!!\n");
-    }
-#if 1
-    ret = HB_VPS_SendFrame(1, &out_buf, 1000);
-    if (ret != 0) {
-      printf("HB_VPS_SendFrame failed %d\n", ret);
-    }
-    ret = HB_VPS_GetChnFrame(1, 0, &out_pym_buf, 1000);
-    if (ret != 0) {
-      printf("HB_VPS_GetChnFrame error!!!\n");
-    }
-    printf("pym layer 4 h:%d  w:%d id:%d\n", out_pym_buf.pym[1].height,
-           out_pym_buf.pym[1].width, out_pym_buf.pym_img_info.pipeline_id);
-    // outfile.open("image_pym" + std::to_string(count++) + ".yuv",
-    // std::ios::ate | std::ios::out | std::ios::binary); printf("pym layer 4
-    // h:%d  w:%d\n", out_pym_buf.pym[1].height, out_pym_buf.pym[1].width);
-    // outfile.write(reinterpret_cast<char *>(out_pym_buf.pym[1].addr[0]),
-    // out_pym_buf.pym[1].height*out_pym_buf.pym[1].width);
-    // outfile.write(reinterpret_cast<char *>(out_pym_buf.pym[1].addr[1]),
-    // out_pym_buf.pym[1].height*out_pym_buf.pym[1].width/2); outfile.close();
-    ret = HB_VPS_ReleaseChnFrame(0, 0, &out_buf);
-    if (ret != 0) {
-      printf("HB_VPS_ReleaseChnFrame error!!!\n");
-    }
-
-    std::vector<std::shared_ptr<PymImageFrame>> pym_images;
-    // 从 image path 填充pvio image
-    // auto ret = FillVIOImageByImagePath(pvio_image, image_path);
-    // if (ret) {
-    auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
-    Convert(&out_pym_buf, *pym_image_frame_ptr);
-    pym_image_frame_ptr->channel_id = 0;
-    pym_image_frame_ptr->frame_id = count++;
-    pym_images.push_back(pym_image_frame_ptr);
-    // } else {
-    //   std::free(pvio_image);
-    //   LOGF << "fill vio image failed";
-    // }
-    std::shared_ptr<VioMessage> input(
-        new ImageVioMessage(pym_images, 1, 1), [&](ImageVioMessage *p) {
-          if (p) {
-            // p->FreeImage();
-            // FreeBuffer();
-            // delete p;
-            ret = HB_VPS_ReleaseChnFrame(1, 0, &out_pym_buf);
-          }
-          p = nullptr;
-        });
-    PushMsg(input);
-
-    ret = HB_VPS_ReleaseChnFrame(1, 0, &out_pym_buf);
-#endif
-  }
-  printf("Exit get decode frame thread\n");
-}
-
-void RtspPlugin::WaitToStart() {
-  // // sleep(2);
-  // std::thread t(&RtspPlugin::GetDeocdeFrame, this, nullptr, 0);
-  // // const std::vector<std::shared_ptr<MediaPipeLine>>& pipelines =
-  // MediaPipeManager::GetInstance().GetPipeLine();
-  // // LOGE << "\n\nPipeline size : " << pipelines.size();
-  // // for (uint32_t i = 0; i < pipelines.size(); ++i) {
-  // //   std::thread t(&RtspPlugin::GetDeocdeFrame, this, pipelines[i], i);
-  // // }
 }
 
 void RtspPlugin::Process() {
   // Begin by setting up our usage environment:
-  scheduler = BasicTaskScheduler::createNew();
-  env = BasicUsageEnvironment::createNew(*scheduler);
+  scheduler_ = BasicTaskScheduler::createNew();
+  env_ = BasicUsageEnvironment::createNew(*scheduler_);
 
   for (int i = 0; i < channel_number_; ++i) {
     ourRTSPClient *client = nullptr;
-    client =
-        openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
-                rtsp_url_[i].tcp_flag, ("channel" + std::to_string(i) + ""));
+    client = openURL(*env_, "RTSPClient", rtsp_url_[i].url.c_str(),
+                     rtsp_url_[i].tcp_flag, rtsp_url_[i].frame_max_size,
+                     ("channel" + std::to_string(i) + ".stream"),
+                     rtsp_url_[i].save_stream);
     client->SetChannel(i);
     rtsp_clients_.push_back(client);
   }
 
-  // ourRTSPClient * client = nullptr;
-  // client = openURL(*env, "RTSPClient",
-  // "rtsp://admin:admin123@10.64.32.172:554/0", ("channel" + std::to_string(0)
-  // + ".h264")); rtsp_clients_.push_back(client); client = openURL(*env,
-  // "RTSPClient",
-  // "rtsp://admin:admin123@10.64.35.195:554/cam/realmonitor?channel=1&subtype=0",
-  // ("channel" + std::to_string(1) + ".h264"));
-  // rtsp_clients_.push_back(client);
-  // client = openURL(*env, "RTSPClient",
-  // "rtsp://admin:admin123@10.64.32.174:554/0", ("channel" + std::to_string(2)
-  // + ".h264")); rtsp_clients_.push_back(client); client = openURL(*env,
-  // "RTSPClient", "rtsp://admin:admin123@10.64.31.90:554/0", ("channel" +
-  // std::to_string(3) + ".h264")); rtsp_clients_.push_back(client);
   const std::vector<std::shared_ptr<MediaPipeLine>> &pipelines =
       MediaPipeManager::GetInstance().GetPipeLine();
   LOGE << "\n\nPipeline size : " << pipelines.size();
@@ -375,7 +215,7 @@ void RtspPlugin::Process() {
   }
 
   // All subsequent activity takes place within the event loop:
-  env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
+  env_->taskScheduler().doEventLoop(&eventLoopWatchVariable);
   for (int i = 0; i < channel_number_; ++i) {
     ourRTSPClient *client = rtsp_clients_[i];
     // operators cause crash if client is invalid
@@ -384,10 +224,9 @@ void RtspPlugin::Process() {
       Medium::close(client->scs.session);
     }
   }
-  // client->sendTeardownCommand(*client->scs.session, NULL);
-  // Medium::close(client->scs.session);
-  env->reclaim();
-  delete scheduler;
+
+  env_->reclaim();
+  delete scheduler_;
   for (uint32_t i = 0; i < pipelines.size(); ++i) {
     if (t[i]) {
       if (t[i]->joinable()) {
@@ -406,8 +245,8 @@ void RtspPlugin::Process() {
   // you can also reclaim the (small) memory used by these objects by
   // uncommenting the following code:
   /*
-    env->reclaim(); env = NULL;
-    delete scheduler; scheduler = NULL;
+    env_->reclaim(); env_ = NULL;
+    delete scheduler_; scheduler_ = NULL;
   */
 }
 
@@ -415,7 +254,7 @@ void RtspPlugin::CheckRtspState() {
   const std::vector<std::shared_ptr<MediaPipeLine>> &pipelines =
       MediaPipeManager::GetInstance().GetPipeLine();
 
-  sleep(5);  // wait for rtsp stream connect success
+  sleep(10);  // wait for rtsp stream connect success
   LOGW << "Start CheckRtspState thread,running flag:" << running_;
   while (running_) {
     struct timeval tv;
@@ -428,12 +267,18 @@ void RtspPlugin::CheckRtspState() {
 
       int channel = pipelines[i]->GetGrpId();
       LOGE << "RTSP channel:" << channel << " , 10 seconds no stream!";
-      rtsp_clients_[i]->Stop();
+      if (pipelines[i]->GetDecodeType() !=
+          RTSP_Payload_NONE) {  // if not start, maybe the destructor
+                                // has been called
+        rtsp_clients_[i]->Stop();
+      }
+
       // reopen rtsp url
       ourRTSPClient *client = nullptr;
-      client =
-          openURL(*env, "RTSPClient", rtsp_url_[i].url.c_str(),
-                  rtsp_url_[i].tcp_flag, ("channel" + std::to_string(i) + ""));
+      client = openURL(*env_, "RTSPClient", rtsp_url_[i].url.c_str(),
+                       rtsp_url_[i].tcp_flag, rtsp_url_[i].frame_max_size,
+                       ("channel" + std::to_string(i) + ".stream"),
+                       rtsp_url_[i].save_stream);
       client->SetChannel(i);
       LOGI << "after reopen rtsp stream, channel:" << i;
       rtsp_clients_[i] = client;
@@ -444,30 +289,7 @@ void RtspPlugin::CheckRtspState() {
 }
 
 int RtspPlugin::Start() {
-  // auto &pipelines =
-  //         MediaPipeManager::GetInstance().GetPipeLine();
-  // for (auto& pipeline : pipelines) {
-  // pipeline->Start();
-  // }
-
   process_thread_ = std::make_shared<std::thread>(&RtspPlugin::Process, this);
-
-#if 0
-  for (size_t idx = 0; idx < pipelines.size(); idx++) {
-    auto stat = pipelines.at(idx)->CheckStat();
-    if (stat < 0) {
-      LOGE << "check stat fail, grp:" << idx
-           << "  stat:" << stat
-           << "  url:" << rtsp_url_[idx].url;
-      rtsp_clients_stat_[idx] = false;
-      return stat;
-    } else {
-      LOGW << "check stat success, grp:" << idx
-           << "  stat:" << stat;
-      rtsp_clients_stat_[idx] = true;
-    }
-  }
-#endif
   check_thread_ =
       std::make_shared<std::thread>(&RtspPlugin::CheckRtspState, this);
   return 0;
@@ -490,169 +312,6 @@ int RtspPlugin::Stop() {
   return 0;
 }
 
-int RtspPlugin::DecodeInit() {
-  int ret = 0;
-  ret = HB_SYS_Init();
-  if (ret != 0) {
-    printf("HB_SYS_Init failed %x\n", ret);
-    return ret;
-  }
-
-  VP_CONFIG_S struVpConf;
-  memset(&struVpConf, 0x00, sizeof(VP_CONFIG_S));
-  struVpConf.u32MaxPoolCnt = 32;
-  ret = HB_VP_SetConfig(&struVpConf);
-  if (ret != 0) {
-    printf("HB_VP_SetConfig failed %x\n", ret);
-    return ret;
-  }
-  ret = HB_VP_Init();
-  if (ret != 0) {
-    printf("vp_init fail s32Ret = %d !\n", ret);
-  }
-  HB_VDEC_Module_Init();
-  VDEC_CHN_ATTR_S vdec_attr;
-  // VdecChnAttrInit(&vdec_attr, hb_CodecType, 1920, 1080);
-  vdec_attr.enType = PT_H264;
-  vdec_attr.enMode = VIDEO_MODE_FRAME;
-  vdec_attr.enPixelFormat = HB_PIXEL_FORMAT_NV12;
-  vdec_attr.u32FrameBufCnt = 10;
-  vdec_attr.u32StreamBufCnt = 10;
-  // vdec_attr.u32StreamBufSize = image_height_ * image_width_ * 3 / 2;
-  vdec_attr.u32StreamBufSize = 1920 * 1088 * 3 / 2;
-  vdec_attr.bExternalBitStreamBuf = HB_TRUE;
-  vdec_attr.stAttrH264.bandwidth_Opt = HB_TRUE;
-  vdec_attr.stAttrH264.enDecMode = VIDEO_DEC_MODE_NORMAL;
-  vdec_attr.stAttrH264.enOutputOrder = VIDEO_OUTPUT_ORDER_DISP;
-
-  VPS_GRP_ATTR_S grp_attr;
-  VPS_CHN_ATTR_S chn_attr;
-  memset(&grp_attr, 0, sizeof(VPS_GRP_ATTR_S));
-  grp_attr.maxW = 1920;
-  grp_attr.maxH = 1088;
-  // VPS Init
-  ret = HB_VPS_CreateGrp(0, &grp_attr);
-  if (ret) {
-    printf("HB_VPS_CreateGrp error!!!\n");
-  } else {
-    printf("created a group ok:GrpId = %d\n", 0);
-  }
-  // ret = HB_SYS_SetVINVPSMode(0, VIN_OFFLINE_VPS_OFFINE);
-  // if (ret < 0) {
-  //   printf("HB_SYS_SetVINVPSMode%d error!\n", VIN_OFFLINE_VPS_OFFINE);
-  //   return ret;
-  // }
-  grp_attr.maxW = 1920;
-  grp_attr.maxH = 1080;
-  ret = HB_VPS_CreateGrp(1, &grp_attr);
-  if (ret) {
-    printf("HB_VPS_CreateGrp error!!!\n");
-  } else {
-    printf("created a group ok:GrpId = %d\n", 1);
-  }
-  // ret = HB_SYS_SetVINVPSMode(1, VIN_OFFLINE_VPS_OFFINE);
-  // if (ret < 0) {
-  //   printf("HB_SYS_SetVINVPSMode%d error!\n", VIN_OFFLINE_VPS_OFFINE);
-  //   return ret;
-  // }
-
-  memset(&chn_attr, 0, sizeof(VPS_CHN_ATTR_S));
-  chn_attr.enScale = 1;
-  chn_attr.width = 1920;
-  chn_attr.height = 1080;
-  chn_attr.frameDepth = 8;
-
-  VPS_CROP_INFO_S chn_crop_info;
-  memset(&chn_crop_info, 0, sizeof(VPS_CROP_INFO_S));
-  chn_crop_info.en = 1;
-  chn_crop_info.cropRect.x = 0;
-  chn_crop_info.cropRect.y = 0;
-  chn_crop_info.cropRect.width = 1920;
-  chn_crop_info.cropRect.height = 1080;
-
-  VPS_PYM_CHN_ATTR_S pym_chn_attr;
-  memset(&pym_chn_attr, 0, sizeof(VPS_PYM_CHN_ATTR_S));
-  pym_chn_attr.timeout = 2000;
-  pym_chn_attr.ds_layer_en = 23;
-  pym_chn_attr.us_layer_en = 0;
-  pym_chn_attr.frame_id = 0;
-  pym_chn_attr.frameDepth = 8;
-  pym_chn_attr.ds_info[5].factor = 32;
-  pym_chn_attr.ds_info[5].roi_x = 0;
-  pym_chn_attr.ds_info[5].roi_y = 0;
-  pym_chn_attr.ds_info[5].roi_width = 900;
-  pym_chn_attr.ds_info[5].roi_height = 540;
-  pym_chn_attr.ds_info[6].factor = 32;
-  pym_chn_attr.ds_info[6].roi_x = 0;
-  pym_chn_attr.ds_info[6].roi_y = 0;
-  pym_chn_attr.ds_info[6].roi_width = 960;
-  pym_chn_attr.ds_info[6].roi_height = 540;
-
-  int i = 0;
-  // for (int i = 0; i < 4; ++i) {
-  ret = HB_VDEC_CreateChn(i, &vdec_attr);
-  if (ret != 0) {
-    printf("HB_VDEC_CreateChn failed %x\n", ret);
-    return ret;
-  }
-
-  // EXPECT_EQ(HB_VDEC_GetChnAttr(hb_VDEC_Chn, &hb_VencChnAttr), 0);
-
-  ret = HB_VDEC_SetChnAttr(i, &vdec_attr);  // config
-  if (ret != 0) {
-    printf("HB_VDEC_SetChnAttr failed %x\n", ret);
-    return ret;
-  }
-
-  ret = HB_VDEC_StartRecvStream(i);
-  if (ret != 0) {
-    printf("HB_VDEC_StartRecvStream failed %x\n", ret);
-    return ret;
-  }
-
-  ret = HB_VPS_SetChnAttr(0, i, &chn_attr);
-  if (ret) {
-    printf("HB_VPS_SetChnAttr error!!!\n");
-  } else {
-    printf("set chn Attr ok: GrpId = %d, chn_id = %d\n", 0, i);
-  }
-  ret = HB_VPS_SetChnCrop(0, i, &chn_crop_info);
-  if (ret) {
-    printf("HB_VPS_SetChnCropAttr error!!!\n");
-  } else {
-    printf("set chn Crop Attr ok: GrpId = %d, chn_id = %d\n", 0, i);
-  }
-  ret = HB_VPS_SetChnAttr(1, i, &chn_attr);
-  if (ret) {
-    printf("HB_VPS_SetChnAttr error!!!\n");
-  } else {
-    printf("set chn Attr ok: GrpId = %d, chn_id = %d\n", i, 0);
-  }
-  ret = HB_VPS_SetPymChnAttr(1, i, &pym_chn_attr);
-  if (ret) {
-    printf("HB_VPS_SetPymChnAttr error!!!\n");
-  } else {
-    printf("HB_VPS_SetPymChnAttr ok: grp_id = %d g_pym_chn = %d\n", 1, i);
-  }
-  HB_VPS_EnableChn(1, i);
-
-  HB_VPS_EnableChn(0, i);
-  // }
-  ret = HB_VPS_StartGrp(0);
-  if (ret) {
-    printf("HB_VPS_StartGrp error!!!\n");
-  } else {
-    printf("start grp ok: grp_id = %d\n", 0);
-  }
-  ret = HB_VPS_StartGrp(1);
-  if (ret) {
-    printf("HB_VPS_StartGrp error!!!\n");
-  } else {
-    printf("start grp ok: grp_id = %d\n", 1);
-  }
-  return ret;
-}
-
 void RtspPlugin::GetConfigFromFile(const std::string &path) {
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
@@ -661,7 +320,28 @@ void RtspPlugin::GetConfigFromFile(const std::string &path) {
   ifs >> config_;
   ifs.close();
 
-  auto value_js = config_["channel_num"];
+  auto value_js = config_["rtsp_config_file"];
+  if (value_js.isNull()) {
+    LOGE << "Can not find key: channel_num";
+  }
+  LOGW << value_js;
+  std::string rtsp_config_file = value_js.asString();
+
+  value_js = config_["drop_frame_config_file"];
+  if (value_js.isNull()) {
+    LOGE << "Can not find key: channel_num";
+  }
+  LOGW << value_js;
+  std::string drop_frame_config_file = value_js.asString();
+
+  std::ifstream rtsp_file(rtsp_config_file);
+  if (!rtsp_file.is_open()) {
+    LOGE << "Open config file " << path << " failed";
+  }
+  rtsp_file >> config_;
+  rtsp_file.close();
+
+  value_js = config_["channel_num"];
   if (value_js.isNull()) {
     LOGE << "Can not find key: channel_num";
   }
@@ -675,11 +355,30 @@ void RtspPlugin::GetConfigFromFile(const std::string &path) {
     Rtspinfo info;
     info.url = rtsp_url;
     info.tcp_flag = config_[channel.c_str()]["tcp"].asBool();
-    LOGW << "channel: " << channel << " protocol tcp flag: " << info.tcp_flag;
+    info.frame_max_size = config_[channel.c_str()]["frame_max_size"].asInt();
+    info.save_stream = config_[channel.c_str()]["save_stream"].asBool();
+    LOGW << "channel: " << channel << " protocol tcp flag: " << info.tcp_flag
+         << "max frame size:" << info.frame_max_size;
     rtsp_url_.push_back(info);
   }
 
   rtsp_clients_stat_.resize(channel_number_);
+
+  std::ifstream drop_frame_file(drop_frame_config_file);
+  if (!drop_frame_file.is_open()) {
+    LOGE << "Open config file " << path << " failed";
+  }
+  drop_frame_file >> config_;
+  drop_frame_file.close();
+
+  value_js = config_["frame_drop"];
+  if (value_js.isNull()) {
+    LOGE << "Can not find key: frame_drop";
+  }
+
+  drop_frame_ = config_["frame_drop"]["drop_frame"].asBool();
+  drop_frame_interval_ =
+      config_["frame_drop"]["interval_frames_num"].asInt();
 }
 
 }  // namespace rtspplugin

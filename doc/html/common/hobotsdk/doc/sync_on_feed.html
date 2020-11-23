@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>问题场景 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>问题场景 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../../genindex.html" />
     <link rel="search" title="搜索" href="../../../search.html" /> 
 </head>
@@ -49,7 +50,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -63,7 +64,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,6 +73,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -94,6 +96,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,7 +135,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>问题场景</li>
     
@@ -140,7 +143,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../../_sources/common/hobotsdk/doc/sync_on_feed.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/common/hobotsdk/doc/sync_on_feed.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -276,7 +279,7 @@ image                       先处理Forward(i1, a1)
                       <span class="kt">int</span><span class="p">,</span>                           <span class="c1">// input_slot_index</span>
                       <span class="n">spMessage</span><span class="o">&gt;&gt;</span>                    <span class="c1">// message</span>
                       <span class="n">feed_messages</span><span class="p">,</span> 
-                    <span class="n">int64</span> <span class="n">feed_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+                    <span class="n">int64</span> <span class="n">feed_id</span> <span class="o">=</span> <span class="mi">-1</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>当前的Feed方法都只支持单个数据的Feed；所以需要确保有一个接口可以代表对整个Workflow的一次调用，这次调用可以输入多个Message。同时，加入一个参数<code class="docutils literal notranslate"><span class="pre">feed_id</span></code>作为这次feed的唯一id，作为区分不同feed的数据的依据。同时，现有的Feed接口也追加<code class="docutils literal notranslate"><span class="pre">feed_id</span></code>作为参数，默认值-1代表可忽略的feed_id。</p>
@@ -288,7 +291,7 @@ image                       先处理Forward(i1, a1)
 <div class="section" id="workflow-setsynconfeed">
 <h2>Workflow增加接口：SetSyncOnFeed<a class="headerlink" href="#workflow-setsynconfeed" title="永久链接至标题">¶</a></h2>
 <p>增加接口：</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="n">DefaultWorkflow</span><span class="o">::</span><span class="n">SetSyncOnFeed</span><span class="p">(</span><span class="n">Module</span> <span class="o">*</span><span class="n">module</span><span class="p">,</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="n">DefaultWorkflow</span><span class="o">::</span><span class="n">SetSyncOnFeed</span><span class="p">(</span><span class="n">Module</span> <span class="o">*</span><span class="k">module</span><span class="p">,</span>
                                    <span class="kt">int</span> <span class="n">forward_index</span><span class="p">,</span>
                                    <span class="nl">std</span><span class="p">:</span><span class="n">list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">input_slots</span><span class="p">,</span>
                                    <span class="kt">bool</span> <span class="n">order_by_feedid</span> <span class="o">=</span> <span class="nb">false</span>
@@ -316,11 +319,19 @@ image                       先处理Forward(i1, a1)
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -331,7 +342,6 @@ image                       先处理Forward(i1, a1)
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

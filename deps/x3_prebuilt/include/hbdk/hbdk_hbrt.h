@@ -90,6 +90,11 @@ typedef struct {
   uint32_t _reserved[2];
 } hbrt_version_info_t;
 
+#define HBRT_VERSION_INFO_INITIALIZER         \
+  {                                           \
+    0, 0, 0, {0}, HBRT_VERSION_RUNTIME, { 0 } \
+  }
+
 /**
  * Similar to model handle. This handle can be used as feature identification
  * to get information such as feature dimensions, element type, etc.
@@ -164,7 +169,9 @@ typedef struct {
 } hbrt_global_memory_hook_t;
 
 #define HBRT_GLOBAL_MEMORY_HOOK_INITIALIZER \
-  { NULL, NULL, NULL, NULL }
+  {                                         \
+    NULL, NULL, NULL, NULL, { 0 }           \
+  }
 
 HBDK_PUBLIC extern hbrt_error_t hbrtSetGlobalMemoryHook(const hbrt_global_memory_hook_t *hook);
 
@@ -1101,7 +1108,7 @@ static inline hbrt_error_t hbrtIsCompatibleHeader() {
   if (err) {
     return err;
   }
-  hbrt_version_info_t header_version = {};
+  hbrt_version_info_t header_version = {0, 0, 0, {0}, HBRT_VERSION_RUNTIME, {0}};
   header_version.major = HBRT_VERSION_MAJOR;
   header_version.minor = HBRT_VERSION_MINOR;
   header_version.patch = HBRT_VERSION_PATCH;

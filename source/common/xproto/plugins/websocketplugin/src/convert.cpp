@@ -17,6 +17,7 @@
 #include "horizon/vision/util.h"
 #include "hobotlog/hobotlog.hpp"
 #include "turbojpeg.h"
+// #include "hb_vio_interface.h"
 
 namespace horizon {
 namespace vision {
@@ -124,6 +125,18 @@ int Convertor::GetYUV(iot_venc_src_buf_t *frame_buf, VioMessage *vio_msg,
       first = false;  // only dump a yuv
   }
 #endif
+#if 0  // debug test
+  for (std::size_t i = 0; i < vio_msg->image_.size(); i++) {
+    pym_image = vio_msg->image_[i];
+    auto pipe_id = pym_image->channel_id;
+    auto pym_buffer = static_cast<pym_buffer_t*>(pym_image->context);
+    auto frame_id = pym_buffer->pym_img_info.frame_id;
+    auto ts = pym_buffer->pym_img_info.time_stamp;
+    LOGW << "pipe_id: " << pipe_id << " frame_id: "
+      << frame_id << " ts: " << ts;
+  }
+#endif
+
 
   return 0;
 }

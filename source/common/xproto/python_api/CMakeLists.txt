@@ -60,7 +60,7 @@ set(OpenCVLib opencv_world)
 set(BASE_LIBRARIES
     websocketplugin smartplugin vioplugin
     xproto xproto_msgtype
-    xstream-framework hobotsdk hobotthread
+    xstream hobotsdk hobotthread
     vision_type_util hobotlog protobuf jsoncpp ${OpenCVLib} ${ARCH_LIBS})
 
 pybind11_add_module(native_xproto

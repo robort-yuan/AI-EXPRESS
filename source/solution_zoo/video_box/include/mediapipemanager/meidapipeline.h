@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -12,7 +12,6 @@
 
 #include "mediapipemanager/vdecmodule.h"
 #include "mediapipemanager/vpsmodule.h"
-// #include "mediapipemanager/votmodule.h"
 
 namespace horizon {
 namespace vision {
@@ -20,7 +19,9 @@ class MediaPipeLine {
  public:
   MediaPipeLine(uint32_t gp_id0, uint32_t gp_id1);
   virtual int Init();
+  bool InitFlag();
   virtual int Start();
+  bool StartFlag();
   virtual int Stop();
   virtual int Input(void *data);
   virtual int Output(void **data);
@@ -46,8 +47,14 @@ class MediaPipeLine {
   void UpdateTime();
   uint64_t GetlastReadDataTime() { return last_recv_data_time_; }
 
-protected:
-private:
+  void SetFrameDropFlag(const bool frame_drop) { frame_drop_ = frame_drop;}
+  bool GetFrameDropFlag() { return frame_drop_;}
+
+  void SetFrameDropInterval(const int frame_drop_interval) {
+    frame_drop_interval_ = frame_drop_interval;
+  }
+
+ private:
   MediaPipeLine() = delete;
   MediaPipeLine(const MediaPipeLine &) = delete;
   MediaPipeLine &operator=(const MediaPipeLine &) = delete;
@@ -57,7 +64,6 @@ private:
 
   std::shared_ptr<VdecModule> vdec_module_;
   std::shared_ptr<VpsModule> vps_module_;
-  // std::shared_ptr<VotModule> vot_module_;
 
   int decode_type_;
   int width_ = 0;
@@ -69,6 +75,8 @@ private:
   bool set_prom_ = false;
 
   uint64_t last_recv_data_time_;
+  bool frame_drop_ = false;
+  int frame_drop_interval_ = 0;
 };
 
 }  // namespace vision

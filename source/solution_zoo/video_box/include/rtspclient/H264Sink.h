@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <tuple>
 
 #include "BasicUsageEnvironment.hh"
 #include "H264VideoRTPSource.hh"
@@ -37,7 +38,7 @@ class H264Sink : public MediaSink {
       int buffer_count = 8);  // identifies the stream itself (optional)
 
   virtual ~H264Sink();
-  void SetFileName(const std::string &file_name);
+  void SetFileName(std::tuple<bool, std::string> file);
   int SaveToFile(void *data, const int data_siz);
   void SetChannel(int channel);
   int GetChannel(void) const;
@@ -72,6 +73,8 @@ class H264Sink : public MediaSink {
 
   char *stream_id_;
   std::string file_name_;
+  bool save_file_;
+  std::ofstream outfile_;
   int channel_;
   bool first_frame_;
   bool waiting_;
@@ -84,8 +87,8 @@ class H264Sink : public MediaSink {
   bool batch_send_ = false;
   std::shared_ptr<horizon::vision::MediaPipeLine> pipe_line_;
 
-  char *video_buffer;
-  int buffer_len;
+  char *video_buffer_;
+  int buffer_len_;
   int data_len_;
 };
 

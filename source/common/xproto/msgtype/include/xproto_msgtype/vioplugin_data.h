@@ -32,6 +32,8 @@ namespace basic_msgtype {
 #define TYPE_DROP_IMAGE_MESSAGE "XPLUGIN_DROP_IMAGE_MESSAGE"
 #define TYPE_MULTI_IMAGE_MESSAGE "XPLUGIN_MULTI_IMAGE_MESSAGE"
 
+#define IMAGE_CHANNEL_FROM_AP (1003)  //  meaning this channel image is from ap
+
 using horizon::vision::xproto::MsgScopeProfile;
 
 struct VioMessage : public XProtoMessage {

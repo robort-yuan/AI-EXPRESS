@@ -248,8 +248,7 @@ function CopySSDMethod(){
 
 set -eux
 bash deploy.sh
-# for xstream_test
-cp build/lib/libxstream.so deploy/lib
+
 mkdir -p deploy/unit_test
 ARCHITECTURE=$(cat platform.tmp)
 ALL_PROJECT_DIR=$PWD

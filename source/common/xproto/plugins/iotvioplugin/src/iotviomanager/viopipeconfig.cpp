@@ -101,6 +101,8 @@ bool VioPipeConfig::ParserConfig() {
     json_[pipe_name]["vin"]["sensor"]["sensor_port"].asInt();
   vio_cfg_.vin_cfg.sensor_info.i2c_bus =
     json_[pipe_name]["vin"]["sensor"]["i2c_bus"].asInt();
+  vio_cfg_.vin_cfg.sensor_info.extra_mode =
+    json_[pipe_name]["vin"]["sensor"]["extra_mode"].asInt();
   vio_cfg_.vin_cfg.sensor_info.need_clk =
     json_[pipe_name]["vin"]["sensor"]["need_clk"].asInt();
   vio_cfg_.vin_cfg.sensor_info.serdes_index =
@@ -117,6 +119,8 @@ bool VioPipeConfig::ParserConfig() {
   // 2.3 sif config
   vio_cfg_.vin_cfg.sif_info.need_md =
     json_[pipe_name]["vin"]["sif"]["need_md"].asInt();
+  vio_cfg_.vin_cfg.sif_info.sif_out_buf_num =
+    json_[pipe_name]["vin"]["sif"]["sif_out_buf_num"].asInt();
   // 2.4 isp config
   vio_cfg_.vin_cfg.isp_info.temper_mode =
     json_[pipe_name]["vin"]["isp"]["temper_mode"].asInt();
@@ -143,6 +147,12 @@ bool VioPipeConfig::ParserConfig() {
     json_[pipe_name][grp_name]["feedback"]["fb_height"].asInt();
   vio_cfg_.vps_cfg.fb_info.buf_num =
     json_[pipe_name][grp_name]["feedback"]["fb_buf_num"].asInt();
+  vio_cfg_.vps_cfg.fb_info.inner_buf_en =
+    json_[pipe_name][grp_name]["feedback"]["inner_buf_en"].asInt();
+  vio_cfg_.vps_cfg.fb_info.inner_buf_type =
+    json_[pipe_name][grp_name]["feedback"]["inner_buf_type"].asInt();
+  vio_cfg_.vps_cfg.fb_info.bind_pipe_id =
+    json_[pipe_name][grp_name]["feedback"]["bind_pipe_id"].asInt();
   // 4.2 gdc config
   for (int gdc_idx = 0; gdc_idx < MAX_GDC_NUM; gdc_idx++) {
     std::string gdc_name = "gdc" + std::to_string(gdc_idx);
@@ -285,6 +295,7 @@ bool VioPipeConfig::PrintConfig() {
   LOGI << "sensor_id: "    << vio_cfg_.vin_cfg.sensor_info.sensor_id;
   LOGI << "sensor_port: "  << vio_cfg_.vin_cfg.sensor_info.sensor_port;
   LOGI << "i2c_bus: "      << vio_cfg_.vin_cfg.sensor_info.i2c_bus;
+  LOGI << "extra_mode: "      << vio_cfg_.vin_cfg.sensor_info.extra_mode;
   LOGI << "need_clk: "     << vio_cfg_.vin_cfg.sensor_info.need_clk;
   LOGI << "serdes_index: " << vio_cfg_.vin_cfg.sensor_info.serdes_index;
   LOGI << "serdes_port: "  << vio_cfg_.vin_cfg.sensor_info.serdes_port;
@@ -294,6 +305,7 @@ bool VioPipeConfig::PrintConfig() {
   LOGI << "dol2_vc_index: "  << vio_cfg_.vin_cfg.mipi_info.dol2_vc_index;
   // 2.3 sif config
   LOGI << "need_md: "      << vio_cfg_.vin_cfg.sif_info.need_md;
+  LOGI << "sif_out_buf_num: "  << vio_cfg_.vin_cfg.sif_info.sif_out_buf_num;
   // 2.4 isp config
   LOGI << "temper_mode: "  << vio_cfg_.vin_cfg.isp_info.temper_mode;
   LOGI << "isp_out_buf_num: "  << vio_cfg_.vin_cfg.isp_info.isp_out_buf_num;
@@ -309,6 +321,9 @@ bool VioPipeConfig::PrintConfig() {
   LOGI << "fb_width: "     << vio_cfg_.vps_cfg.fb_info.width;
   LOGI << "fb_height: "    << vio_cfg_.vps_cfg.fb_info.height;
   LOGI << "fb_buf_num: "   << vio_cfg_.vps_cfg.fb_info.buf_num;
+  LOGI << "fb_inner_buf_en: "   << vio_cfg_.vps_cfg.fb_info.inner_buf_en;
+  LOGI << "fb_inner_buf_type: "   << vio_cfg_.vps_cfg.fb_info.inner_buf_type;
+  LOGI << "fb_bind_pipe_id: "   << vio_cfg_.vps_cfg.fb_info.bind_pipe_id;
   // 3.2 gdc config
   for (int gdc_idx = 0; gdc_idx < MAX_GDC_NUM; gdc_idx++) {
     LOGI << "gdc_" << gdc_idx << "_en: "

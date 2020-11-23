@@ -26,6 +26,7 @@
 #include "vioplugin/viomessage.h"
 #include "vioplugin/vioprocess.h"
 #include "iotviomanager/viopipeline.h"
+#include "iotviomanager/viopipemanager.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,6 +59,7 @@ class VioConfig {
   VioConfig() = default;
   explicit VioConfig(const Json::Value &json) : json_(json) {}
   std::string GetValue(const std::string &key) const;
+  int GetIntValue(const std::string &key) const;
   Json::Value GetJson() const;
   std::vector<std::string> GetArrayItem(std::string key) const;
   std::shared_ptr<VioConfig> GetSubConfig(std::string key);
@@ -98,6 +100,7 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   virtual void FreeBuffer();
   bool AllocBuffer();
   virtual void WaitUntilAllDone();
+  int SetVioConfigNum(int num);
 
  protected:
   VioProduce() : is_running_{false} {
@@ -145,7 +148,6 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   // child class can use this api to dec h264, h265 through override
   virtual VDEC_CHN_ATTR_S VdecChnAttrInit();
 
-
  public:
   int InitDecModule();
   int DeInitDecModule();
@@ -154,6 +156,7 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   int InputDecModule(const char* buf, int size);
   int GetOutputDecModule(VIDEO_FRAME_S&);
   int ReleaseOutputDecModule(VIDEO_FRAME_S& pstFrame);
+
 #if defined(X3_X2_VIO)
   bool GetPyramidInfo(img_info_t *pvio_image, char *data, int len);
   bool GetPyramidInfo(VioFeedbackContext *feed_back_context, char *data,
@@ -166,6 +169,12 @@ class VioProduce : public std::enable_shared_from_this<VioProduce> {
   bool GetPyramidInfo(IotMultPymBuffer *pvio_image, char *data, int len);
   int pipe_id_ = -1;
   std::shared_ptr<VioPipeLine> vio_pipeline_ = nullptr;
+  int pipe_num_ = 0;
+#endif
+  #ifdef USE_MC
+
+ public:
+  virtual int OnGetAPImage(const XProtoMessagePtr &msg) { return 0; }
 #endif
 };
 
@@ -188,6 +197,15 @@ class PanelCamera : public VioCamera {
  public:
   explicit PanelCamera(const std::vector<std::string> &vio_cfg_list);
   virtual ~PanelCamera();
+
+ private:
+  int camera_index_ = -1;
+};
+
+class ApaCamera : public VioCamera {
+ public:
+  explicit ApaCamera(const std::vector<std::string> &vio_cfg_list);
+  virtual ~ApaCamera();
 
  private:
   int camera_index_ = -1;
@@ -216,6 +234,13 @@ class ImageList : public VioProduce {
   bool FillVIOImageByImagePath(T *pvio_image, const std::string &img_name);
   virtual ~ImageList();
   int Run() override;
+
+#ifdef USE_MC
+  int OnGetAPImage(const XProtoMessagePtr &msg);
+  int Finish() override;
+  bool ap_hg_mode_ = false;
+  std::mutex decod_mut_;
+#endif
 };
 
 class JpegImageList : public ImageList {
@@ -248,12 +273,35 @@ class VideoFeedbackProduce : public VioProduce {
   int Run() override;
 };
 
+class MultiFeedbackProduce : public VioProduce {
+ public:
+  MultiFeedbackProduce() = delete;
+  explicit MultiFeedbackProduce(const std::vector<std::string> &vio_cfg_list);
+  virtual ~MultiFeedbackProduce();
+  int Run() override;
+
+ private:
+  int ParseImageListFile();
+  bool FillVIOImageByImagePath(const std::vector<std::string> &image_name_list,
+      std::vector<std::shared_ptr<PymImageFrame>> &pym_images);
+
+ private:
+  uint32_t sample_freq_ = 1;
+  uint32_t s_img_cnt_ = 0;
+  uint32_t pipe_num_ = 0;
+  int name_list_loop_ = 0;
+  int interval_ms_ = 40;
+  std::string fb_mode_;
+  std::vector<std::vector<std::string>> image_source_list_;
+};
+
 class UsbCam : public VioProduce {
  public:
   UsbCam() = delete;
   explicit UsbCam(const char *vio_cfg_file);
   virtual ~UsbCam() { DeInitUvc(); }
   int Run() override;
+  int Finish() override;
 
  private:
   int InitUvc(std::string dev_name);
@@ -266,6 +314,8 @@ class UsbCam : public VioProduce {
   std::shared_ptr<std::thread> sp_feed_decoder_task_ = nullptr;
   std::shared_ptr<std::thread> sp_get_decoder_task_ = nullptr;
 
+
+  static bool recv_usb_cam_;
   static void got_frame_handler(struct video_frame *frame, void *user_args);
 /**
  * convert_yuy2_to_nv12 - image convert from yuy2 to nv12

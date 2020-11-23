@@ -212,7 +212,20 @@ bool ImageConvertor::ConvertToI420() {
 #else
     cv::Mat mat;
     mat.create(height_, width_, CV_8UC3);
-    memcpy(mat.data, input_data_[0], input_data_size_[0]);
+    if (width_ * 3 == input_first_stride_) {
+      // no stride
+      memcpy(mat.data, input_data_[0], input_data_size_[0]);
+    } else {
+      // has stride
+      const uint8_t *input_pos = input_data_[0];
+      uint8_t *output_pos = mat.data;
+      for (int h = 0; h < height_; ++h) {
+        memcpy(output_pos, input_pos, width_ * 3);
+        output_pos += width_ * 3;
+        input_pos += input_first_stride_;
+      }
+    }
+
     cv::cvtColor(mat, mat, CV_BGR2YUV_I420);
     uint32_t step = mat.step.p[0];
     memcpy(y, mat.data, step * height_);

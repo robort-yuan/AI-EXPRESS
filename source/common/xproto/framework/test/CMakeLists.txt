@@ -53,7 +53,7 @@ else ()
 endif ()
 
 # hobot_util.cmake已经设置了在build/bin中生成可执行文件，默认应该在test目录里生成
-add_executable(unit_test ${SOURCE_FILES})
-target_link_libraries(unit_test
+add_executable(xproto_unit_test ${SOURCE_FILES})
+target_link_libraries(xproto_unit_test
   PUBLIC ${PROJECT_NAME} ${BASE_LIBRARIES}
 )

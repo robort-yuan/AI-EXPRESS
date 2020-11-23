@@ -1,5 +1,5 @@
 file(GLOB TEST_SOURCE_SRC "src/*.cpp")
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework bpu_predict -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream bpu_predict -Wl,--no-whole-archive)
 set(OpenCVLib viowrapper opencv_world libcam.so libvio.so)
 
 add_executable(${PROJECT_NAME}_test ${TEST_SOURCE_SRC})

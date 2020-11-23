@@ -151,7 +151,7 @@ struct Tensor {
       std::cerr << "cannot set data with element type " << static_cast<uint32_t>(ElementType<T>::value) << " to tensor "
                 << name << " with element type " << static_cast<uint32_t>(element_type) << std::endl;
     }
-    data.assign(reinterpret_cast<const char *>(ptr), reinterpret_cast<const char *>(ptr) + size * sizeof(T));
+    data.assign(reinterpret_cast<const char *>(ptr), reinterpret_cast<const char *>(ptr) + (size * sizeof(T)));
   }
 
   template <typename T>
@@ -236,6 +236,8 @@ struct Layer {
     DILATE,
     ELEMENTWISE_MIN,
     ELEMENTWISE_MAX,
+    SPOOLING_AVG_GLOBAL,
+    RESCALE,
   };
 
   Layer() = default;
@@ -266,6 +268,7 @@ struct Layer {
   std::string name;
   std::vector<std::shared_ptr<Tensor>> input_tensors;
   std::vector<std::shared_ptr<Tensor>> output_tensors;
+  // cppcheck-suppress misra-c2012-5.5
   std::string desc;  // user-defined information, e.g. how to use the output of this layer.
   // the compiler does not parse it
 };
@@ -655,6 +658,49 @@ struct GlobalAvgPoolingLayer : public Layer {
 };
 
 /**
+ * SAlphaPlusGlobal Average Pooling Layer
+ *
+ * input [feature]
+ * 1. feature shape is [N, H, W, C], has 1 or C shift values
+ *
+ * output [output]
+ * 1. output shape is [N, H, W, C], has 1 or C shift values
+ *
+ * quanti: output = (((feature * weight) >> accu_shift) * scale) >> output_shift
+ *         weight are all 1 in order to do sum feature, then right shift, then multiply scale
+ *
+ */
+struct SGlobalAvgPoolingLayer : public Layer {
+ public:
+  using Layer::Layer;
+  SGlobalAvgPoolingLayer(std::string name, std::vector<std::shared_ptr<Tensor>> input_tensors,
+                         std::vector<std::shared_ptr<Tensor>> output_tensors, std::vector<int32_t> output_scale,
+                         std::vector<int8_t> accu_right_shift, std::vector<int8_t> output_right_shift)
+      : Layer(std::move(name), std::move(input_tensors), std::move(output_tensors)),
+        output_scale(std::move(output_scale)),
+        accu_right_shift(std::move(accu_right_shift)),
+        output_right_shift(std::move(output_right_shift)) {}
+  ~SGlobalAvgPoolingLayer() noexcept override = default;
+  layer_type_t GetLayerType() const override { return layer_type_t::SPOOLING_AVG_GLOBAL; }
+
+  template <class Archive>
+  void serialize(Archive &ar, std::int32_t const version) {
+    // Don't forget to update the version number using HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION in the following
+    if (version == 1) {
+      ar(cereal::base_class<Layer>(this), CEREAL_NVP(output_scale), CEREAL_NVP(accu_right_shift),
+         CEREAL_NVP(output_right_shift));
+    } else {
+      AbortOnVersion(this, version);
+    }
+  }
+  std::vector<int32_t> output_scale;
+  std::vector<int8_t> accu_right_shift;
+  std::vector<int8_t> output_right_shift;
+
+  bool enable_rounding = false;
+};
+
+/**
  * Global Max Pooling Layer
  *
  * input [feature]
@@ -723,7 +769,7 @@ struct RoiResizeLayer : public Layer {
         roi_(roi),
         pad_mode_(pad_mode),
         align_mode_(align_mode) {
-    if (roi_.left == 0 && roi_.right == 0 && roi_.top == 0 && roi_.bottom == 0) {
+    if ((roi_.left == 0) && (roi_.right == 0) && (roi_.top == 0) && (roi_.bottom == 0)) {
       roi_.right = this->input_tensors.at(0)->shape[2];
       roi_.bottom = this->input_tensors.at(0)->shape[1];
     }
@@ -2124,106 +2170,125 @@ struct ElementwiseMax : public Layer {
   }
 };
 
+struct Rescale : public Layer {
+  using Layer::Layer;
+  ~Rescale() noexcept override = default;
+  layer_type_t GetLayerType() const override { return layer_type_t::RESCALE; }
+
+  template <class Archive>
+  void serialize(Archive &ar, std::int32_t const version) {
+    if (version == 1) {
+      ar(cereal::base_class<Layer>(this), CEREAL_NVP(output_scale), CEREAL_NVP(output_right_shift));
+    } else {
+      AbortOnVersion(this, version);
+    }
+  }
+  std::vector<int32_t> output_scale;
+  std::vector<int8_t> output_right_shift;
+};
+
 }  // namespace hbir
 }  // namespace hbdk
 
 #ifndef SWIG
 #define HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(type, version) \
-  CEREAL_REGISTER_TYPE(type);                                      \
-  CEREAL_CLASS_VERSION(type, version);
+  CEREAL_REGISTER_TYPE(type)                                       \
+  CEREAL_CLASS_VERSION(type, version)
 
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Tensor, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Tensor, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Layer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Layer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::QuantiInputLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::QuantiInputLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConvolutionLayer, 4);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConvolutionLayer, 4)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SConvolutionLayer, 3);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SConvolutionLayer, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::AvgPoolingLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::AvgPoolingLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::MaxPoolingLayer, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::MaxPoolingLayer, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::GlobalAvgPoolingLayer, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::GlobalAvgPoolingLayer, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::GlobalMaxPoolingLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::GlobalMaxPoolingLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::RoiResizeLayer, 9);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::RoiResizeLayer, 9)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReluLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReluLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMul, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMul, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SElementwiseMul, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SElementwiseMul, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseAdd, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseAdd, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseSub, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseSub, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SElementwiseAdd, 3);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SElementwiseAdd, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SplitLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SplitLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConcatLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConcatLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ChannelMaxLayer, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ChannelMaxLayer, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SoftmaxLayer, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SoftmaxLayer, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::WarpingLayer, 4);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::WarpingLayer, 4)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DetectionPostProcessLayer, 5);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DetectionPostProcessLayer, 5)
 // NOLINTNEXTLINE
 HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::RcnnPostProcessLayer, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ROIAlignLayer, 3);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ROIAlignLayer, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ChannelSumLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ChannelSumLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::FilterLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::FilterLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SliceLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SliceLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::LutLayer, 3);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::LutLayer, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReshapeLayer, 3);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReshapeLayer, 3)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::QuantiFlatten, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::QuantiFlatten, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DeconvolutionLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DeconvolutionLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SDeconvolutionLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SDeconvolutionLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ScaleRelu, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ScaleRelu, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::LinearPolynomial, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::LinearPolynomial, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReluX, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ReluX, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::NearestUpsample, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::NearestUpsample, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ShuffleLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ShuffleLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SQuantiInputLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::SQuantiInputLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::OpticalPyramidLayer, 2);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::OpticalPyramidLayer, 2)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::PadLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::PadLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Correlation, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Correlation, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::StepwiseFit, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::StepwiseFit, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConvertBetweenInt8AndUint8Layer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ConvertBetweenInt8AndUint8Layer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DilateLayer, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::DilateLayer, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMin, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMin, 1)
 // NOLINTNEXTLINE
-HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMax, 1);
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::ElementwiseMax, 1)
+// NOLINTNEXTLINE
+HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION(hbdk::hbir::Rescale, 1)
 #undef HBDK_HBIR_CEREAL_REGISTER_TYPE_WITH_VERSION
 
 #endif  // SWIG

@@ -8,11 +8,11 @@ mkdir -p ${RELEASE_DIR}
 ARCHITECTURE=$(cat platform.tmp)
 ## libs
 mkdir ${RELEASE_DIR}/lib/
-cp ${ALL_PROJECT_DIR}/build/lib/libxproto*.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/build/lib/libvioplugin*.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/build/lib/libsmartplugin*.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/build/lib/libvisualplugin*.so ${RELEASE_DIR}/lib/ -rf
 cp ${ALL_PROJECT_DIR}/build/lib/libwebsocketplugin*.so ${RELEASE_DIR}/lib/ -rf
+
 if [ ${ARCHITECTURE} == "x3" ]
 then
   cp ${ALL_PROJECT_DIR}/build/lib/libuvcplugin*.so ${RELEASE_DIR}/lib/ -rf
@@ -59,6 +59,7 @@ then
   cp ${ALL_PROJECT_DIR}/output/apa ${RELEASE_DIR}/ -rf
   cp ${ALL_PROJECT_DIR}/output/apa/configs/configs/*  ${RELEASE_DIR}/configs/ -rf
   cp ${ALL_PROJECT_DIR}/output/multivioplugin/bin/multivioplugin_test ${RELEASE_DIR}/apa/ -rf
+  cp ${ALL_PROJECT_DIR}/output/multisourceinput ${RELEASE_DIR}/ -rf
 fi
 cp ${ALL_PROJECT_DIR}/output/visualplugin/config/visualplugin*.json ${RELEASE_DIR}/configs/ -rf
 cp ${ALL_PROJECT_DIR}/source/common/xproto/plugins/websocketplugin/configs/websocketplugin_attribute.json ${RELEASE_DIR}/configs/ -rf
@@ -91,6 +92,7 @@ then
 cp -r ${RELEASE_DIR}/configs/hb* ${RELEASE_DIR}/ssd_test/config/vio_config
 cp -r ${RELEASE_DIR}/configs/vio ${RELEASE_DIR}/ssd_test/config/vio_config
 cp ${ALL_PROJECT_DIR}/output/video_box ${RELEASE_DIR}/ -rf
+cp ${ALL_PROJECT_DIR}/output/video_box/data/test.264 ${RELEASE_DIR}/ -rf
 fi
 cp -r ${ALL_PROJECT_DIR}/build/bin/ssd_method_test ${RELEASE_DIR}/ssd_test/
 cp -r ${ALL_PROJECT_DIR}/source/solution_zoo/xstream/methods/ssd_method/test/data ${RELEASE_DIR}/ssd_test
@@ -105,6 +107,9 @@ cp ${ALL_PROJECT_DIR}/source/common/xproto/python_api/package/tests/* ${RELEASE_
 cp ${ALL_PROJECT_DIR}/source/common/xstream/python_api/package/configs/* ${RELEASE_DIR}/configs/pytest_configs/ -rf
 ## webservice
 cp ${ALL_PROJECT_DIR}/webservice ${RELEASE_DIR}/ -rf
+## vioplugin_test
+mkdir -p ${RELEASE_DIR}/vioplugin_test
+cp -r ${ALL_PROJECT_DIR}/build/bin/vioplugin_sample ${RELEASE_DIR}/vioplugin_test/
 
 
 

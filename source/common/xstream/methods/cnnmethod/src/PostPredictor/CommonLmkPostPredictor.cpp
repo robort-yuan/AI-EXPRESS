@@ -11,6 +11,8 @@
 
 #include "CNNMethod/PostPredictor/CommonLmkPostPredictor.h"
 #include <vector>
+#include <string>
+#include <algorithm>
 #include "CNNMethod/CNNConst.h"
 #include "CNNMethod/util/util.h"
 #include "hobotlog/hobotlog.hpp"
@@ -23,11 +25,24 @@ int32_t CommonLmkPostPredictor::Init(std::shared_ptr<CNNMethodConfig> config) {
   }
   model_name_ = config->GetSTDStringValue("model_name");
   lmk_num_ = config->GetIntValue("lmk_num", 21);
+  post_fn_ = config->GetSTDStringValue("post_fn");
+
   feature_w_ = config->GetIntValue("feature_w", 32);
   feature_h_ = config->GetIntValue("feature_h", 32);
   i_o_stride_ = config->GetIntValue("i_o_stride", 4);
   output_slot_size_ = config->GetIntValue("output_size");
+  vector_size_ = config->GetIntValue("vector_size", 32);
   HOBOT_CHECK(output_slot_size_ > 0);
+
+  std::string s_norm_method = config->GetSTDStringValue("norm_method",
+                                                        "norm_by_nothing");
+  expand_scale_ = config->GetFloatValue("expand_scale", 1.0f);
+  auto iter = g_norm_method_map.find(s_norm_method);
+  HOBOT_CHECK(iter != g_norm_method_map.end())
+  << "norm_method is unknown:" << s_norm_method;
+  norm_type_ = iter->second;
+  aspect_ratio_ = config->GetFloatValue("aspect_ratio", 1.0f);
+
   return 0;
 }
 
@@ -73,7 +88,15 @@ void CommonLmkPostPredictor::HandleLmk(
     const std::vector<std::vector<uint32_t>> &shifts,
     std::vector<BaseDataPtr> *output) {
   if (mxnet_outs.size()) {
-    auto lmk = Lmk3Post(mxnet_outs, box, nhwc, shifts);
+    BaseDataPtr lmk;
+    if ("common_lmk" == post_fn_) {
+      lmk = Lmk3Post(mxnet_outs, box, nhwc, shifts);
+    } else if ("common_lmk_106pts" == post_fn_) {
+      lmk = Lmk4Post(mxnet_outs, box);
+    } else {
+      lmk = std::make_shared<XStreamData<hobot::vision::Landmarks>>();
+      lmk->state_ = DataState::INVALID;
+    }
     output->push_back(lmk);
   } else {
     auto landmarks = std::make_shared<XStreamData<hobot::vision::Landmarks>>();
@@ -86,6 +109,99 @@ int CommonLmkPostPredictor::CalIndex(int k, int i, int j) {
   auto index = i * feature_w_ * lmk_num_ + \
           j * lmk_num_ + k;
   return index;
+}
+
+// Calculate the index of point in the 1d tensor array,
+// with channel k, vector index i.
+int CommonLmkPostPredictor::CalIndex(int k, int i) {
+    return i * lmk_num_ + k;
+}
+
+void CommonLmkPostPredictor::Lmks4PostProcess(
+        const float *vector_pred,
+        const hobot::vision::BBox &box,
+        std::vector<hobot::vision::Point> &lmks4,
+        int axis) {
+  // lmks4 post process
+  // nhwc, heatmap_pred: 1x64x1x68
+  for (size_t k = 0; k < lmk_num_; ++k) {  // c
+    float max_value = 0;
+    int max_index = 0;
+    for (int i = 0; i < vector_size_; ++i) {  // vector_size_
+      int index = CalIndex(k, i);
+      float value = vector_pred[index];
+      if (value > max_value) {
+        max_value = value;
+        max_index = i;
+      }
+    }
+
+    float index = max_index;
+    float diff = 0;
+    if (index > 0 && index < vector_size_ - 1) {
+      int left = CalIndex(k, index-1);
+      int right = CalIndex(k, index+1);
+      diff = vector_pred[right] - vector_pred[left];
+    }
+
+    if (diff > 0) {
+      diff = 0.25;
+    } else if (diff < 0) {
+      diff = -0.25;
+    } else {
+      diff = 0;
+    }
+
+    index = index + (diff * 1.0 + 0.5);
+    index = index * i_o_stride_;
+
+    auto cal_score = [&max_value] (float score) -> float {
+        float new_score = 0.0;
+        float val = max_value / 2.0;
+        if (val > 1.0) {
+          val = 1.0;
+        }
+        if (score > 0) {
+          new_score = std::min(score, val);
+        } else {
+          new_score = val;
+        }
+        return new_score;
+    };
+
+    if (axis == 0) {
+      // vertical vector
+      lmks4.at(k).y = index * box.Height() / (
+              vector_size_ * i_o_stride_) + box.y1;
+      lmks4.at(k).score = cal_score(lmks4.at(k).score);
+    } else {
+      // horizontal vector
+      lmks4.at(k).x = index * box.Width() / (
+              vector_size_ * i_o_stride_) + box.x1;
+      lmks4.at(k).score = cal_score(lmks4.at(k).score);
+    }
+  }  // c
+}
+
+BaseDataPtr CommonLmkPostPredictor::Lmk4Post(
+        const std::vector<std::vector<int8_t>> &mxnet_outs,
+        const hobot::vision::BBox &box) {
+  auto vector_x = reinterpret_cast<const float *>(mxnet_outs[0].data());
+  auto vector_y = reinterpret_cast<const float *>(mxnet_outs[1].data());
+  auto landmarks = std::make_shared<XStreamData<hobot::vision::Landmarks>>();
+  landmarks->value.values.resize(lmk_num_);
+  Lmks4PostProcess(vector_x, box, landmarks->value.values, 1);
+  Lmks4PostProcess(vector_y, box, landmarks->value.values, 0);
+
+  if (NormMethod::BPU_MODEL_NORM_BY_LSIDE_RATIO == norm_type_) {
+    const auto& c_x = box.CenterX();
+    const auto& c_y = box.CenterY();
+    for (auto& val : landmarks->value.values) {
+      val.x = (val.x - c_x) * expand_scale_ + c_x;
+      val.y = (val.y - c_y) * expand_scale_ + c_y;
+    }
+  }
+  return std::static_pointer_cast<BaseData>(landmarks);
 }
 
 BaseDataPtr CommonLmkPostPredictor::Lmk3Post(

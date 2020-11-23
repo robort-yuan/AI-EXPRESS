@@ -29,6 +29,8 @@ VisualConfig::VisualConfig(const std::string &path) : path_(path)
   vlc_support_ = 1;
   is_cbr_ = 1;
   bitrate_ = 2000;
+  input_h264_filename_ = "test.264";
+  local_forward_ = 0;
 }
 
 bool VisualConfig::LoadConfig() {
@@ -67,28 +69,28 @@ std::string VisualConfig::GetValue(const std::string &key) {
 Json::Value VisualConfig::GetJson() const { return this->json_; }
 
 bool VisualConfig::CheckConfig() {
-  if(json_.isMember("auto_mode")) {
-    auth_mode_ = json_["auto_mode"].asInt();
+  if (json_.isMember("auth_mode")) {
+    auth_mode_ = json_["auth_mode"].asInt();
   }
 
-  if(auth_mode_!=0) {
+  if (auth_mode_ != 0) {
     auth_mode_ = 1;
-    if(json_.isMember("user")) {
-      user_ = json_["user"].asInt();
+    if (json_.isMember("user")) {
+      user_ = json_["user"].asString();
     }
-    if(json_.isMember("password")) {
-      password_ = json_["password"].asInt();
+    if (json_.isMember("password")) {
+      password_ = json_["password"].asString();
     }
   }
 
-  if(json_.isMember("layer")) {
+  if (json_.isMember("layer")) {
     layer_ = json_["layer"].asUInt();
     layer_ = layer_ >> 2 << 2;
   }
 
-  if(json_.isMember("jpeg_quality")) {
+  if (json_.isMember("jpeg_quality")) {
     jpeg_quality_ = json_["jpeg_quality"].asUInt();
-    if(jpeg_quality_ > 100)
+    if (jpeg_quality_ > 100)
       jpeg_quality_ = 100;
   }
 
@@ -96,22 +98,22 @@ bool VisualConfig::CheckConfig() {
     display_mode_ = static_cast<DisplayType>(json_["display_mode"].asUInt());
   }
 
-  if(json_.isMember("smart_type")) {
+  if (json_.isMember("smart_type")) {
     smart_type_ = static_cast<SmartType>(json_["smart_type"].asInt());
   }
-  if(json_.isMember("video_type")) {
+  if (json_.isMember("video_type")) {
     video_type_ = static_cast<VideoType>(json_["video_type"].asInt());
   }
-  if(json_.isMember("image_width")) {
+  if (json_.isMember("image_width")) {
     image_width_ = json_["image_width"].asUInt();
   }
-  if(json_.isMember("image_height")) {
+  if (json_.isMember("image_height")) {
     image_height_ = json_["image_height"].asUInt();
   }
-  if(json_.isMember("data_buf_size")) {
+  if (json_.isMember("data_buf_size")) {
     data_buf_size_ = json_["data_buf_size"].asUInt();
   }
-  if(json_.isMember("packet_size")) {
+  if (json_.isMember("packet_size")) {
     packet_size_ = json_["packet_size"].asUInt();
   }
   if (json_.isMember("frame_buf_depth")) {
@@ -138,6 +140,13 @@ bool VisualConfig::CheckConfig() {
     bitrate_ = json_["bitrate"].asInt();
   }
 
+  if (json_.isMember("input_h264_filename")) {
+    input_h264_filename_ = json_["input_h264_filename"].asString();
+  }
+
+  if (json_.isMember("local_forward")) {
+    local_forward_ = json_["local_forward"].asInt();
+  }
   // check the value
   // to do ..
   return true;

@@ -4,6 +4,7 @@
  * @Author:
  * @Mail: @horizon.ai
  */
+
 #include "mediapipemanager/vdecmodule.h"
 
 #include "hb_vdec.h"
@@ -36,7 +37,7 @@ int VdecModule::Init(uint32_t group_id, const PipeModuleInfo *module_info) {
     vdec_attr.enType = PT_H264;
   } else if (module_info->input_encode_type == RTSP_Payload_H265) {
     vdec_attr.enType = PT_H265;
-    printf("\nvdec init decoder type is 265\n");
+    LOGI << "vdec init decoder type is 265";
   } else {
     LOGE << "VdecModule::Init recv unknow decoder type:"
          << module_info->input_encode_type << ", channel:" << group_id;
@@ -102,36 +103,20 @@ int VdecModule::Input(void *data) {
 
 int VdecModule::Output(void **data) {
   int ret = 0;
-  // hb_vio_buffer_t *hb_vio_buf = (hb_vio_buffer_t *)data;
   uint32_t index = buffer_index_ % frameDepth_;
-  // ret = HB_VDEC_GetFrame(group_id_, &buffers_[index], -1);
   ret = HB_VDEC_GetFrame(group_id_, &buffers_[index], timeout_);
   if (ret != 0) {
     data = nullptr;
     LOGE << "HB_VDEC_GetFrame Failed. ret = " << ret;
     return ret;
   }
-  LOGW << "HB_VDEC_GetFrame frame width: " << buffers_[index].stVFrame.width
+  LOGI << "HB_VDEC_GetFrame frame width: " << buffers_[index].stVFrame.width
        << " frame height: " << buffers_[index].stVFrame.height
        << " frame size: " << buffers_[index].stVFrame.size;
 
   *data = &buffers_[index];
   buffer_index_++;
-  // LOGW << "HB_VDEC_GetFrame frame width: " << video_frame_.stVFrame.width
-  //      << " frame height: " << video_frame_.stVFrame.height
-  //      << " frame size: " << video_frame_.stVFrame.size;
-  // memset(hb_vio_buf, 0, sizeof(hb_vio_buffer_t));
-  // hb_vio_buf->img_addr.addr[0] = video_frame_.stVFrame.vir_ptr[0];
-  // hb_vio_buf->img_addr.paddr[0] = video_frame_.stVFrame.phy_ptr[0];
-  // hb_vio_buf->img_addr.addr[1] = video_frame_.stVFrame.vir_ptr[1];
-  // hb_vio_buf->img_addr.paddr[1] = video_frame_.stVFrame.phy_ptr[1];
-  // hb_vio_buf->img_addr.width = video_frame_.stVFrame.width;
-  // hb_vio_buf->img_addr.height = video_frame_.stVFrame.height;
-  // hb_vio_buf->img_addr.stride_size = video_frame_.stVFrame.width;
-  // hb_vio_buf->img_info.planeCount = 2;
-  // hb_vio_buf->img_info.img_format = 8;
-  // hb_vio_buf->img_info.fd[0] = video_frame_.stVFrame.fd[0];
-  // hb_vio_buf->img_info.fd[1] = video_frame_.stVFrame.fd[1];
+
   return ret;
 }
 
@@ -148,7 +133,7 @@ int VdecModule::OutputBufferFree(void *data) {
 
 int VdecModule::Stop() {
   int ret = 0;
-  LOGE << "Vdec Stop id: " << group_id_;
+  LOGI << "Vdec Stop id: " << group_id_;
   ret = HB_VDEC_StopRecvStream(group_id_);
   if (ret != 0) {
     LOGE << "HB_VDEC_StopRecvStream Failed. ret = " << ret;

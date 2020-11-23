@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include <opencv2/core/core.hpp>
 
@@ -61,6 +62,7 @@ struct ImageFrame {
   uint64_t time_stamp = 0;
   uint64_t frame_id = 0;
   std::string type = "";
+  std::string image_name = "";
   /// \~Chinese 图像数据
   virtual uint64_t Data() = 0;
   /// \~Chinese UV分量数据
@@ -265,6 +267,32 @@ struct ImageLevelInfo {
   uint64_t c_vaddr;
 };
 
+struct SrcImageFrame : public ImageFrame {
+  SrcImageFrame() {
+    type = "X3SrcImageFrame";
+    pixel_format = HorizonVisionPixelFormat::kHorizonVisionPixelFormatX3SRC;
+  }
+  ImageLevelInfo src_info;
+  void *context = nullptr;
+
+  /// \~Chinese 图像数据
+  uint64_t Data() override { return src_info.y_vaddr; }
+  /// \~Chinese uv分量数据
+  uint64_t DataUV() override { return src_info.c_vaddr; }
+  /// \~Chinese 图片大小
+  uint32_t DataSize() override { return Stride()*Height(); }
+  /// \~Chinese uv分量大小
+  uint32_t DataUVSize() override { return Stride()*Height() / 2; }
+  /// \~Chinese 宽度
+  uint32_t Width() override { return src_info.width; }
+  /// \~Chinese 高度
+  uint32_t Height() override { return src_info.height; }
+  /// \~Chinese 长度
+  uint32_t Stride() override { return src_info.stride; }
+  /// \~Chinese uv长度
+  uint32_t StrideUV() override { return Stride(); }
+};
+
 struct PymImageFrame : public ImageFrame {
   PymImageFrame() {
     type = "PymImageFrame";
@@ -424,6 +452,92 @@ struct BBox_ {
   std::string category_name = "";
 };
 typedef BBox_<float> BBox;
+
+template <typename Dtype>
+struct Oriented_BBox_ {
+  inline Oriented_BBox_() {}
+  inline Oriented_BBox_(
+      Dtype x1_, Dtype y1_, Dtype x2_, Dtype y2_,
+      Dtype x3_, Dtype y3_, Dtype x4_, Dtype y4_,
+      float score_ = 0.0f, int32_t id_ = -1,
+      const std::string &category_name_ = "") {
+    x1 = x1_;
+    y1 = y1_;
+    x2 = x2_;
+    y2 = y2_;
+    x3 = x3_;
+    y3 = y3_;
+    x4 = x4_;
+    y4 = y4_;
+    id = id_;
+    score = score_;
+    category_name = category_name_;
+  }
+  inline Dtype CenterX() const { return (x1 + x2 + x3 + x4) / 4; }
+  inline Dtype CenterY() const { return (y1 + y2 + y3 + y4) / 4; }
+
+  // 默认点1-2、3-4是Length1；点2-3、1-4 Length2
+  inline Dtype Length1() const {
+    Dtype l1 = sqrt(pow((x2-x1), 2) + pow((y2-y1), 2));
+    Dtype l2 = sqrt(pow((x4-x3), 2) + pow((y4-y3), 2));
+    return (l1 + l2) / 2;
+  }
+  inline Dtype Length2() const {
+    Dtype l1 = sqrt(pow((x4-x1), 2) + pow((y4-y1), 2));
+    Dtype l2 = sqrt(pow((x3-x2), 2) + pow((y3-y2), 2));
+    return (l1 + l2) / 2;
+  }
+  // theta is the angble between the longside and horizontal line
+  // theta: [0, PI]
+  inline float Theta() const {
+    float theta;
+    const float PI = 3.1415926;
+    Dtype length1 = Length1();
+    Dtype length2 = Length2();
+    if (length1 > length2) {
+       theta = (atan2(y2 - y1, x2 - x1) + atan2(y3 - y4, x3 - x4)) / 2;
+    } else {
+       theta = (atan2(y2 - y3, x2 - x3) + atan2(y1 - y4, x1 - x4)) / 2;
+    }  // theta: [-PI, PI]
+    if (theta < 0) {
+      theta = PI + theta;
+    }
+    return theta;
+  }
+  inline friend std::ostream &operator<<(std::ostream &out,
+                                         Oriented_BBox_ &bbox) {
+    out << "( x1: " << bbox.x1 << " y1: " << bbox.y1
+        << " x2: " << bbox.x2 << " y2: " << bbox.y2
+        << " x3: " << bbox.x3 << " y3: " << bbox.y3
+        << " x4: " << bbox.x4 << " y4: " << bbox.y4
+        << ") score: " << bbox.score << " id: " << bbox.id;
+    return out;
+  }
+
+  inline friend std::ostream &operator<<(std::ostream &out,
+                                         const Oriented_BBox_ &bbox) {
+    out << "( x1: " << bbox.x1 << " y1: " << bbox.y1
+        << " x2: " << bbox.x2 << " y2: " << bbox.y2
+        << " x3: " << bbox.x3 << " y3: " << bbox.y3
+        << " x4: " << bbox.x4 << " y4: " << bbox.y4
+        << ") score: " << bbox.score << " id: " << bbox.id;
+    return out;
+  }
+
+  Dtype x1 = 0;
+  Dtype y1 = 0;
+  Dtype x2 = 0;
+  Dtype y2 = 0;
+  Dtype x3 = 0;
+  Dtype y3 = 0;
+  Dtype x4 = 0;
+  Dtype y4 = 0;
+  float score = 0.0;
+  int32_t id = 0;
+  std::string category_name = "";
+};
+typedef Oriented_BBox_<float> Oriented_BBox;
+
 /**
  * \~Chinese @brief 单精度浮点数组，可用于存储特征值、质量结果等
  */

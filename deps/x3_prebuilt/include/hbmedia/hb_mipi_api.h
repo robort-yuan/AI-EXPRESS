@@ -27,6 +27,7 @@ enum HB_MIPI_ERROR_CODE {
 	MIPI_CLEAR_FAIL,
 	MIPI_SET_BYPASS_FAIL,
 	MIPI_ENABLE_SENSOR_CLK_FAIL,
+	MIPI_SET_SENSOR_CLK_FAIL,
 	MIPI_DISENABLE_SENSOR_CLK_FAIL,
 	MIPI_SENSOR_FUNC_NOT_SUPPORT,
 	MIPI_SET_SENSOR_FPS_FAIL,
@@ -149,6 +150,7 @@ extern int HB_MIPI_SetMipiHsMode(uint32_t mipiIdx, uint32_t laneMode);
 extern int HB_MIPI_ResetMipi(uint32_t mipiIdx);
 extern int HB_MIPI_UnresetMipi(uint32_t mipiIdx);
 extern int HB_MIPI_EnableSensorClock(uint32_t mipiIdx);
+extern int HB_MIPI_SetSensorClock(uint32_t mipiIdx, uint32_t snsMclk);
 extern int HB_MIPI_DisableSensorClock(uint32_t mipiIdx);
 extern int HB_MIPI_SetMipiAttr(uint32_t mipiIdx, MIPI_ATTR_S *mipiAttr);
 extern int HB_MIPI_Clear(uint32_t mipiIdx);

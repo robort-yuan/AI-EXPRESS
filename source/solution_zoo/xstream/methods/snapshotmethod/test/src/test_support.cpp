@@ -56,8 +56,17 @@ static int SaveImg(const ImageFramePtr &img_ptr, const std::string &path) {
       break;
     }
     case kHorizonVisionPixelFormatRawNV12: {
-      auto nv12Img = cv::Mat(height * 3 / 2, width, CV_8UC1, snap_data);
+      uint8_t *data = static_cast<uint8_t *>(
+              std::calloc(img_ptr->DataSize() + img_ptr->DataUVSize(),
+                          sizeof(uint8_t)));
+      memcpy(data, reinterpret_cast<uint8_t *>(img_ptr->Data()),
+             img_ptr->DataSize());
+      memcpy(data + img_ptr->DataSize(),
+             reinterpret_cast<uint8_t *>(img_ptr->DataUV()),
+             img_ptr->DataUVSize());
+      auto nv12Img = cv::Mat(height * 3 / 2, width, CV_8UC1, data);
       cv::cvtColor(nv12Img, bgrImg, CV_YUV2BGR_NV12);
+      free(data);
       break;
     }
     case kHorizonVisionPixelFormatRawI420: {
@@ -91,6 +100,8 @@ int DumpSnap(const XStreamSnapshotInfoPtr &snapshot_info, std::string dir) {
 #ifdef DUMP_YUV
   FILE *pfile = nullptr;
   auto data_size = snapshot_info->value->snap->DataSize();
+  void * snap_data =
+   reinterpret_cast<void *>snapshot_info->value->snap->Data();
   if (snap_data && data_size) {
     pfile = fopen(filename, "w");
     if (!pfile) {

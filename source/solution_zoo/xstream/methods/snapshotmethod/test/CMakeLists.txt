@@ -14,7 +14,7 @@ include_directories(
         include
 )
 
-set(BASE_LIBRARIES xstream-framework
+set(BASE_LIBRARIES xstream
         ${OpenCVLib}
         ${OpenCVDeps}
         jsoncpp.a pthread dl)

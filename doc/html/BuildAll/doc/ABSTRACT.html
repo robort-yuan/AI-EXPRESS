@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>地平线AI芯片 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>地平线AI芯片 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../genindex.html" />
     <link rel="search" title="搜索" href="../../search.html" /> 
 </head>
@@ -49,7 +50,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -63,7 +64,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,6 +73,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -94,6 +96,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,7 +135,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>地平线AI芯片</li>
     
@@ -140,7 +143,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/BuildAll/doc/ABSTRACT.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/BuildAll/doc/ABSTRACT.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -255,7 +258,6 @@ AI应用中间件它有如下特点：</p>
 │   │       ├── imagetools
 │   │       ├── methods
 │   │       ├── python_api
-│   │       ├── tutorials
 │   │       └── vision_type
 │   └── solution_zoo
 │       ├── body
@@ -359,7 +361,7 @@ AI应用中间件它有如下特点：</p>
 <div class="section" id="id6">
 <h2>基于XStream-framework集成模型、开发算法策略模块等<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h2>
 <p>XStream-framework提供了面向数据流的编程框架，基于该框架可以将多个业务模块串联起来构建一个workflow，模型集成或者算法策略模块以method的形式加入workflow中。</p>
-<p>XStream-tutorials<code class="docutils literal notranslate"><span class="pre">source/common/xstream/tutorials</span></code>提供了Step-by-step 创建xstream SDK, 创建多线程实例, Method属性支持。workflow执行流控制几个步骤。读者可从入门到精通的方式，掌握基于xstream framework的method开发。</p>
+<p>XStream-tutorials<code class="docutils literal notranslate"><span class="pre">source/common/xstream/framework/tutorials</span></code>提供了Step-by-step 创建xstream SDK, 创建多线程实例, Method属性支持。workflow执行流控制几个步骤。读者可从入门到精通的方式，掌握基于xstream framework的method开发。</p>
 <p>Solutions<code class="docutils literal notranslate"><span class="pre">source/solutions</span></code>包括几个method<code class="docutils literal notranslate"><span class="pre">fasterrcnnmethod,</span> <span class="pre">cnnmethod,</span> <span class="pre">filtermethod,</span> <span class="pre">gradingmethod,</span> <span class="pre">mergemethod,</span> <span class="pre">plate_vote_method,</span> <span class="pre">snapshotmethod,</span> <span class="pre">valuemergemethod等</span></code>， 基于这些method
 给出人脸抓拍识别解决方案<code class="docutils literal notranslate"><span class="pre">source/solutions/face</span></code>, 人体骨骼检测解决方案<code class="docutils literal notranslate"><span class="pre">source/solutions/body</span></code>, 车辆新人检测解决方案<code class="docutils literal notranslate"><span class="pre">source/solutions/vehicle</span></code>。</p>
 <p>Fasterrcnnmethod、CNNMethod对模型集成做了部分抽象，建议用户基于此完成自己的模型适配或者集成新的模型;</p>
@@ -406,11 +408,19 @@ AI应用中间件它有如下特点：</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -421,7 +431,6 @@ AI应用中间件它有如下特点：</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

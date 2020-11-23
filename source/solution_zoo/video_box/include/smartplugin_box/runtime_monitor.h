@@ -70,7 +70,7 @@ private:
   std::unordered_map<int32_t, InputFrameData> input_frames_;
   std::mutex map_mutex_;
   std::vector<std::shared_ptr<Time_Point>> TP;
-  const int channel_ = 4;
+  const int channel_ = 9;
   const uint8_t channel_frame_queue_limit_ = 50;
   std::vector<std::map<uint64_t, bool>> channel_frame_id_;
 };

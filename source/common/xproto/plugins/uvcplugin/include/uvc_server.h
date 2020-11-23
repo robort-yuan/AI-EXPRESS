@@ -24,6 +24,7 @@
 #include "video_queue.h"
 #include "usb_common.h"
 #include "media_codec/media_codec_manager.h"
+#include "uevent_helper.h"
 
 namespace horizon {
 namespace vision {
@@ -55,6 +56,8 @@ struct single_buffer {
   pthread_mutex_t mutex;
 };
 
+// typedef function<void()> func;
+
 class UvcServer {
   friend class VencClient;
 
@@ -84,11 +87,7 @@ class UvcServer {
 
   static bool IsUvcStreamOn() {
     std::lock_guard<std::mutex> lg(mutex_);
-    if (uvc_stream_on == 0) {
-      return false;
-    } else {
-      return true;
-    }
+    return uvc_stream_on == 1;
   }
 
   static void SetUvcStreamOn(int on) {
@@ -98,11 +97,7 @@ class UvcServer {
 
   static bool IsEncoderRunning() {
     std::lock_guard<std::mutex> lg(mutex_);
-    if (encoder_running_) {
-      return true;
-    } else {
-      return false;
-    }
+    return encoder_running_;
   }
 
   static void SetEncoderRunning(bool running) {
@@ -117,12 +112,9 @@ class UvcServer {
 
   static bool IsNv12On() {
     std::lock_guard<std::mutex> lg(mutex_);
-    if (nv12_is_on_) {
-      return true;
-    } else {
-      return false;
-    }
+    return nv12_is_on_;
   }
+
  public:
   static int uvc_stream_on;
   static bool encoder_running_;
@@ -137,7 +129,11 @@ class UvcServer {
   char *v4l2_devname;
   static uint64_t width;
   static uint64_t height;
+  std::string config_path_;
   venc_type vtype_;
+  int efd_;
+  int monitor_flag_;
+  int kbhit_flag_;
   std::shared_ptr<std::thread> worker_;
 };
 }  // namespace Uvcplugin

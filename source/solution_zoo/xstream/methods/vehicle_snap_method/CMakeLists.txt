@@ -26,7 +26,7 @@ file(GLOB PROJECT_SRC
 set(SOURCE_FILES ${PROJECT_INC} ${PROJECT_SRC})
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
-set(BASE_LIBRARIES xstream-framework jsoncpp hobotlog
+set(BASE_LIBRARIES xstream jsoncpp hobotlog
     opencv_world protobuf dl m pthread rt)
 target_link_libraries(${PROJECT_NAME} ${BASE_LIBRARIES})
 

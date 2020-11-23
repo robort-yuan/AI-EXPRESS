@@ -78,19 +78,59 @@ std::vector<BaseDataPtr> DetectPredictor::RunSingleFrame(
       auto cv_image = std::static_pointer_cast<
           hobot::vision::CVImageFrame>(xstream_img->value);
       HOBOT_CHECK(cv_image->pixel_format ==
-                  HorizonVisionPixelFormat::kHorizonVisionPixelFormatRawNV12);
-      src_img_height = cv_image->Height();
-      src_img_width = cv_image->Width();
-      auto img_mat = cv_image->img;
+                  HorizonVisionPixelFormat::kHorizonVisionPixelFormatRawNV12 ||
+                  cv_image->pixel_format ==
+                  HorizonVisionPixelFormat::kHorizonVisionPixelFormatRawBGR);
+      // support nv12, bgr
+      cv::Mat img_nv12;
+      if (cv_image->pixel_format ==
+            HorizonVisionPixelFormat::kHorizonVisionPixelFormatRawNV12) {
+        src_img_height = cv_image->Height();
+        src_img_width = cv_image->Width();
+        auto img_mat = cv_image->img;
 
-      cv::Mat resized_mat = img_mat;
-      if (src_img_height != model_input_height_ ||
-          src_img_width != model_input_width_) {
-        cv::resize(img_mat, resized_mat,
-                   cv::Size(model_input_width_, model_input_height_ * 3 / 2));
+        img_nv12 = img_mat;
+        if (src_img_height != model_input_height_ ||
+            src_img_width != model_input_width_) {
+          cv::resize(img_mat, img_nv12,
+                     cv::Size(model_input_width_, model_input_height_ * 3 / 2));
+        }
+      } else {
+        src_img_height = cv_image->Height();
+        src_img_width = cv_image->Width();
+        auto img_mat = cv_image->img;
+        cv::Mat resized_mat = img_mat;
+        if (src_img_height != model_input_height_ &&
+            src_img_width != model_input_width_) {
+          LOGD << "need resize.";
+          cv::resize(img_mat, resized_mat,
+                     cv::Size(model_input_width_, model_input_height_));
+        }
+        // bgr_to_nv12
+        {
+          cv::Mat yuv_mat;
+          cv::cvtColor(resized_mat, yuv_mat, cv::COLOR_BGR2YUV_I420);
+          uint8_t *yuv = yuv_mat.ptr<uint8_t>();
+          img_nv12 = cv::Mat(model_input_height_ * 3 / 2,
+                             model_input_width_, CV_8UC1);
+          uint8_t *nv12 = img_nv12.ptr<uint8_t>();
+
+          int uv_height = model_input_height_ / 2;
+          int uv_width = model_input_width_ / 2;
+          // copy y data
+          int y_size = uv_height * uv_width * 4;
+          memcpy(nv12, yuv, y_size);
+
+          // copy uv data
+          int uv_stride = uv_width * uv_height;
+          uint8_t *uv_data = nv12 + y_size;
+          for (int i = 0; i < uv_stride; ++i) {
+            *(uv_data++) = *(yuv + y_size + i);
+            *(uv_data++) = *(yuv + y_size + +uv_stride + i);
+          }
+        }
       }
-      uint8_t *nv12_data = resized_mat.ptr<uint8_t>();
-
+      uint8_t *nv12_data = img_nv12.ptr<uint8_t>();
       int img_len = model_input_width_ * model_input_height_ * 3 / 2;
       LOGD << "nv12 img_len: " << img_len;
       PrepareInputTensorData(nv12_data, img_len, input_tensors);

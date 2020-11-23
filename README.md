@@ -1,11 +1,6 @@
-AIExpress
-=======
-
-# 简介
+# 快速上手
 
 AI Express，中文名称AI应用开发中间件，是地平线芯片“天工开物”（Horizon OpenExplorer™️ Platform）AI开发平台的一部分，旨在通过全面降低开发者门槛、提升开发速度、保证开发质量，赋能产业智慧升级。
-
-# 快速上手
 
 ## 概述
 
@@ -25,7 +20,11 @@ AI Express，中文名称AI应用开发中间件，是地平线芯片“天工�
 ### 搭建软件开发环境
 
 **a. Linux开发机环境准备**
-* 安装`cmake 3.15+`以上版本，安装方式如下：
+
+* 本地安装
+
+ 1).安装`CMake 3.15+`以上版本。安装方式如下：
+
 ```bash
 wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz \
     && tar -zxvf cmake-3.17.2.tar.gz \
@@ -36,13 +35,25 @@ wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar
     && cd .. \
     && rm -rf cmake-3.17* 
 ```
-* 下载并安装芯片交叉编译工具[gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu](https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2)，推荐安装路径:`/opt/`，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
+2).安装交叉编译工具链。
+
+下载并安装芯片交叉编译工具[gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu](https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2)，推荐安装路径:`/opt/`，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
 具体修改内容：
 
 ```bash
 set(CMAKE_C_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 ```
+
+* 使用Docker环境
+
+获取镜像及启动容器
+
+```bash
+docker pull hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+docker run -i -t hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+```
+
 **b. Windows开发机环境准备**
 
 * 下载开发板系统镜像及烧录工具：[开发板系统镜像及烧录工具下载地址](https://developer.horizon.ai/forum/id=5f156192740aaf0beb3119dd)
@@ -53,7 +64,7 @@ set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 
   | 名称             |             说明 |
 | ---------------- | ---------------: |
-| disk_X3SDB-Linux-0922wb_2G.img              |       x3sdb开发板系统镜像文件 |
+| disk_X3SDB-Linux-1023wb.img              |       x3sdb开发板系统镜像文件 |
 | hbupdate_win64_0.7.6.zip           |         hbupdate开发板烧录工具(Windows) |
 | win32diskimager-1.0.0-install.zip    |     win32diskimager开发板烧录工具 |
 | CP210x_USB2UART_Driver.zip    |     Windows串口驱动安装包 |
@@ -92,6 +103,28 @@ git clone git@github.com:HorizonRobotics-Platform/AI-EXPRESS.git
 
 代码仓库提供了编译一键脚本build.sh，git clone代码后可直接编译。 编译时需要指定平台信息即可，具体编译如下：
 
+* 本地环境
+
+本地环境可以直接编译
+```bash
+cd AI-EXPRESS
+bash build.sh x3
+```
+
+* Docker环境
+
+1).下载代码后修改ai_express_release/CMakeLists.txt，注释掉文件开头的工具链设置项。
+```bash
+#set(CMAKE_C_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc)
+#set(CMAKE_CXX_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++)
+```
+
+2).设置交叉编译工具链环境变量：
+```bash
+echo "export CC=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc" >> ~/.bashrc
+echo "export CXX=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++"  >> ~/.bashrc
+```
+3).编译
 ```bash
 cd AI-EXPRESS
 bash build.sh x3
@@ -161,25 +194,39 @@ sh run_ut.sh
 
 ## 4.生成xstream和xproto库
 
-AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64/Ubuntu/CentOS,3种平台。
-以需要生成CentOS平台下的xstream和xproto库为例
+AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64(默认)/Ubuntu/CentOS，3种平台。
+
+以生成CentOS平台下的xstream库为例:
+
+* 首先 修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关`X86_ARCH`和`X86_CENTOS`为`ON`
+
 ```bash
-cd AI-EXPRESS
-bash xstream_xproto_build.sh centos
+option(X86_ARCH "x86 architecture" ON)
+option(X86_CENTOS "centos release" ON)
 ```
-编译结束后，AI-EXPRESS工程根目录下会生成lib_aiexpress目录，包含xstream库和xproto库及使用框架的样例代码及样例代码编译部署文档。
 
-xstream库头文件目录：lib_aiexpress/include/xstream/include
+(默认编译xstream会生成libxstream.a，如果需要生成libxstream.so，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项`BUILD_SHARED_LIBS`为`true`，即可。)
 
-xstream库文件：lib_aiexpress/liblibxstream.so
+```bash
+set(BUILD_SHARED_LIBS true)
+```
 
-xstream库样例代码：lib_aiexpress/example/xstream
+如果需要生成Ubuntu平台下的xstream库，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关`X86_ARCH`为`ON`，然后编译即可。
 
-xproto库头文件目录：lib_aiexpress/include/xproto/include
+如果对CMakeLists.txt不做任何修改，则默认使用linaro-aarch64交叉编译工具链进行编译。
 
-xproto库文件：lib_aiexpress/liblibxproto.so
+* 单独编译xstream:
 
-xproto库样例代码：lib_aiexpress/example/xproto
+```bash
+cd AI-EXPRESS/source/common/xstream/framework
+mkdir build && cd build && cmake .. && make -j
+make install
+```
+编译结束后，AI-EXPRESS/source/common/xstream/framework下会生成output目录，output目录包含libxstream.a及头文件
+
+xstream库的使用教程可参考AI-EXPRESS/source/common/xstream/framework/tutorials.
+
+编译xproto库方法，与xstream相同。
 
 ## 5.AIExpress框架文档
 

@@ -10,7 +10,7 @@ set(BASE_LIBRARIES jsoncpp.a pthread dl)
 
 if (${SHARED_LIB})
     add_library(grading_shared SHARED ${SOURCE_FILES})
-    target_link_libraries(grading_shared ${PROJECT_NAME} -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive ${BASE_LIBRARIES})
+    target_link_libraries(grading_shared ${PROJECT_NAME} -Wl,--whole-archive xstream -Wl,--no-whole-archive ${BASE_LIBRARIES})
 
     add_executable(grading_example grading_example.cpp)
     target_link_libraries(grading_example grading_shared)

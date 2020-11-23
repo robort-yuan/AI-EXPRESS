@@ -354,7 +354,7 @@ class XStreamSDK {
   // 通过此方法构造SDK实例
   static XStreamSDK *CreateSDK();
 
-  //说明：用于设置整个workflow的配置，目前支持的功能有：  
+  //说明：用于设置整个workflow的配置，接口返回0表示设置成功，返回-1表示暂不支持此配置；目前支持的功能有：  
   //1）key为"config_file"，value设置为workflow的配置路径，它定义整个workflow数据流。   
   //2）key为"profiler"，value为"on"，表示打开性能统计功能。"off"表示关闭, 默认为关闭。   
   //3）key为"profiler_file",value为性能统计输出文件路径，用于设置性能统计文件的路径名称，默认为./profiler.txt   
@@ -362,11 +362,12 @@ class XStreamSDK {
   //打开此项配置,可以减少峰值内存使用。"off"表示关闭, 默认为关闭。 
   virtual int SetConfig(const std::string &key, const std::string &value) = 0; 
 
-  //用于初始化xstream句柄，必须在调用SetConfig之后执行Init()
+  //用于初始化xstream句柄，必须在调用SetConfig之后执行Init();Init接口返回0表示初始化成功，否则失败。
   virtual int Init() = 0;
 
   // 用于设置node的参数，最终会通过调用对应的node管理的method实例的UpdateParameter(InputParamPtr ptr)接口，完成参数的更新。
   // 形参unique_name传入node的名字；形参ptr为该node对应的配置信息
+  // UpdateConfig接口返回0表示参数更新成功，否则失败。
   virtual int UpdateConfig(const std::string &unique_name, InputParamPtr ptr) = 0;
 
   //获取某个node的参数，最终会调用对应的node管理的method实例的GetParameter()返回配置信息。
@@ -375,20 +376,22 @@ class XStreamSDK {
   // 获取node对应method的版本信息。
   virtual std::string GetVersion(const std::string &unique_name) const = 0;
 
-  // 同步运行接口，传⼊数据，接口会阻塞住，直到整个workflow处理完成，将workflow的结果通过函数返回值返回为止。
+  // 同步运行接口，传⼊数据，接口会阻塞住，直到整个workflow处理完成，将workflow的结果通过函数返回值返回，可以通过返回值中OutputData的output_type_字段信息判断输出类型。
   // 该接口需要在Init()之后执行才有效。
   virtual OutputDataPtr SyncPredict(InputDataPtr input) = 0;
 
-  // 同步多路输出的场景下， 输出接口可以通过output_type_信息判断输出类型。
-  virtual OutputDataPtr SyncPredict2(InputDataPtr input) = 0;
+  // 同步运行接口，用法同SyncPredict接口，返回接口为多路输出。
+  virtual std::vector<OutputDataPtr> SyncPredict2(InputDataPtr input) = 0;
 
   // 使用异步运行接口时，设置SetCallback才有效。
   // 将name设置为默认值，通过该接口可以设置整个workflow处理完成后的回调函数；
   // 将name设置为某个node的unique名字，通过该接口可以设置该node处理数据完成后的回调函数。
+  // 接口返回0表示设置成功，否则设置失败。
   virtual int SetCallback(XStreamCallback callback, const std::string &name = "") = 0; 
 
   // 异步运行接口，结果通过SetCallback设置的回调函数捕获。AsyncPredict接口调用后立即返回。
   // 该接口需要在Init()之后执行才有效。
+  // 接口返回值大于等于0，则表示该任务成功加入队列，且返回码表示该路输入源的sequence_id，结果通过SetCallback设置的回调函数捕获；若接口返回值小于0，表示任务队列已满，添加任务失败。
   virtual int64_t AsyncPredict(InputDataPtr input) = 0; 
 };
 ```
@@ -404,7 +407,7 @@ XStreamSDK核心功能是将一个Workflow配置转化为算法SDK：
 
 实例代码如下:
 ```c++
-// xstream/tutorials/stage1/sync_main.cc
+// xstream/framework/tutorials/stage1/sync_main.cc
 using xstream::BaseData;
 using xstream::BaseDataPtr;
 using xstream::BaseDataVector;
@@ -444,7 +447,7 @@ delete flow;
 
  实例代码所示: 
 ```c++
-// xstream/tutorials/stage1/async_main.cc
+// xstream/framework/tutorials/stage1/async_main.cc
 using xstream::BaseData;
 using xstream::BaseDataPtr;
 using xstream::BaseDataVector;
@@ -605,7 +608,7 @@ XStream内的数据流是通过配置json文件来生成的，框架内目前已
 ##### 2.1定义数据类型
 BBoxFilter Method需要输入一组BBox，输出一组BBox，因此需要定义的数据类型为BBox。
 ```c++
-// xstream/tutorials/stage1/method/b_box.h
+// xstream/framework/tutorials/stage1/method/b_box.h
 namespace hobot {
 namespace vision {
 template <typename Dtype>
@@ -641,7 +644,7 @@ Note: 为了统一基础数据结构定义，我们在vision_type中预定义了
 ##### 2.2数据类型封装
 基于`XStreamData`将自定义数据类型需要封装为在XStream数据表示，从而支持在XStream中流转。
 ```c++
-// xstream/tutorials/stage1/method/b_box.h
+// xstream/framework/tutorials/stage1/method/b_box.h
 typedef XStreamData<hobot::vision::BBox> BBox;
 ```
 输入输出是一组BBox，因此是一个BaseDataVector, 构成一个BBox数组的方式为：
@@ -658,7 +661,7 @@ data->datas_.push_back(BaseDataPtr(bbox2));
 ##### 2.3Method实现
 继承Method基类，实现BBoxFilter Method
 ```c++
-// xstream/tutorials/stage1/method/b_box_filter.h
+// xstream/framework/tutorials/stage1/method/b_box_filter.h
 #include "hobotxstream/method.h"
 
 namespace xstream {
@@ -693,7 +696,7 @@ class BBoxFilter : public Method {
 ```
 DoProcess：根据面积过滤框，这里没有直接过滤掉框，而是设置了Filter状态，最终输出可以通过检查状态位得到剩余框（未被过滤的框状态应为VALID）：
 ```c++
-// xstream/tutorials/stage1/method/b_box_filter.cc
+// xstream/framework/tutorials/stage1/method/b_box_filter.cc
 std::vector<std::vector<BaseDataPtr>> BBoxFilter::DoProcess(
     const std::vector<std::vector<BaseDataPtr>> &input,
     const std::vector<InputParamPtr> &param) {
@@ -755,7 +758,7 @@ b_filter.json配置为：
 ```
 需要注意的是Init输入参数为Json config文件路径，并不是json配置文件本身，需要先load文件然后完成json解析:
 ```c++
-// xstream/tutorials/stage1/method/b_box_filter.cc
+// xstream/framework/tutorials/stage1/method/b_box_filter.cc
 int BBoxFilter::Init(const std::string &config_file_path) {
   std::ifstream infile(file_path);
   Json::Value cfg_jv;
@@ -767,7 +770,7 @@ int BBoxFilter::Init(const std::string &config_file_path) {
 ```
 如果需要运行时更新阈值，需要实现UpdateParameter
 ```c++
-// xstream/tutorials/stage1/method/b_box_filter.cc
+// xstream/framework/tutorials/stage1/method/b_box_filter.cc
 int BBoxFilter::UpdateParameter(InputParamPtr ptr) {
   auto real_ptr = dynamic_cast<xstream::FilterParam *>(ptr.get());
   if (real_ptr->HasThreshold()) {
@@ -778,7 +781,7 @@ int BBoxFilter::UpdateParameter(InputParamPtr ptr) {
 ```
 UpdateParameter的输入参数类型是InputParamPtr，这是XStream定义的参数类型的基类，用户需要继承该基类实现自定义的输入参数类FilterParam：
 ```c++
-// xstream/tutorials/stage1/filter_param.h
+// xstream/framework/tutorials/stage1/filter_param.h
 #include "hobotxsdk/xstream_data.h"
 namespace xstream {
 typedef struct _FilterParam__isset {
@@ -938,7 +941,7 @@ struct InputData {
 ##### 4.2Method注册
 XStream框架构建workflow时，调用全局MethodFactory创建对应Method实例，在使用BBoxFilter之前需要注册到MethodFactory中;
 ```c++
-// xstream/tutorials/stage1/method_factory.cc
+// xstream/framework/tutorials/stage1/method_factory.cc
 #include "hobotxstream/method_factory.h"
 #include "method/bbox_filter.h"
 namespace xstream {
@@ -956,11 +959,11 @@ MethodPtr CreateMethod(const std::string &method_name) {
 ```
 
 ##### 4.3同步预测
-调用XStreamSDK的class静态接口CreateSDK, 创建一个XStreamSDK的对象，并使用SyncPredict进行同步预测。
+调用XStreamSDK的class静态接口CreateSDK, 创建一个XStreamSDK的对象，并使用SyncPredict进行同步预测。SyncPredict接口直接返回workflow的输出结果。
 
 构建SDK代码如下：
 ```c++
-  // xstream/tutorials/stage1/sync_main.cc文件对输入数据稍作改动，改成了循环输入10次数据。
+  // xstream/framework/tutorials/stage1/sync_main.cc文件对输入数据稍作改动，改成了循环输入10次数据。
   using xstream::BaseData;
   using xstream::BaseDataPtr;
   using xstream::BaseDataVector;
@@ -1020,7 +1023,8 @@ MethodPtr CreateMethod(const std::string &method_name) {
 ```c++
 virtual int64_t AsyncPredict(InputDataPtr input) = 0;
 ```
-说明：异步预测接口，AsyncPredict接⼝调⽤后立即返回，结果通过SetCallback设置的回调函数捕获。  
+说明：异步预测接口，AsyncPredict接⼝调⽤后立即返回，若AsyncPredict接口返回值大于等于0，则表示该任务成功加入队列，且返回码表示该路输入源的sequence_id，结果通过SetCallback设置的回调函数捕获；若接口返回小于0，表示任务队列已满，添加任务失败。
+
 Note:该接⼝需要在Init()之后执⾏才有效。   
 
 * 设置异步回调接口
@@ -1033,7 +1037,7 @@ virtual int SetCallback(XStreamCallback callback, const std::string &name = "") 
 
 基于异步接口创建sdk的方式：
 ```c++
-  // xstream/tutorials/stage1/async_main.cc
+  // xstream/framework/tutorials/stage1/async_main.cc
   using xstream::BaseData;
   using xstream::BaseDataPtr;
   using xstream::BaseDataVector;
@@ -1123,7 +1127,7 @@ virtual int SetCallback(XStreamCallback callback, const std::string &name = "") 
 ##### 4.5预测结果解析
 
 ```c++
- // xstream/tutorials/stage1/sync_main.cc
+ // xstream/framework/tutorials/stage1/sync_main.cc
   void ParseOutput(xstream::OutputDataPtr output) {
     using xstream::BaseDataVector;
     std::cout << "=====================" << std::endl;
@@ -1895,6 +1899,43 @@ XStream内的数据流是通过配置json文件来生成的，框架内目前已
 * 某些node间的outputs重名，图中体现为：浅蓝色双箭头边相连，边带有字段：same-node-outputs
 
 ### XStream tutorials
+XStream Framework提供了一系列的开发示例，基于Framework实现一系列独立的功能，由简至难，逐步介绍XStream的基础功能和高阶功能。
+#### stage1 构造简单workflow
+本节将介绍如何搭建一个简单的workflow，实现过滤Box的功能。
+详细参见[tutorials_stage1 构造简单workflow](../../xsdk/common/xstream/framework/tutorials/stage1/README.html)
+
+#### stage2 多线程示例
+本节介绍如何创建多线程。
+详细参见[tutorials_stage2 多线程示例](../../xsdk/common/xstream/framework/tutorials/stage2/README.html)
+
+#### stage3 运行时进行参数更新
+本节介绍如何在运行时进行参数更新。
+详细参见[tutorials_stage3 运行时进行参数更新](../../xsdk/common/xstream/framework/tutorials/stage3/README.html)
+
+#### stage4 多路输入
+本节介绍如何使用多路输入。
+详细参见[tutorials_stage4 多路输入](../../xsdk/common/xstream/framework/tutorials/stage4/README.html)
+
+#### stage5 超时告警
+本节介绍如何使用超时告警。
+详细参见[tutorials_stage5 超时告警](../../xsdk/common/xstream/framework/tutorials/stage5/README.html)
+
+#### stage6 Profile功能
+本节介绍如何使用Profile性能统计功能。
+详细参见[tutorials_stage6 Profile功能](../../xsdk/common/xstream/framework/tutorials/stage6/README.html)
+
+#### stage7 Node输出回调
+本节介绍如何进行Node输出回调。
+详细参见[tutorials_stage7 Node输出回调](../../xsdk/common/xstream/framework/tutorials/stage7/README.html)
+
+#### stage8 子workflow
+本节介绍如何使用子workflow。
+详细参见[tutorials_stage8 子workflow](../../xsdk/common/xstream/framework/tutorials/stage8/README.html)
+
+#### stage9 关闭指定的method实例
+本节介绍如何关闭指定的method实例。
+详细参见[tutorials_stage9 关闭指定的method实例](../../xsdk/common/xstream/framework/tutorials/stage9/README.html)
+
 
 ## 内置数据结构vision_type
 vision_type是根据IOT业务需求沉淀出来的一套数据结构。这些数据结构定义在common/xstream/vision_type/include/horizon/vision_type/vision_type.hpp中。
@@ -2158,6 +2199,7 @@ struct SnapshotInfo {
   std::vector<DType> userdata;
 };
 ```
+
 ### XStream-Framework使用这些数据结构
 定义的这些数据结构不是继承自XStream-Framework中定义的BaseData基类，故不能直接在XStream-Framework框架中使用，需要借助XStream-Framework提供的包装类模块进行封装：
 ```C++
@@ -2170,6 +2212,7 @@ struct XStreamData : public BaseData {
 
 struct XStreamData<BBox> box;  // 则XStreamData<BBox>继承自BaseData，里面包含一个数据成员value，类型为BBox。
 ```
+
 ## 内置Method
 
 本节主要介绍XStream内置的算法Method和策略Method，以及解释如何基于这些Method进行业务开发。

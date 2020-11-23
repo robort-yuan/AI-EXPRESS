@@ -144,7 +144,7 @@ function ChangeRunMode(){
   sed -i "s#\(\./body_solution/configs/body_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
   sed -i "s#\(\./body_solution/configs/xbox_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
   sed -i "s#\(\./body_solution/configs/behavior_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
-  sed -i "s#\(\./body_solution/configs/guesture_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
+  sed -i "s#\(\./body_solution/configs/gesture_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
   sed -i "s#\(\./video_box/configs/body_solution.json  ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
   sed -i "s#\(\./body_solution/configs/dance_solution.json ./configs/visualplugin_body.json -i\).*#\1 ${1}#g" run.sh
   sed -i "s#\(\${face_body_multisource_vio} ./face_body_multisource/configs/face_body_solution.json -i\).*#\1 ${1}#g" run.sh
@@ -162,61 +162,69 @@ function RunSolutions(){
  
   ARCHITECTURE=${1}
   if [ ${ARCHITECTURE} == "x3" ];then
-    ChangeRunMode ut
+     ChangeRunMode ut
+    # log_level i:info w:warning
+    log_level=w
+    # board_type 3:x3sdb 4:x3dvb
+    board_type=3
+    # # fb_resolution 1:1080p feedback  2:2160p feedback
+    # fb_resolution=1
     # face x3dev hg cache
-    sh run.sh i ut 1 4 2 1
-    # face x3dev hg jpg
-    sh run.sh i ut 1 4 2 2
-    # face x3dev hg nv12
-    sh run.sh i ut 1 4 2 3
-    # face_recog x3dev hg cache
-    sh run.sh i ut 2 4 2 1
-    # face_recog x3dev hg jpg
-    sh run.sh i ut 2 4 2 2
-    # face_recog x3dev hg nv12
-    sh run.sh i ut 2 4 2 3
+    # sh run.sh ${log_level} ut 1 ${board_type} 2 ${fb_resolution} 1
+    sh run.sh ${log_level} ut 1 ${board_type} 2 2
+    # # face x3dev hg jpg
+    # sh run.sh ${log_level} ut 1 ${board_type} 2 2
+    # # face x3dev hg nv12
+    # sh run.sh ${log_level} ut 1 ${board_type} 2 3
+    # # face_recog x3dev hg cache
+    # sh run.sh ${log_level} ut 2 ${board_type} 2 1
+    # # face_recog x3dev hg jpg
+    # sh run.sh ${log_level} ut 2 ${board_type} 2 2
+    # # face_recog x3dev hg nv12
+    # sh run.sh ${log_level} ut 2 ${board_type} 2 3
     # body x3dev hg cache
-    sh run.sh i ut 3 4 2 1
-    # body x3dev hg jpg
-    sh run.sh i ut 3 4 2 2
-    # body x3dev hg nv12
-    sh run.sh i ut 3 4 2 3
-    # xbox x3dev hg cache
-    sh run.sh i ut 4 4 2 1
-    # xbox x3dev hg jpg
-    sh run.sh i ut 4 4 2 2
-    # xbox x3dev hg nv12
-    sh run.sh i ut 4 4 2 3
-    # behavior x3dev hg cache
-    sh run.sh i ut 5 4 2 1
-    # behavior x3dev hg jpg
-    sh run.sh i ut 5 4 2 2
-    # behavior x3dev hg nv12
-    sh run.sh i ut 5 4 2 3
-    # gesture x3dev hg cache
-    sh run.sh i ut 6 4 2 1
-    # gesture x3dev hg jpg
-    sh run.sh i ut 6 4 2 2
-    # gesture x3dev hg nv12
-    sh run.sh i ut 6 4 2 3
+    # sh run.sh ${log_level} ut 3 ${board_type} 2 ${fb_resolution} 1
+    sh run.sh ${log_level} ut 3 ${board_type} 2 3
+    # # body x3dev hg jpg
+    # sh run.sh ${log_level} ut 3 ${board_type} 2 2
+    # # body x3dev hg nv12
+    # sh run.sh ${log_level} ut 3 ${board_type} 2 3
+    # # xbox x3dev hg cache
+    # sh run.sh ${log_level} ut 4 ${board_type} 2 1
+    # # xbox x3dev hg jpg
+    # sh run.sh ${log_level} ut 4 ${board_type} 2 2
+    # # xbox x3dev hg nv12
+    # sh run.sh ${log_level} ut 4 ${board_type} 2 3
+    # # behavior x3dev hg cache
+    # sh run.sh ${log_level} ut 5 ${board_type} 2 1
+    # # behavior x3dev hg jpg
+    # sh run.sh ${log_level} ut 5 ${board_type} 2 2
+    # # behavior x3dev hg nv12
+    # sh run.sh ${log_level} ut 5 ${board_type} 2 3
+    # # gesture x3dev hg cache
+    # sh run.sh ${log_level} ut 6 ${board_type} 2 1
+    # # gesture x3dev hg jpg
+    # sh run.sh ${log_level} ut 6 ${board_type} 2 2
+    # # gesture x3dev hg nv12
+    # sh run.sh ${log_level} ut 6 ${board_type} 2 3
     # video_box x3dev hg cache
-    sh run.sh i ut 7 4 2 1
-    # video_box x3dev hg jpg
-    sh run.sh i ut 7 4 2 2
-    # video_box x3dev hg nv12
-    sh run.sh i ut 7 4 2 3
-    # tv_dance x3dev hg cache
-    sh run.sh i ut 8 4 2 1
-    # tv_dance x3dev hg jpg
-    sh run.sh i ut 8 4 2 2
-    # tv_dance x3dev hg nv12
-    sh run.sh i ut 8 4 2 3
+    #sh run.sh ${log_level} ut 7 ${board_type} 2 1
+    # # video_box x3dev hg jpg
+    # sh run.sh ${log_level} ut 7 ${board_type} 2 2
+    # # video_box x3dev hg nv12
+    # sh run.sh ${log_level} ut 7 ${board_type} 2 3
+    # # tv_uvc x3dev hg cache
+    # sh run.sh ${log_level} ut 8 ${board_type} 2 1
+    # # tv_uvc x3dev hg jpg
+    # sh run.sh ${log_level} ut 8 ${board_type} 2 2
+    # # tv_uvc x3dev hg nv12
+    # sh run.sh ${log_level} ut 8 ${board_type} 2 3
     # face_body_multisource x3dev hg cache
-    sh run.sh i ut 12 4 2 1
+    sh run.sh ${log_level} ut 9 ${board_type} 2 1
     # face_body_multisource x3dev hg jpg
-    sh run.sh i ut 12 4 2 2
+    sh run.sh ${log_level} ut 9 ${board_type} 2 2
     # face_body_multisource x3dev hg nv12
-    sh run.sh i ut 12 4 2 3
+    sh run.sh ${log_level} ut 9 ${board_type} 2 3
     ChangeRunMode normal
   elif [ ${ARCHITECTURE} == "x2" ];then
     ChangeRunMode ut

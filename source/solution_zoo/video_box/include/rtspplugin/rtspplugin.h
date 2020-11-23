@@ -1,13 +1,8 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
- * @Author: Songshan Gong
- * @Mail: songshan.gong@horizon.ai
- * @Date: 2019-08-04 02:41:22
- * @Version: v0.0.1
- * @Brief: smartplugin declaration
- * @Last Modified by: Songshan Gong
- * @Last Modified time: 2019-09-30 00:45:01
+ * @Author:
+ * @Mail: @horizon.ai
  */
 
 #ifndef INCLUDE_RTSPPLUGIN_SMARTPLUGIN_H_
@@ -58,9 +53,11 @@ using xstream::OutputDataPtr;
 using xstream::XStreamSDK;
 
 class RtspPlugin : public XPluginAsync {
-public:
+ public:
   RtspPlugin() = default;
-  explicit RtspPlugin(const std::string &config_file);
+  explicit RtspPlugin(const std::string &config_file) {
+    config_file_ = config_file;
+  }
 
   void SetConfig(const std::string &config_file) { config_file_ = config_file; }
 
@@ -73,7 +70,7 @@ public:
   void WaitToStart();
   void GetConfigFromFile(const std::string &path);
 
-private:
+ private:
   int Feed(XProtoMessagePtr msg);
   void OnCallback(xstream::OutputDataPtr out);
   void ParseConfig();
@@ -84,10 +81,11 @@ private:
   std::vector<std::thread> threads_;
   std::vector<ourRTSPClient *> rtsp_clients_;
 
-  struct Rtspinfo
-  {
+  struct Rtspinfo {
     std::string url;
     bool tcp_flag;
+    int frame_max_size;
+    bool save_stream;
   };
   std::vector<Rtspinfo> rtsp_url_;
 
@@ -104,8 +102,11 @@ private:
   static std::mutex framecnt_mtx_;
 
   std::shared_ptr<std::thread> check_thread_;
-  TaskScheduler *scheduler;
-  UsageEnvironment *env;
+  TaskScheduler *scheduler_;
+  UsageEnvironment *env_;
+
+  bool drop_frame_ = false;
+  int drop_frame_interval_ = 0;
 };
 
 }  // namespace rtspplugin

@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>场景参考解决方案 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>场景参考解决方案 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../genindex.html" />
     <link rel="search" title="搜索" href="../../search.html" />
     <link rel="next" title="工具集" href="tools.html" />
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -65,7 +66,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -104,6 +106,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#usb-camera">usb camera</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#apa">apa自动泊车</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id12">车辆结构化</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#camera">多路camera</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">工具集</a></li>
@@ -115,6 +118,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -153,7 +157,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>场景参考解决方案</li>
     
@@ -161,7 +165,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/BuildAll/doc/solution.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/BuildAll/doc/solution.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -182,7 +186,7 @@
 <p>场景参考解决方案是在天工开物模型仓库(Model Zoo)中的产品算法之上，将地平线各种量产场景方案进行开放。下图是“天工开物”模型仓库（Model Zoo）产品算法开放列表。</p>
 <p><img alt="模型仓库" src="../../_images/model-zoo.png" /></p>
 <p>这些产品算法涉及人脸、人体、车辆等多种类别，具备极高的算法质量和精度，可有效避免合作伙伴“重复发明轮子”，大幅节省算法训练和开发的时间与成本。</p>
-<p>当前我们选取人脸、人体、车辆部分核心算法模型，沉淀了<strong>人脸结构化参考方案</strong>,<strong>人体结构化参考方案</strong>,<strong>人体行为分析参考方案</strong>,<strong>视频盒子参考方案</strong>,<strong>体感游戏参考方案</strong>,<strong>usb camera参考方案</strong>,<strong>apa自动泊车参考方案</strong>,<strong>车辆结构化参考方案</strong> 八个解决方案。</p>
+<p>当前我们选取人脸、人体、车辆部分核心算法模型，沉淀了<strong>人脸结构化参考方案</strong>,<strong>人体结构化参考方案</strong>,<strong>人体行为分析参考方案</strong>,<strong>视频盒子参考方案</strong>,<strong>体感游戏参考方案</strong>,<strong>usb camera参考方案</strong>,<strong>apa自动泊车参考方案</strong>,<strong>车辆结构化参考方案</strong>,<strong>多路camera参考方案</strong> 九个解决方案。</p>
 <p>这些参考方案在地平线XJ3系列开发板上可以直接部署运行；大部分解决方案也可以在XJ2系列开发板上直接部署运行。您也可以将这些参考方案轻松迁移到基于地平线芯片的其他硬件设备中。</p>
 <p>注意：这些参考方案当前未全部在GitHub上开源，若需要源码与参考模块，可以<a class="reference external" href="forum-bd&#64;horizon.ai">联系地平线</a>。</p>
 <p>参考方案的功能概述如下：</p>
@@ -195,6 +199,7 @@
 <li><p>usb camera参考方案： X3开发板作为USB设备，插入USB宿主机。X3开发版外接MIPI sensor，完成图像编码、视觉分析，基于标准的UVC协议将视频传输给USB宿主机；基于HID或者RNDIS协议将结构化智能结果传输给USB宿主机；基于标准UAC协议将音频数据传输给USB宿主机； 未开源。</p></li>
 <li><p>apa自动泊车： XJ3开发板接入4路sensor，完成4路图像的视觉分析，输出可行驶区域、障碍物检测框、停车位检测框以及停车位分割结果；支持can信号的传输。当摄像头完成实车标定，且实现控车逻辑后，能够完成自动泊车功能； 未开源，计划开源。</p></li>
 <li><p>车辆结构化参考方案： 完成车辆检测、车牌检测与识别、车辆类型识别等结构化信息提取； 未开源。</p></li>
+<li><p>多路camera：XJ3开发板可接入1~4路sensor，solution完成各路图像的视觉分析，输出可行驶区域、障碍物检测狂、停车位检测框，支持把多路图像和检测结果在web上展示。</p></li>
 </ul>
 </div>
 <div class="section" id="id3">
@@ -547,6 +552,17 @@ AI EXPRESS版本包编译部署后，在J3上可以直接使用如下命令运�
 </ul>
 <p>关于车辆结构化参考方案，详细参考<a class="reference internal" href="../../xsdk/solution_zoo/vehicle/README.html"><span class="doc">README</span></a>。</p>
 </div>
+<div class="section" id="camera">
+<h2>多路camera<a class="headerlink" href="#camera" title="永久链接至标题">¶</a></h2>
+<p>本方案支持多路camera输入、视觉图像处理、多路智能结果在web端展示等，最多支持8路。
+视觉图像预测部分采用了apa的workflow作为示例
+多路camera参考方案基于XProto应用开发框架，，使用了如下组件：</p>
+<ul class="simple">
+<li><p>VioPlugin 接入sensor/回灌图像，获取图像的金字塔数据，支持获取多路camera数据。</p></li>
+<li><p>MultiSourceSmartPlugin完成各路视觉图像的预测。支持不同camera数据单独完成预测、结果处理。</p></li>
+<li><p>MultiSourceWebsocketPlugin 将原图、感知结果通过以太网发送给web展示端，web侧支持展示多路图像和智能数据，最多支持8路。</p></li>
+</ul>
+</div>
 </div>
 
 
@@ -560,11 +576,19 @@ AI EXPRESS版本包编译部署后，在J3上可以直接使用如下命令运�
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -575,7 +599,6 @@ AI EXPRESS版本包编译部署后，在J3上可以直接使用如下命令运�
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

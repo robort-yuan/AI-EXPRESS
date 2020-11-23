@@ -15,6 +15,7 @@ typedef struct SERVER_PARAM {
   char password[64];
   uint32_t data_buf_size;
   uint32_t packet_size;
+  char input_filename[128];
 } SERVER_PARAM_S;
 
 enum MessageType {

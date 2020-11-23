@@ -18,53 +18,53 @@
 #include "hobotxsdk/xstream_data.h"
 
 namespace xstream {
-/// 框架数据状态
+/// BaseData status
 enum BaseDataState {
   DataState_None = 0,
   DataState_Doing,
   DataState_Ready,
   DataState_Error,
 };
-/// FrameworkData状态
+/// FrameworkData status
 enum FrameworkDataState {
   FrameworkDataState_None = 0,
   FrameworkDataState_Doing,
   FrameworkDataState_Ready,
   FrameworkDataState_Error,
 };
-/// 在框架中流转的数据结构，简称框架数据
+/// FrameworkData, used in Framework
 struct FrameworkData {
-  /// 每个slot的数据
+  /// datas in slots
   std::vector<BaseDataPtr> datas_;
-  /// 每个slot的数据状态
+  /// datas status in slots
   std::vector<BaseDataState> datas_state_;
-  /// 每个method的输入参数
+  /// inputparam of node
   std::unordered_map<std::string, InputParamPtr> method_param_;
-  /// 已上报的单路output
+  /// name of outputdata has been handled
   std::vector<std::string> output_type_isout_;
-  /// 每个slot数据已驱动Node的数量
+  /// the number of nodes have been driven by dataslots
   std::vector<int> driven_nodes_nums_;
-  /// SDK Input透传数据
+  /// pasthroughed from context_ of Inputdata
   const void *context_ = nullptr;
-  /// 用于SDK等待同步结果的辅助字段
+  /// flag data of sync mode
   void *sync_context_ = nullptr;
-  /// 时间戳
+  /// timestamp
   uint64_t timestamp_;
-  /// 用来做reorder
+  /// sequence_id, used to reorder
   uint64_t sequence_id_;
-  /// 数据源 id 用于多路输入时区分输入源,单一源情况赋值为 0
+  /// input_data source id, used in multi-input; default value 0(single-input)
   uint32_t source_id_ = 0;
   uint32_t golbal_squence_id_;
-  /// 当前帧状态
+  /// framework data status
   FrameworkDataState state_ = FrameworkDataState_None;
 };
 typedef std::shared_ptr<FrameworkData> FrameworkDataPtr;
 
-/// 一次Batch批量操作
+/// FrameworkDataBatch
 struct FrameworkDataBatch {
-  /// 多帧数据
+  /// batch frameworkdata
   std::vector<FrameworkDataPtr> datas_;
-  /// 时间戳
+  /// timestamp
   int64_t timestamp_;
 };
 typedef std::shared_ptr<FrameworkDataBatch> FrameworkDataBatchPtr;

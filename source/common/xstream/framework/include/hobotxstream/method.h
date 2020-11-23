@@ -17,40 +17,39 @@
 #include "hobotxsdk/xstream_data.h"
 
 namespace xstream {
-/// Method基本信息
+/// Method Info
 struct MethodInfo {
-  /// 是否线程安全
+  /// is thread safe
   bool is_thread_safe_ = false;
-  /// 是否需要做reorder，也就是让每一帧结果的返回顺序同请求顺序。
+  /// is need reorder, the order of outputdata must be same as the inputdata
   bool is_need_reorder = false;
-  /// 是否对输入源有前后文依赖 source context dependent
+  /// is dependent on inputdata source
   bool is_src_ctx_dept = false;
 };
 
 class Method {
  public:
   virtual ~Method();
-  /// 初始化
+  /// Init
   virtual int Init(const std::string &config_file_path) = 0;
   // overload Init
   virtual int InitFromJsonString(const std::string &config) { return -1; }
-  /// 动态改变Method运行参数配置
+  /// Update Method Parameter
   virtual int UpdateParameter(InputParamPtr ptr) = 0;
-  // 数据处理函数，第一个参数是输入数据（双重vector，外层vector表示batch是多帧的输入
-  // 内层的vector表示单帧的数据列表），
-  // 内层vector对应workflow的"inputs"输入列表
+  // Process Func
+  // <parameter> input: input data, input[i][j]: batch i, slot j
   virtual std::vector<std::vector<BaseDataPtr>> DoProcess(
       const std::vector<std::vector<BaseDataPtr>> &input,
       const std::vector<InputParamPtr> &param) = 0;
-  /// 获取Method运行参数配置
+  /// grt Method Parameter
   virtual InputParamPtr GetParameter() const = 0;
-  /// 获取Method版本号，比如 metric_v0.4.0 或者 MD112 等
+  /// get Method Version
   virtual std::string GetVersion() const = 0;
-  /// 析构
+  /// destructor
   virtual void Finalize() = 0;
-  /// 获取Method基本信息
+  /// get MethodInfo
   virtual MethodInfo GetMethodInfo();
-  /// 用于告知Method整个SDK的Profiler状态更改
+  /// change Profiler status
   virtual void OnProfilerChanged(bool on) = 0;
 };
 

@@ -18,57 +18,59 @@
 namespace xstream {
 
 /**
- * 典型使用
+ * Example Usage:
  * xstream::XStreamSDK *flow = xstream::XStreamSDK::CreateSDK();
  * flow->SetConfig("config_file", config);
  * flow->Init();
  * InputDataPtr inputdata(new InputData());
- * // ... 构造输入数据
+ * // ... construct inputdata
  * auto out = flow->SyncPredict(inputdata);
  * // PrintOut(out);
- * // ... 处理输出结果
+ * // ... handle outputdata
  * delete flow;
  */
 
-/// 数据流提供的接口
+/// XStream API
 class XStreamSDK {
  public:
-  /// 因为构造出来的实例是XStreamSDK接口的子类
+  /// Base class(derived class need to be defined, such as XStreamFlow)
   virtual ~XStreamSDK() {}
-  /// 通过此方法构造SDK实例
+  /// creat SDK instance
   static XStreamSDK *CreateSDK();
 
-  /// key：config_file，用来设置workflow配置文件路径
+  /// key："config_file", value: workflow config file(json) path
   virtual int SetConfig(
       const std::string &key,
-      const std::string &value) = 0;  // 设置授权路径、模型路径等等
-  /// 初始化workflow
+      const std::string &value) = 0;
+  /// Init workflow
   virtual int Init() = 0;
-  /// 针对method实例更新配置参数
+  /// Update InputParam for specified method instance
   virtual int UpdateConfig(const std::string &unique_name,
                            InputParamPtr ptr) = 0;
-  /// 获取method实例当前配置
+  /// Get InputParam of specified method
   virtual InputParamPtr GetConfig(const std::string &unique_name) const = 0;
-  /// 获取method实例的版本号
+  /// Get Version of specified method
   virtual std::string GetVersion(const std::string &unique_name) const = 0;
-  /// 同步运行接口，单路输出
+  /// SyncPredict Func for SingleOutput mode
   virtual OutputDataPtr SyncPredict(InputDataPtr input) = 0;
-  /// 同步运行接口，多路输出
+  /// SyncPredict Func for MultiOutput mode
   virtual std::vector<OutputDataPtr> SyncPredict2(InputDataPtr input) = 0;
+
   /**
-   *  异步接口的callback设置接口
+   *  Set callback func, only support async mode
    *
-   * 需要在Init()后执行，否则name不为空时无法得到结果
-   * @param callback [in], 回调函数
-   * @param name [in], workflow 节点
-   * unique_name，当使用默认参数时，callback为全局回调，
-   *    只有当这一帧数据全部计算结束才会回调报告结果；如果设置了unique_name，则在异步调用中就会
-   *    上报当前节点的输出，但同步调用中不会回调。
+   * Note: XStreamSDK should be inited(Init()) before SetCallback()
+   * @param callback [in], callback func
+   * @param name [in], workflow node name;
+   * name = "": default param, set callback for final outputdata;
+   * name: node name, set callback for specifed node, callback func handle the node's outputdata
    */
   virtual int SetCallback(XStreamCallback callback,
-                          const std::string &name = "") = 0;  // 设置回调
-  /// 异步运行接口
-  virtual int64_t AsyncPredict(InputDataPtr input) = 0;  // 异步接口
+                          const std::string &name = "") = 0;
+  /// AsyncPredict Func
+  virtual int64_t AsyncPredict(InputDataPtr input) = 0;
+
+  virtual int64_t GetTaskNum() = 0;
 };
 
 }  // namespace xstream

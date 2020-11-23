@@ -14,6 +14,7 @@
 #define INCLUDE_SMARTPLUGIN_CONVERT_H_
 
 #include <string>
+#include <vector>
 #include "xproto_msgtype/vioplugin_data.h"
 #include "xproto_msgtype/smartplugin_data.h"
 #include "opencv2/opencv.hpp"
@@ -73,7 +74,6 @@ class Convertor {
   static int PackSmartMsg(std::string &data, SmartMessage *smart_msg, int type);
 
  private:
-
 };
 
 }  // namespace visualplugin

@@ -45,6 +45,7 @@ int VioPipeManager::VbInit() {
   int ret = -1;
   VP_CONFIG_S vp_config;
 
+  vb_init_ref_cnt_++;
   if (vb_init_ == true) {
     LOGW << "vp has already init";
     return 0;
@@ -73,11 +74,17 @@ int VioPipeManager::VbDeInit() {
   std::lock_guard<std::mutex> lg(mutex_);
   int ret = -1;
 
+  vb_init_ref_cnt_--;
+  if (vb_init_ref_cnt_ == 0) {
+    LOGI << "vb start attemp deinit";
+  } else {
+    LOGW << "vb init referent cnt: " << vb_init_ref_cnt_;
+    return 0;
+  }
   if (vb_init_ == false) {
     LOGW <<  "vp has not init!";
     return 0;
   }
-
   ret = HB_VP_Exit();
   if (ret == 0) {
     LOGD << "vp exit ok!";

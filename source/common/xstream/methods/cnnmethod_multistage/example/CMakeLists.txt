@@ -4,7 +4,7 @@ set(BASE_LIBRARIES jsoncpp pthread dl rt)
 set(OpenCVLib opencv_world)
 set(VioWrapperLib viowrapper)
 
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream -Wl,--no-whole-archive)
 set(X2_PREBUILT_LIB bpu_predict libcam.so libvio.so libcnn_intf.so)
 
 file(GLOB_RECURSE EXAMPLE_SOURCE_FILES *.cpp)

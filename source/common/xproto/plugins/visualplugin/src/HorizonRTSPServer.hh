@@ -119,7 +119,7 @@ class MetadataFramedSource : public FramedSource {
                                          bool sendFeature,
                                          bool sendBackground);
   static void onDataFrame(unsigned char *buff, int len, int msgType);
-
+//  static void onHisiFrame(VENC_STREAM_S *pstStream);
   static void onH264Frame(unsigned char *buff, int len);
 
   static void sendFrame(void *client);

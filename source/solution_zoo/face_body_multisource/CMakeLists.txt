@@ -55,7 +55,7 @@ set(Method_LIBS
     GradingMethod
 )
 
-set(BASE_LIBRARIES hobotlog xstream-framework vision_type_util
+set(BASE_LIBRARIES hobotlog xstream vision_type_util
     jsoncpp protobuf vioplugin xproto_msgtype xproto)
 
 set(OpenCVLib opencv_world)

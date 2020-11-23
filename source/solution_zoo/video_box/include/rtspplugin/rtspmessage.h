@@ -1,12 +1,8 @@
-/*
- * @Description: implement of vioplugin
- * @Author: fei.cheng@horizon.ai
- * @Date: 2019-08-26 16:17:25
- * @Author: songshan.gong@horizon.ai
- * @Date: 2019-09-26 16:17:25
- * @LastEditors: hao.tian@horizon.ai
- * @LastEditTime: 2019-10-16 16:27:39
- * @Copyright 2017~2019 Horizon Robotics, Inc.
+/**
+ * Copyright (c) 2020, Horizon Robotics, Inc.
+ * All rights reserved.
+ * @Author:
+ * @Mail: @horizon.ai
  */
 #ifndef INCLUDE_RTSPMESSAGE_RTSPMESSAGE_H_
 #define INCLUDE_RTSPMESSAGE_RTSPMESSAGE_H_

@@ -72,6 +72,8 @@ class VisualConfig {
   int vlc_support_ = 0;
   int is_cbr_ = 1;
   int bitrate_ = 2000;
+  std::string input_h264_filename_;
+  int local_forward_;
 };
 
 }  // namespace visualplugin

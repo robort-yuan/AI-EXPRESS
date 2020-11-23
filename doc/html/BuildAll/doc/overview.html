@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>概述 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>概述 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,14 +35,10 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../genindex.html" />
     <link rel="search" title="搜索" href="../../search.html" />
     <link rel="next" title="快速上手" href="quick_start.html" />
-    <link rel="prev" title="AI Express用户文档(V2.6.0)" href="../../index.html" /> 
+    <link rel="prev" title="AI Express用户文档(V2.7.0)" href="../../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -65,7 +66,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -87,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xstreamsdk">XStream算法SDK编程框架</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xproto">XProto原型应用开发框架</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id2">场景参考解决方案</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-expressbpu-predict">AI Express与bpu_predict的区别</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id3">定位与优势</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id4">开源仓库</a></li>
 </ul>
@@ -104,6 +107,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -142,7 +146,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>概述</li>
     
@@ -150,7 +154,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/BuildAll/doc/overview.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/BuildAll/doc/overview.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -183,7 +187,7 @@
 <ul class="simple">
 <li><p>XStream: 一套独立的算法SDK编程框架。将预测任务拆分到一系列Method中，提供能力将Method串联成Graph，完成基于Graph的计算。可以根据不同的业务场景(不同的workflow)，快速生成对应的预测SDK。</p></li>
 <li><p>XProto: 一套独立的原型应用开发框架。该框架将整个应用划分成一系列的Plugin，各个Plugin之间通过消息总线通信，完成了模块的解耦、复用、可扩展等需求。</p></li>
-<li><p>内置参考解决方案: 沉淀了人脸结构化、人体结构化、人体行为分析、视频盒子、体感游戏、usb camera、apa、车辆结构化等示例。可以直接基于这些示例修改，完成客户的产品功能开发。</p></li>
+<li><p>内置参考解决方案: 沉淀了人脸结构化、人体结构化、人体行为分析、视频盒子、体感游戏、usb camera、apa、车辆结构化、多路camera等示例。可以直接基于这些示例修改，完成客户的产品功能开发。</p></li>
 </ul>
 </div>
 <div class="section" id="xstreamsdk">
@@ -220,7 +224,7 @@
 <div class="section" id="id2">
 <h2>场景参考解决方案<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
 <p>基于XStream和XProto两套框架，我们也将经过地平线各种量产考验的场景解决方案进行开放，这些解决方案通过搭配地平线芯片以及开发板等硬件参考设计，可以实现快速场景应用的落地。</p>
-<p>目前提供了人脸结构化参考方案、人体结构化参考方案、人体行为分析参考方案、视频盒子参考方案、体感游戏参考方案、usb camera参考方案、apa自动泊车参考方案、车辆结构化参考方案。提供了工程代码以及配套的参考模型，可以部署运行在地平线XJ3、XJ2开发板。这些参考方案会逐步完全对外开放。</p>
+<p>目前提供了人脸结构化参考方案、人体结构化参考方案、人体行为分析参考方案、视频盒子参考方案、体感游戏参考方案、usb camera参考方案、apa自动泊车参考方案、车辆结构化、多路camera参考方案。提供了工程代码以及配套的参考模型，可以部署运行在地平线XJ3、XJ2开发板。这些参考方案会逐步完全对外开放。</p>
 <p>各个参考方案的功能描述如下</p>
 <ul class="simple">
 <li><p>人脸结构化参考方案: 人脸的检测、人脸姿态检测、人脸关键点、人脸跟踪、优先抓拍、人脸特征提取等结构化信息提取。</p></li>
@@ -230,8 +234,16 @@
 <li><p>体感游戏参考方案: 通过视觉分析实时画面中人员的跳跃、跑步等动作，完成游戏内角色的动作控制。</p></li>
 <li><p>usb camera参考方案: X3开发板作为USB设备，插入USB宿主机。X3开发版外接MIPI sensor，完成图像编码、视觉分析，基于标准的UVC协议将视频传输给USB宿主机；基于HID或者RNDIS协议将结构化智能结果传输给USB宿主机；基于标准UAC协议将音频数据传输给USB宿主机。</p></li>
 <li><p>apa自动泊车: XJ3开发板接入4路sensor，完成4路图像的视觉分析，输出可行驶区域、障碍物检测框、停车位检测框以及停车位分割结果；支持can信号的传输。当摄像头完成实车标定，且实现控车逻辑后，能够完成自动泊车功能。</p></li>
+<li><p>多路camera：XJ3开发板可接入1~4路sensor，solution完成各路图像的视觉分析，输出可行驶区域、障碍物检测框、停车位检测框，支持把多路图像和检测结果在web上展示。</p></li>
 <li><p>车辆结构化参考方案: 完成车辆检测、车牌检测与识别、车辆类型等结构化信息提取。</p></li>
 </ul>
+</div>
+<div class="section" id="ai-expressbpu-predict">
+<h2>AI Express与bpu_predict的区别<a class="headerlink" href="#ai-expressbpu-predict" title="永久链接至标题">¶</a></h2>
+<p>嵌入式预测库bpu_predict提供了一套C风格的API，封装了地平线BPU操作的底层接口，并提供调度策略，帮助用户快速集成模型。bpu_predict提供的接口功能包括模型加载、Tensor内存分配、预测等功能，不包括模型的算法后处理或者预处理部分。</p>
+<p>AI Express中的XStream算法SDK编程框架，提供了基于有向图的计算框架。该框架目标是降低应用开发的成本，其中就包括模型集成的成本：它内置了部分预测Method，这些Method基于bpu_predict接口，完成模型的加载、预测以及前后处理。</p>
+<p>所以可以这么理解，AI Express中预测Method是基于bpu_predict的进一步的封装，模型预测是AI Express中的一部分，不是全部。AI Express中提供的预测Method，对模型的加载、Tensor分配以及预测做了进一步封装，开发人员只需要关注模型的预处理和后处理部分，即将Method的输入转换成模型的输入，将模型预测的结果进行后处理转成Method的输出这两部分，大大降低了模型集成的成本。</p>
+<p>总之若应用使用了AI Express的XStream框架完成模型集成，则必须依赖bpu_predict，集成复杂度比直接使用bpu_predict复杂度低。此外若业务逻辑比较简单、模型数量较少（比如就1-2个模型），策略较少，那么应用也可以直接基于bpu_predict开发，而无需依赖AI Express。</p>
 </div>
 <div class="section" id="id3">
 <h2>定位与优势<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
@@ -269,11 +281,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -284,7 +304,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

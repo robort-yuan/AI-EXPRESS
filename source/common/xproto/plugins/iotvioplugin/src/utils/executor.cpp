@@ -21,16 +21,20 @@ namespace vioplugin {
 std::once_flag Executor::flag_;
 std::shared_ptr<Executor> Executor::worker_;
 
-std::shared_ptr<Executor> Executor::GetInstance() {
+std::shared_ptr<Executor> Executor::GetInstance(const int exe_cnt) {
   if (!worker_) {
-    std::call_once(flag_, [&]() { worker_ = std::make_shared<Executor>(); });
+    std::call_once(flag_,
+        [&]() {
+        worker_ = std::make_shared<Executor>(exe_cnt);
+        });
   }
   return worker_;
 }
 
-Executor::Executor() {
+Executor::Executor(const int exe_cnt) {
   stop_ = false;
   pause_ = false;
+  thread_count_ = exe_cnt;
   for (auto i = 0; i < thread_count_; ++i) {
     threads_.emplace_back(
         std::make_shared<std::thread>(std::bind(&Executor::Run, this)));
@@ -85,7 +89,9 @@ std::future<bool> Executor::AddTask(exe_func func) {
   {
     std::lock_guard<std::mutex> lck(task_queue_mutex_);
     task_queue_.push_back(task);
-    HOBOT_CHECK(task_queue_.size() <= 2);
+    LOGI << "task_queue_size: " << task_queue_.size()
+      << " thread_count: " << thread_count_;
+    HOBOT_CHECK(task_queue_.size() <= static_cast<unsigned int>(thread_count_));
   }
   condition_.notify_one();  // wake worker thread(s)
   return task->p_->get_future();

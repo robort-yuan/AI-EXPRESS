@@ -11,17 +11,20 @@
 
 // Implementation of "AudioG711Sink":
 #define AUDIO_RECEIVE_BUFFER_SIZE 2 * 1024
-void AudioG711Sink::SetFileName(const std::string &file_name) {
-  file_name_ = file_name;
+void AudioG711Sink::SetFileName(std::tuple<bool, std::string> file) {
+  save_file_ = std::get<0>(file);
+  file_name_ = std::get<1>(file);
+
+  if (save_file_ && !file_name_.empty()) {
+    outfile_.open(file_name_, std::ios::app | std::ios::out | std::ios::binary);
+  }
 }
 
 int AudioG711Sink::SaveToFile(void *data, const int data_size) {
-  std::ofstream outfile;
-  if (file_name_ == "") {
-    return -1;
+  if (outfile_.is_open()) {
+    outfile_.write(reinterpret_cast<char *>(data), data_size);
   }
-  outfile.open(file_name_, std::ios::app | std::ios::out | std::ios::binary);
-  outfile.write(reinterpret_cast<char *>(data), data_size);
+
   return 0;
 }
 
@@ -44,6 +47,7 @@ AudioG711Sink::AudioG711Sink(UsageEnvironment &env, MediaSubsession &subsession,
       subsession_(subsession),
       buffer_size_(buffer_size),
       buffer_count_(buffer_count),
+      save_file_(false),
       channel_(-1),
       first_frame_(true),
       waiting_(true),
@@ -57,6 +61,10 @@ AudioG711Sink::~AudioG711Sink() {
   LOGI << "AudioG711Sink::~AudioG711Sink(), channel:" << channel_;
   delete[] stream_id_;
   delete buffer_;
+
+  if (outfile_.is_open()) {
+    outfile_.close();
+  }
   LOGI << "leave ~AudioG711Sink(), channel:" << channel_;
 }
 

@@ -206,6 +206,7 @@ HCanvas.prototype.drawLine = function (p1, p2, option) {
   context.strokeStyle = strokeColor;
   context.stroke();
 };
+
 HCanvas.prototype.drawLine2 = function (p1, points, option) {
   option = option || {};
 
@@ -743,6 +744,49 @@ HCanvas.prototype.drawSkeleton = function (points) {
   });
 };
 
+HCanvas.prototype.drawArcPoint = function (points, diameterSize, colors) {
+  var ctx = this.context;
+  let size = diameterSize || 7
+  let color = colors || '#000'
+  let minScore = 0.3
+  points.map((item, index) => {
+    if (item.score > minScore) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.arc(item.x, item.y, size, 0, Math.PI * 2, true);
+      ctx.fill();
+      if (index + 1 === points.length) {
+       ctx.stroke();
+      }
+    }
+  })
+};
+
+HCanvas.prototype.drawParkingPoint = function (points) {
+  var ctx = this.context;
+  ctx.beginPath();
+  ctx.strokeStyle = "#C499FF";
+  points.map((item, index) => {
+    if(index === 0) {
+      ctx.moveTo(item.x, item.y);
+    } else {
+      ctx.lineTo(item.x, item.y);
+    }
+
+    ctx.font = "50px serif";
+    ctx.strokeText(index + 1, item.x, item.y);
+  })
+  ctx.closePath();
+  ctx.stroke();
+  
+  // this.drawLine2(
+  //   points[0],
+  //   [ points[i-3], points[i-2], points[i-1], points[i] ],
+  //   { lineWidth: 5, strokeColor: "#C499FF" }
+  // )
+};
+
 HCanvas.prototype.drawHandSkeleton = function (points) {
   if (!points[0]) return
 
@@ -950,6 +994,7 @@ HCanvas.prototype.drawPath = function (points, ratio, color, id) {
   });
   // }
 };
+
 HCanvas.prototype.drawGradientPath = function (
   points,
   { color = [], lineWidth = 1, radius = 1 }
@@ -978,17 +1023,13 @@ HCanvas.prototype.drawGradientPath = function (
 
 HCanvas.prototype.drawPathSmooth = function (points, ratio, color, smooth) {
   var context = this.context;
-  // console.log(points)
   for (var i = 0; i < points.length; i + smooth) {
-    // var = point[i]
-    // console.log(i)
     if (i % smooth == 0) {
       var smoothPoint = points[i - smooth] || { x: 0, y: 0 };
       var x = points[i].x * ratio.width;
       var y = points[i].x * ratio.height;
       var sx = smoothPoint.x * ratio.width;
       var sy = smoothPoint.y * ratio.width;
-      // console.log(x, y, sx, sy)
       if (i == 0) {
         context.moveTo(x, y);
       } else {

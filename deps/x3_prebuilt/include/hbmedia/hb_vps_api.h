@@ -132,7 +132,8 @@ typedef enum HB_ROTATION_E {
 	ROTATION_0 = 0,
 	ROTATION_90,
 	ROTATION_180,
-	ROTATION_270
+	ROTATION_270,
+	ROTATION_MAX,
 } ROTATION_E;
 
 typedef struct HB_VPS_DYNAMIC_SRC_INFO_S {
@@ -208,6 +209,8 @@ int HB_VPS_UpdateGdcSize(int VpsGrp, int VpsChn,
 
 int HB_VPS_SetChnAttr(int VpsGrp, int VpsChn, const VPS_CHN_ATTR_S *chnAttr);
 int HB_VPS_GetChnAttr(int VpsGrp, int VpsChn, VPS_CHN_ATTR_S *chnAttr);
+int HB_VPS_SetChnFrameRate(int VpsGrp, int VpsChn,
+		FRAME_RATE_CTRL_S *frameRate);
 
 int HB_VPS_SetChnCrop(int VpsGrp, int VpsChn, const VPS_CROP_INFO_S *cropInfo);
 int HB_VPS_GetChnCrop(int VpsGrp, int VpsChn, VPS_CROP_INFO_S *cropInfo);

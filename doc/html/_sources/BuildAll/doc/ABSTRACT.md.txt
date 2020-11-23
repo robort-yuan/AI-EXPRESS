@@ -108,7 +108,6 @@ Solutions中提供应对不同场景的AI Solution, 比如人脸方案，人体�
 │   │       ├── imagetools
 │   │       ├── methods
 │   │       ├── python_api
-│   │       ├── tutorials
 │   │       └── vision_type
 │   └── solution_zoo
 │       ├── body
@@ -185,7 +184,7 @@ vio配置参数详解见vioplugin;
 ### 基于XStream-framework集成模型、开发算法策略模块等
 XStream-framework提供了面向数据流的编程框架，基于该框架可以将多个业务模块串联起来构建一个workflow，模型集成或者算法策略模块以method的形式加入workflow中。
 
-XStream-tutorials`source/common/xstream/tutorials`提供了Step-by-step 创建xstream SDK, 创建多线程实例, Method属性支持。workflow执行流控制几个步骤。读者可从入门到精通的方式，掌握基于xstream framework的method开发。
+XStream-tutorials`source/common/xstream/framework/tutorials`提供了Step-by-step 创建xstream SDK, 创建多线程实例, Method属性支持。workflow执行流控制几个步骤。读者可从入门到精通的方式，掌握基于xstream framework的method开发。
 
 Solutions`source/solutions`包括几个method`fasterrcnnmethod, cnnmethod, filtermethod, gradingmethod, mergemethod, plate_vote_method, snapshotmethod, valuemergemethod等`， 基于这些method
 给出人脸抓拍识别解决方案`source/solutions/face`, 人体骨骼检测解决方案`source/solutions/body`, 车辆新人检测解决方案`source/solutions/vehicle`。

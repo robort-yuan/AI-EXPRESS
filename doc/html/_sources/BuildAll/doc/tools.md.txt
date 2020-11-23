@@ -88,7 +88,7 @@ XStream/XProto Python API中，除Python脚本，还包含以动态库形式存�
 
 运行Python脚本前，您需要设置*LD_LIBRARY_PATH*环境变量：
 ```
-export LD_LIBRARY_PATH=path/to/shared/libraries
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:path/to/shared/libraries
 ```
 
 在Python脚本中，您需要添加动态库到Python搜索路径：

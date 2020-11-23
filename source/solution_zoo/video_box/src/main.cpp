@@ -1,12 +1,9 @@
 /**
- * Copyright (c) 2019 Horizon Robotics. All rights reserved.
- * @file main.cpp
- * @brief
- * @author fei.cheng
- * @email fei.cheng@horizon.ai
- *
- *
- * */
+ * Copyright (c) 2020, Horizon Robotics, Inc.
+ * All rights reserved.
+ * @Author:
+ * @Mail: @horizon.ai
+ */
 
 #include <signal.h>
 #include <unistd.h>
@@ -51,17 +48,16 @@ int main(int argc, char **argv) {
   HB_BPU_setGlobalConfig(BPU_GLOBAL_ENGINE_TYPE, "native");
   std::string run_mode = "ut";
 
-  if (argc < 5) {
+  if (argc < 4) {
     std::cout << "Usage: smart_main vio_config_file "
               << "xstream_config_file visualplugin_config "
               << "[-i/-d/-w/-f] " << std::endl;
     return 0;
   }
-  std::string vio_config_file = std::string(argv[1]);
-  std::string smart_config_file = std::string(argv[2]);
-  std::string visual_config_file = std::string(argv[3]);
+  std::string box_config_file = std::string(argv[1]);
+  std::string visual_config_file = std::string(argv[2]);
 
-  std::string log_level(argv[4]);
+  std::string log_level(argv[3]);
   if (log_level == "-i") {
     SetLogLevel(HOBOT_LOG_INFO);
   } else if (log_level == "-d") {
@@ -77,8 +73,8 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  if (argc == 6) {
-    run_mode.assign(argv[5]);
+  if (argc == 5) {
+    run_mode.assign(argv[4]);
     if (run_mode != "ut" && run_mode != "normal") {
       LOGE << "not support mode: " << run_mode;
       return 0;
@@ -88,20 +84,17 @@ int main(int argc, char **argv) {
   signal(SIGINT, signal_handle);
   signal(SIGPIPE, signal_handle);
 
-  // auto vio_plg = std::make_shared<VioPlugin>(vio_config_file);
-  // auto visual_plg = std::make_shared<VisualPlugin>(visual_config_file);
-  auto rtsp_plg = std::make_shared<RtspPlugin>();
+  auto visual_plg = std::make_shared<VisualPlugin>(visual_config_file);
+  auto rtsp_plg = std::make_shared<RtspPlugin>(box_config_file);
 
-  // auto ret = vio_plg->Init();
-  // if (ret != 0) {
-  //   LOGE << "Failed to init vio";
-  //   return 1;
-  // }
+  if (visual_plg)
+    visual_plg->Init();
 
-  // if (visual_plg)
-  //   visual_plg->Init();
+  if (visual_plg)
+    visual_plg->Start();
 
-  // vio_plg->Start();
+  sleep(5);
+
   rtsp_plg->Init();
   auto ret = rtsp_plg->Start();
   if (ret < 0) {
@@ -115,8 +108,7 @@ int main(int argc, char **argv) {
     LOGI << "rtsp plugin start success";
   }
 
-  auto smart_plg = std::make_shared<SmartPlugin>(
-          "./video_box/configs/body_solution.json");
+  auto smart_plg = std::make_shared<SmartPlugin>(box_config_file);
   ret = smart_plg->Init();
   if (ret != 0) {
     LOGE << "Failed to init smart plugin";
@@ -124,27 +116,23 @@ int main(int argc, char **argv) {
   }
   smart_plg->Start();
 
-  // if (visual_plg)
-  //   visual_plg->Start();
-
   if (run_mode == "ut") {
     std::this_thread::sleep_for(std::chrono::seconds(30));
   } else {
     while (!exit_) {
-      // std::this_thread::sleep_for(std::chrono::microseconds(40));
       std::this_thread::sleep_for(std::chrono::milliseconds(40));
       LOGD << "wait to quit";
     }
   }
-  // vio_plg->Stop();
+
   rtsp_plg->Stop();
   smart_plg->Stop();
-  // if (visual_plg)
-  //   visual_plg->Stop();
+  if (visual_plg)
+     visual_plg->Stop();
 
-  // vio_plg->DeInit();
+  rtsp_plg->DeInit();
   smart_plg->DeInit();
-  // visual_plg->DeInit();
+  visual_plg->DeInit();
 
   return 0;
 }

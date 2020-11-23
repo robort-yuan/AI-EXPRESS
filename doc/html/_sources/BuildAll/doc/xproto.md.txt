@@ -202,213 +202,24 @@ int XPluginAsync::DeInit() override;
 // 返回值：描述当前自定义Plugin的字符串.
 std::string XPluginAsync::desc() const;
 ```
+
 ### XProto开发示例
-sample程序参考`xsdk/common/xproto/framework/sample/sample_plugin.cpp`
-本示例使用xproto框架实现两个plugin进行数据通信：
-#### 1、定义消息，此消息是plugins之间交互的数据载体
-```c++
-//定义消息名称
-#define TYPE_SAMPLE_MESSAGE "XPLUGIN_SAMPLE_MESSAGE"
-XPLUGIN_REGISTER_MSG_TYPE(XPLUGIN_SAMPLE_MESSAGE)
-//实现一个Message消息类型
-struct NumberProdMessage : XProtoMessage {
-  float num_;
-  explicit NumberProdMessage(float num) :num_(num) {
-    type_ = TYPE_SAMPLE_MESSAGE;//指定消息类型
-  }
-  std::string Serialize() override {
-    std::ostringstream ss;
-    ss << num_;
-    return std::string(ss.str());
-  }
-};
-```
-#### 2、实现生成者plugin
-定义NumberProducerPlugin类，此类继承自XPluginAsync，实现Start和Stop接口；
-Start接口启用一个线程向总线push消息，实现消息发布，框架会把此消息发送给所有订阅了TYPE_SAMPLE_MESSAGE类型消息的plugin
-Stop接口再关闭插件时关闭发送线程
-```c++
-//定义一个插件，实现各个接口实现生命周期管理功能
-class NumberProducerPlugin : public XPluginAsync {
- public:
-  //启动插件，并在插件里面管理了一个发送消息线程。
-  int Start() {
-    prd_thread_ = new std::thread([&] (){
-      for (uint32_t i = 0; i < total_cnt_ && !prd_stop_; i++) {
-        auto np_msg = std::make_shared<NumberProdMessage>(5);
-        PushMsg(np_msg);
-        std::this_thread::sleep_for(milliseconds(40));
-      }
-      LOGI << desc() << " prd exit";
-    });
-    return 0;
-  }
-  //关闭插件，关闭发送消息线程。
-  int Stop() {
-    prd_stop_ = true;
-    prd_thread_->join();
-    return 0;
-  }
-};
-```
-#### 3、实现消费者plugin
-定义SumConsumerPlugin类，此类继承自XPluginAsync，实现Init和Stop接口；
-Init接口：初始化成员数据，向总线注册TYPE_SAMPLE_MESSAGE消息的回调，实现消息订阅，当总线上有此消息时，回调函数将被调用，参数是之前定义的NumberProdMessage；
-Stop接口：数据清零等
-```c++
-class SumConsumerPlugin : public XPluginAsync {
- public:
-  int Init() override {
-    sum_ = 0.f;
-    // 注册消息回调函数
-    RegisterMsg(TYPE_SAMPLE_MESSAGE, 
-      std::bind(&SumConsumerPlugin::Sum,
-      this, std::placeholders::_1));
-    return XPluginAsync::Init();
-  }
-  // 当生成者向总线push一个消息后，框架会调用Sum回调函数
-  int Sum(XProtoMessagePtr msg) {
-    auto np_msg = std::static_pointer_cast<NumberProdMessage>(msg);
-    sum_ += np_msg->num_;
-    LOGI << "curr sum:" << sum_;
-    return sum_;
-  }
-  int Stop() {
-    return 0;
-  }
- private:
-  float sum_;
-};
-```
-#### 4、添加main主函数
-创建SumConsumerPlugin和NumberProducerPlugin对象，调用其Init接口、Start接口运行app，运行结束后调用plugin的Stop和DeInit接口来清理占用的资源，然后退出app
-```c++
-int main() {
-  auto np_plg = std::make_shared<NumberProducerPlugin>();
-  auto sc_plg = std::make_shared<SumConsumerPlugin>();
+XProto提供了一系列的开发示例，基于XProto实现了简单的功能，介绍`消息`和`插件`的基本使用，和XProto消息管理的高阶功能。
 
-  np_plg->Init();
-  sc_plg->Init();
-  g_ctx.plugins.push_back(np_plg);
-  g_ctx.plugins.push_back(sc_plg);
+#### stage1 消息的订阅和发布
+本节将介绍如何使用Xproto框架实现不同插件之间消息的发布和订阅。
+详细参见[tutorials_stage1 消息的订阅和发布](../../xsdk/common/xproto/framework/tutorials/stage1/README.html)
 
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->Start();
-  }
-  std::this_thread::sleep_for(seconds(40));
-#if 0
-  while (!g_ctx.exit) {
-    milliseconds(40);
-  }
-#endif
+#### stage2 插件的最大消息队列
+本节将介绍Xproto框架中消息的管理，有的业务场景下消息产生和消费速率不同，容易造成总线上消息的堆积，本节将介绍如何设置插件的最大消息队列数。
 
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->Stop();
-  }
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->DeInit();
-  }
-  return 0;
-}
-```
-### XProto示例代码说明
-sample程序参考`xsdk/common/xproto/framework/sample/sample_plugin.cpp`
-本示例实现了两个plugin，一个用于生产数据消息，一个用于接收数据并处理，通过总线进行数据的交互
-```c++
-//定义消息名称
-#define TYPE_SAMPLE_MESSAGE "XPLUGIN_SAMPLE_MESSAGE"
-//此宏注册一个名称为"XPLUGIN_SAMPLE_MESSAGE"消息类型
-XPLUGIN_REGISTER_MSG_TYPE(XPLUGIN_SAMPLE_MESSAGE)
-//实现一个Message消息类型
-struct NumberProdMessage : XProtoMessage {
-  float num_;
-  explicit NumberProdMessage(float num) :num_(num) {
-    type_ = TYPE_SAMPLE_MESSAGE;//指定消息类型
-  }
-  std::string Serialize() override {
-    std::ostringstream ss;
-    ss << num_;
-    return std::string(ss.str());
-  }
-};
-//定义一个插件，实现各个接口实现生命周期管理功能
-class NumberProducerPlugin : public XPluginAsync {
- public:
-  //启动插件，并在插件里面管理了一个发送消息线程。
-  int Start() {
-    prd_thread_ = new std::thread([&] (){
-      for (uint32_t i = 0; i < total_cnt_ && !prd_stop_; i++) {
-        auto np_msg = std::make_shared<NumberProdMessage>(5);
-        PushMsg(np_msg);
-        std::this_thread::sleep_for(milliseconds(40));
-      }
-      LOGI << desc() << " prd exit";
-    });
-    return 0;
-  }
-  //关闭插件，关闭发送消息线程。
-  int Stop() {
-    prd_stop_ = true;
-    prd_thread_->join();
-    return 0;
-  }
-};
-//定义一个消费plugin，接收总线上生成者push的消息
-class SumConsumerPlugin : public XPluginAsync {
- public:
-  int Init() override {
-    sum_ = 0.f;
-    // 注册消息回调函数
-    RegisterMsg(TYPE_SAMPLE_MESSAGE, 
-      std::bind(&SumConsumerPlugin::Sum,
-      this, std::placeholders::_1));
-    return XPluginAsync::Init();
-  }
-  // 当生成者向总线push一个消息后，框架会调用Sum回调函数，并以Message的形式传递数据
-  int Sum(XProtoMessagePtr msg) {
-    auto np_msg = std::static_pointer_cast<NumberProdMessage>(msg);
-    sum_ += np_msg->num_;
-    LOGI << "curr sum:" << sum_;
-    return sum_;
-  }
-  int Stop() {
-    return 0;
-  }
- private:
-  float sum_;
-};
-// 实现main主函数
-int main() {
-  // 设置log级别
-  SetLogLevel(HOBOT_LOG_DEBUG);
-  // 信号处理
-  signal(SIGINT, signal_handle);
-  signal(SIGPIPE, signal_handle);
-  signal(SIGSEGV, signal_handle);
-  // 创建plugin
-  auto np_plg = std::make_shared<NumberProducerPlugin>();
-  auto sc_plg = std::make_shared<SumConsumerPlugin>();
-  // 初始化plugin
-  np_plg->Init();
-  sc_plg->Init();
-  g_ctx.plugins.push_back(np_plg);
-  g_ctx.plugins.push_back(sc_plg);
-  // 启动所有的plugin，app开始运行
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->Start();
-  }
-  std::this_thread::sleep_for(seconds(40));
-  // 停止所有的plugin
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->Stop();
-  }
-  // 清理plugin占用的资源，然后退出app
-  for (auto& plugin : g_ctx.plugins) {
-    plugin->DeInit();
-  }
-  return 0;
-}
-```
+详细参见[tutorials_stage2 插件的最大消息队列](../../xsdk/common/xproto/framework/tutorials/stage2/README.html)
+
+#### stage3 消息处理超时警告
+本节介绍使用Xproto框架对消息处理的耗时进行监控。当插件处理消息的耗时超过默认时长，程序内回抛出警告日志。
+详细参见[tutorials_stage3 消息处理超时警告](../../xsdk/common/xproto/framework/tutorials/stage3/README.html)
+
+
 ## 内置数据类型msgtype
 * protobuf：用于序列化智能数据，便于不同平台间交互，详细请参考x3.proto文件
 * can_bus_data：用于存放接收来自MCU或发送到MCU的消息
@@ -420,7 +231,7 @@ int main() {
 * vioplugin_data：vio图像数据载体
 
 ## 内置plugin
-### 2、Smart Plugin
+### 1. Smart Plugin
 Getting Started with smartplugin
 
 #### 简介
@@ -636,7 +447,7 @@ StatisticsMessage {
 }
 ```
 
-### 4. HbipcPlugin
+### 2. HbipcPlugin
 
 HbipcPlugin为跨板传输插件，主要负责实现AP与地平线CP端的双向通信功能，CP端通过HbipcPlugin将智能帧等数据发送到AP端，或者通过HbipcPlugin接收AP端发过来的配置数据与命令数据。
 
@@ -701,7 +512,7 @@ class HbipcPlugin : public XPluginAsync {
 ```
 关于HBIPCPlugin，详细参考[README](../../xsdk/common/xproto/plugins/hbipcplugin/README.md)。
 
-### 5.WebsocketPlugin
+### 3.WebsocketPlugin
 
 WebsocketPlugin为web多媒体传输方式插件，基于开源项目uwebsocket开发，用于通过web浏览器展示视频和算法效果。
 
@@ -755,7 +566,7 @@ class WebsocketPlugin : public xproto::XPluginAsync {
 }
 ```
 
-### 6.UvcPlugin
+### 4.UvcPlugin
 UvcPlugin为usb传输插件，基于uvc 1.0和hid 1.01协议开发，用于通过usb向客户端播放器发送视频和智能数据。可通过PC端potplayer,amcap等或者android端usb camera等第三方app预览视频，或通过地平线自研的安卓app预览视频和智能效果。
 
 UvcPlugin负责将VioPlugin和SmartPlugin产生的消息发送到web端，所以它需要监听总线上面的`XPLUGIN_SMART_MESSAGE`、`XPLUGIN_IMAGE_MESSAGE`和`XPLUGIN_DROP_MESSAGE`。
@@ -807,7 +618,7 @@ class UvcPlugin : public xproto::XPluginAsync {
 }
 ```
 
-### 7. IoTVioPlugin
+### 5. IoTVioPlugin
 IoTVioPlugin的的应用场景是用于X3系统，整体框架、消息总线传输机制实际是和X2 VIOPlugin的功能类似。主要功能负责获取、转换图像数据并控制图像数据获取速率，然后将图像数据或丢帧消息推送给消息总线。针对于接口层，最主要的区别是IoTVioPlugin不仅支持与X2 VioPlugin相同的原生接口，还是支持与海思一样类似的接口。IoTVioPlugin同样分为两个部分：
 * 图像数据的获取：图像来源可以分为SIF（摄像头）、JPEG回灌图片和NV12回灌图片。
 * 控制图像数据获取速率：VioPlugin中通过定长buffer来实现速率控制。buffer大小可以通过JSON文件进行配置。单输入图像源的情况下理论最多可达6个，当智能帧产生速率过慢，buffer耗尽时，VioPlugin产生主动丢帧数据

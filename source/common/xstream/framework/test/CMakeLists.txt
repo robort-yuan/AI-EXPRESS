@@ -141,4 +141,3 @@ add_executable(config_test ${SOURCE_FILES} config_test.cpp)
 target_link_libraries(config_test
   PUBLIC ${BASE_LIBRARIES}
 )
-

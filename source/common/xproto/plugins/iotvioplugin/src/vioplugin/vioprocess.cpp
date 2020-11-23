@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <ctime>
 #include <fstream>
+#include <iomanip>
 
 #include "vioplugin/vioprocess.h"
 
@@ -76,7 +77,11 @@ void Convert(pym_buffer_t *pym_buffer, PymImageFrame &pym_img) {
       pym_addr = reinterpret_cast<address_info_t *>(
           &pym_buffer->pym_roi[i / 4][i % 4 - 1]);
     }
-    LOGD << "dxd1 : " << pym_addr->width;
+    LOGD << "pym_layer: " << std::left << std::setw(4) << i
+      << std::left << std::setw(4) << " width: "
+      << std::left << std::setw(4) << pym_addr->width
+      << std::left << std::setw(4) << " height: "
+      << std::left << std::setw(4) << pym_addr->height;
     pym_img.down_scale[i].width = pym_addr->width;
     pym_img.down_scale[i].height = pym_addr->height;
     pym_img.down_scale[i].stride = pym_addr->stride_size;
@@ -99,7 +104,6 @@ void Convert(pym_buffer_t *pym_buffer, PymImageFrame &pym_img) {
         reinterpret_cast<uint64_t>(pym_buffer->us[i].addr[1]);
   }
   for (int i = 0; i < DOWN_SCALE_MAIN_MAX; ++i) {
-    LOGD << "dxd2 : " << pym_buffer->pym[i].width;
     pym_img.down_scale_main[i].width = pym_buffer->pym[i].width;
     pym_img.down_scale_main[i].height = pym_buffer->pym[i].height;
     pym_img.down_scale_main[i].stride = pym_buffer->pym[i].stride_size;

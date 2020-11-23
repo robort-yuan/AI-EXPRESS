@@ -1,65 +1,65 @@
 <!-- TOC -->
 
 - [Overview](#overview)
-    - [XStream Framework解决什么问题](#xstream-framework解决什么问题)
-    - [XStream Frameowrk 概述](#xstream-frameowrk-概述)
-        - [XStream Framework核心模块](#xstream-framework核心模块)
-        - [XStream Framework驱动引擎](#xstream-framework驱动引擎)
+  - [XStream Framework解决什么问题](#xstream-framework解决什么问题)
+  - [XStream Frameowrk 概述](#xstream-frameowrk-概述)
+    - [XStream Framework核心模块](#xstream-framework核心模块)
+    - [XStream Framework驱动引擎](#xstream-framework驱动引擎)
 - [XStream-Framework 用户使用指南](#xstream-framework-用户使用指南)
-    - [Build](#build)
-        - [Bazel 编译](#bazel-编译)
-            - [安装 bazel](#安装-bazel)
-            - [本地及交叉编译](#本地及交叉编译)
-        - [Cmake 编译](#cmake-编译)
-            - [安装cmake](#安装cmake)
-            - [安装交叉编译工具链](#安装交叉编译工具链)
-            - [编译](#编译)
-        - [编译结果](#编译结果)
-        - [环境信息](#环境信息)
-    - [Step by step构建XStream SDK](#step-by-step构建xstream-sdk)
-        - [XStream SDK接口定义](#xstream-sdk接口定义)
-        - [XStream SDK接口说明](#xstream-sdk接口说明)
-            - [CreateSDK](#createsdk)
-            - [SetConfig](#setconfig)
-            - [Init](#init)
-            - [UpdateCondig](#updatecondig)
-            - [SetConfig](#setconfig-1)
-            - [GetVersion](#getversion)
-            - [SyncPredict](#syncpredict)
-                - [SetCallback](#setcallback)
-                - [AsyncPredict](#asyncpredict)
-                - [SyncPredict2](#syncpredict2)
-        - [XStream SDK使用](#xstream-sdk使用)
-            - [创建SDK](#创建sdk)
-                - [设置XStream配置初始化](#设置xstream配置初始化)
-            - [XStream SDK初始化](#xstream-sdk初始化)
-            - [定义和设置 callback](#定义和设置-callback)
-            - [使用性能统计工具profiler](#性能统计工具-profiler)
-            - [异步运行-输入数据](#异步运行-输入数据)
-            - [异步运行](#异步运行)
-            - [同步运行-输入数据](#同步运行-输入数据)
-            - [同步运行-输出数据](#同步运行-输出数据)
-            - [异步运行-多路输出数据](#异步运行-多路输出数据)
-            - [同步运行-多路输出数据](#同步运行-多路输出数据)
-        - [include 文件列表](#include-文件列表)
-        - [实现MethodFactory](#实现methodfactory)
-        - [通过Config文件定义workflow](#通过config文件定义workflow)
-            - [常用配置](#常用配置)
-            - [指定线程优先级的配置](#指定线程优先级的配置)
-            - [多路输出配置](#多路输出配置)
-        - [数据类型](#数据类型)
-            - [错误码](#错误码)
-            - [基础数据结构](#基础数据结构)
-                - [DataState](#datastate)
-                - [BaseData](#basedata)
-                - [BaseDataVector](#basedatavector)
-                - [XStreamData](#xstreamdata)
-                - [InputParam](#inputparam)
-                - [DisableParam](#disableparam)
-                - [SdkCommParam](#sdkcommparam)
-                - [InputData](#inputdata)
-                - [OutputData](#outputdata)
-                - [XStreamCallback](#xstreamcallback)
+  - [Build](#build)
+    - [Bazel 编译](#bazel-编译)
+      - [安装 bazel](#安装-bazel)
+      - [本地及交叉编译](#本地及交叉编译)
+    - [Cmake 编译](#cmake-编译)
+      - [安装cmake](#安装cmake)
+      - [安装交叉编译工具链](#安装交叉编译工具链)
+      - [编译](#编译)
+    - [编译结果](#编译结果)
+    - [环境信息](#环境信息)
+  - [Step by step构建XStream SDK](#step-by-step构建xstream-sdk)
+    - [XStream SDK接口定义](#xstream-sdk接口定义)
+    - [XStream SDK接口说明](#xstream-sdk接口说明)
+      - [CreateSDK](#createsdk)
+      - [SetConfig](#setconfig)
+      - [Init](#init)
+      - [UpdateCondig](#updatecondig)
+      - [SetConfig](#setconfig-1)
+      - [GetVersion](#getversion)
+      - [SyncPredict](#syncpredict)
+        - [SetCallback](#setcallback)
+        - [AsyncPredict](#asyncpredict)
+        - [SyncPredict2](#syncpredict2)
+    - [XStream SDK使用](#xstream-sdk使用)
+      - [创建SDK](#创建sdk)
+        - [设置XStream配置初始化](#设置xstream配置初始化)
+      - [XStream SDK初始化](#xstream-sdk初始化)
+      - [定义和设置 callback](#定义和设置-callback)
+      - [使用性能统计工具-profiler](#性能统计工具-profiler)
+      - [异步运行-输入数据](#异步运行-输入数据)
+      - [异步运行](#异步运行)
+      - [同步运行-输入数据](#同步运行-输入数据)
+      - [同步运行-输出数据](#同步运行-输出数据)
+      - [异步运行-多路输出数据](#异步运行-多路输出数据)
+      - [同步运行-多路输出数据](#同步运行-多路输出数据)
+    - [include 文件列表](#include-文件列表)
+    - [实现MethodFactory](#实现methodfactory)
+    - [通过Config文件定义workflow](#通过config文件定义workflow)
+      - [常用配置](#常用配置)
+      - [指定线程优先级的配置](#指定线程优先级的配置)
+      - [多路输出配置](#多路输出配置)
+    - [数据类型](#数据类型)
+      - [错误码](#错误码)
+      - [基础数据结构](#基础数据结构)
+        - [DataState](#datastate)
+        - [BaseData](#basedata)
+        - [BaseDataVector](#basedatavector)
+        - [XStreamData](#xstreamdata)
+        - [InputParam](#inputparam)
+        - [DisableParam](#disableparam)
+        - [SdkCommParam](#sdkcommparam)
+        - [InputData](#inputdata)
+        - [OutputData](#outputdata)
+        - [XStreamCallback](#xstreamcallback)
 
 <!-- /TOC -->
 # Overview
@@ -129,27 +129,27 @@ Build timestamp as int: 1574262295
 
 #### 本地及交叉编译
 * x86_64     本地编译 XStream Framework库文件
-`bazel build -s  //xstream/framework:xstream-framework  --define cpu=x86_64 --define os=linux`
+`bazel build -s  //xstream/framework:xstream  --define cpu=x86_64 --define os=linux`
 其中 `-define cpu=x86_64 --define os=linux` 用于指定CPU类型和OS系统类型
 
 * x86_64     本地编译以及打包 XStream Framework库文件 
-`bazel build -s  //xstream/framework:xstream-framework_zip  --define cpu=x86_64 --define os=linux`
+`bazel build -s  //xstream/framework:xstream_zip  --define cpu=x86_64 --define os=linux`
 在build中用cc_library_pkg定语的rule,可以加`_zip`,表示编译并打包。
  例如:
 ```c++
  cc_library_pkg(
-    name = "xstream-framework",
+    name = "xstream",
 ...
 ``` 
 另外`-define cpu=x86_64 --define os=linux` 用于指定CPU类型和OS系统类型
 参见 build_script/build_xstream-framework_x86.sh
 
 * X2J2 64位  交叉编译 XStream Framework库文件
-`bazel build -s   //xstream/framework:xstream-framework --crosstool_top="@hr_bazel_tools//rules_toolchain/toolchain:toolchain" --cpu=x2j2-aarch64 --define cpu=x2j2-aarch64 --verbose_failures   --spawn_strategy=local`
+`bazel build -s   //xstream/framework:xstream --crosstool_top="@hr_bazel_tools//rules_toolchain/toolchain:toolchain" --cpu=x2j2-aarch64 --define cpu=x2j2-aarch64 --verbose_failures   --spawn_strategy=local`
 参见 build_script/build_xstream-framework_aarch.sh
 
 * X2J2 32位  交叉编译 XStream Framework库文件
-`bazel build -s   //xstream/framework:xstream-framework --crosstool_top="@hr_bazel_tools//rules_toolchain/toolchain:toolchain" --cpu=x2j2-armv8l  --define cpu=x2j2-armv8l  --verbose_failures   --spawn_strategy=local`
+`bazel build -s   //xstream/framework:xstream --crosstool_top="@hr_bazel_tools//rules_toolchain/toolchain:toolchain" --cpu=x2j2-armv8l  --define cpu=x2j2-armv8l  --verbose_failures   --spawn_strategy=local`
 
 ### Cmake 编译
 #### 安装cmake

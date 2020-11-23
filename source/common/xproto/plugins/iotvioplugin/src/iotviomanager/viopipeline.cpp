@@ -9,9 +9,15 @@
  */
 
 #include "iotviomanager/viopipeline.h"
-#include "iotviomanager/viopipeconfig.h"
+#include <vector>
+#include <memory>
+#include "horizon/vision_type/vision_type.hpp"
 #include "hobotlog/hobotlog.hpp"
+#include "vioplugin/vioprocess.h"
+#include "iotviomanager/viopipeconfig.h"
+#include "iotviomanager/violog.h"
 
+extern const char *kIotTypeInfo[];
 namespace horizon {
 namespace vision {
 namespace xproto {
@@ -20,6 +26,7 @@ namespace vioplugin {
 int VioPipeLine::Init() {
   int ret = -1;
   int cam_en = -1;
+  int inner_buf_en = -1;
   int pipe_id = pipe_start_idx_;
   IotVioCfg vio_cfg = { 0 };
   IotVinParams *vin_params = nullptr;
@@ -35,9 +42,10 @@ int VioPipeLine::Init() {
   for (int index = 0; index < pipe_sync_num_; index++) {
     vio_cfg = vio_cfg_[pipe_id];
     cam_en = vio_cfg.cam_en;
+    inner_buf_en = vio_cfg.vps_cfg.fb_info.inner_buf_en;
     vin_params = &vin_params_[pipe_id];
     if (cam_en == 1) {
-      /* Create Vinmodule */
+      /* Cam Create Vinmodule */
       vin_module = std::make_shared<VinModule>(pipe_id, vio_cfg);
       vin_pair = make_pair(pipe_id, vin_module);
       vin_module_list_.push_back(vin_pair);
@@ -61,13 +69,19 @@ int VioPipeLine::Init() {
       ret = vin_module->GetCamConfig(vin_params);
       HOBOT_CHECK(ret == 0) << "vin module get cam config failed!";
     } else {
-      /* Create Vpsmodule */
+      /* Create Null Vinmodule */
+      vin_module = nullptr;
+      vin_pair = make_pair(pipe_id, vin_module);
+      vin_module_list_.push_back(vin_pair);
+      /* Feedback Create Vpsmodule */
       vps_module = std::make_shared<VpsModule>(pipe_id, vio_cfg);
       vps_pair = make_pair(pipe_id, vps_module);
       vps_module_list_.push_back(vps_pair);
       /* vps and fb init */
-      ret = vps_module->FbInit();
-      HOBOT_CHECK(ret == 0) << "fb module init failed!";
+      if (inner_buf_en == 0) {
+        ret = vps_module->FbInit();
+        HOBOT_CHECK(ret == 0) << "fb module init failed!";
+      }
       ret = vps_module->VpsInit();
       HOBOT_CHECK(ret == 0) << "vps module init failed!";
     }
@@ -80,14 +94,20 @@ int VioPipeLine::Init() {
 int VioPipeLine::DeInit() {
   int ret = -1;
   int cam_en = -1;
+  int inner_buf_en = -1;
   int pipe_id = pipe_start_idx_;
+  IotVioCfg vio_cfg = { 0 };
   std::shared_ptr<VinModule> vin_module = nullptr;
   std::shared_ptr<VpsModule> vps_module = nullptr;
   std::pair<int, std::shared_ptr<VinModule>> vin_pair;
   std::pair<int, std::shared_ptr<VpsModule>> vps_pair;
 
+  LOGI << "Enter viopipeline deinit, pipe_id: " << pipe_id
+    << " pipe_sync_num: " << pipe_sync_num_;
   for (int index = 0; index < pipe_sync_num_; index++) {
-    cam_en = vio_cfg_[pipe_id].cam_en;
+    vio_cfg = vio_cfg_[pipe_id];
+    cam_en = vio_cfg.cam_en;
+    inner_buf_en = vio_cfg.vps_cfg.fb_info.inner_buf_en;
     vps_pair = vps_module_list_[index];
     vps_module = vps_pair.second;
     if (cam_en == 1) {
@@ -96,8 +116,10 @@ int VioPipeLine::DeInit() {
       ret = vin_module->DeInit();
       HOBOT_CHECK(ret == 0) << "vin module deinit failed!";
     } else {
-      ret = vps_module->FbDeInit();
-      HOBOT_CHECK(ret == 0) << "fb module deinit failed!";
+      if (inner_buf_en == 0) {
+        ret = vps_module->FbDeInit();
+        HOBOT_CHECK(ret == 0) << "fb module deinit failed!";
+      }
     }
     ret = vps_module->VpsDeInit();
     HOBOT_CHECK(ret == 0) << "vps module deinit failed!";
@@ -123,6 +145,7 @@ int VioPipeLine::Start() {
     if (cam_en == 1) {
       vin_pair = vin_module_list_[index];
       vin_module = vin_pair.second;
+      HOBOT_CHECK(vin_module != nullptr);
       ret = vin_module->Start();
       if (ret) {
         LOGE << "vin module start failed, pipe_id: " << pipe_id;
@@ -131,6 +154,7 @@ int VioPipeLine::Start() {
     }
     vps_pair = vps_module_list_[index];
     vps_module = vps_pair.second;
+    HOBOT_CHECK(vps_module != nullptr);
     ret = vps_module->VpsStart();
     if (ret) {
       LOGE << "vps module start failed, pipe_id: " << pipe_id;
@@ -156,17 +180,18 @@ int VioPipeLine::Stop() {
     cam_en = vio_cfg_[pipe_id].cam_en;
     vps_pair = vps_module_list_[index];
     vps_module = vps_pair.second;
-    LOGI << "viopipeline stop, cam_en: " << cam_en
-      << " pipe_id: " << pipe_id;
+    LOGI << "viopipeline stop, cam_en: " << cam_en << " pipe_id: " << pipe_id;
     if (cam_en == 1) {
       vin_pair = vin_module_list_[index];
       vin_module = vin_pair.second;
+      HOBOT_CHECK(vin_module != nullptr);
       ret = vin_module->Stop();
       if (ret) {
         LOGE << "vin module stop failed!";
         return ret;
       }
     }
+    HOBOT_CHECK(vps_module != nullptr);
     ret = vps_module->VpsStop();
     if (ret) {
       LOGE << "vps module stop failed!";
@@ -189,6 +214,8 @@ int VioPipeLine::GetInfo(uint32_t info_type, void *data) {
   vps_pair = vps_module_list_[index];
   pipe_id = vps_pair.first;
   vps_module = vps_pair.second;
+  pr_debug("pipe_id:%d, viopipeline set info: %s\n",
+      pipe_id, kIotTypeInfo[info_type]);
   ret = vps_module->VpsGetInfo(info_type, data);
   if (ret) {
     LOGE << "vps module get info failed, pipe_id: " << pipe_id;
@@ -205,9 +232,11 @@ int VioPipeLine::SetInfo(uint32_t info_type, void *data) {
 
   CHECK_PARAMS_VALID(data);
   index = 0;
-  pipe_id = vps_pair.first;
   vps_pair = vps_module_list_[index];
+  pipe_id = vps_pair.first;
   vps_module = vps_pair.second;
+  pr_debug("pipe_id:%d, viopipeline set info: %s\n",
+      pipe_id, kIotTypeInfo[info_type]);
   ret = vps_module->VpsSetInfo(info_type, data);
   if (ret) {
     LOGE << "vps module set info failed, pipe_id: " << pipe_id;
@@ -224,8 +253,8 @@ int VioPipeLine::FreeInfo(uint32_t info_type, void *data) {
 
   CHECK_PARAMS_VALID(data);
   index = 0;
-  pipe_id = vps_pair.first;
   vps_pair = vps_module_list_[index];
+  pipe_id = vps_pair.first;
   vps_module = vps_pair.second;
   ret = vps_module->VpsFreeInfo(info_type, data);
   if (ret) {
@@ -369,47 +398,146 @@ int VioPipeLine::FreeFeedbackSrcInfo(hb_vio_buffer_t *feed_info) {
 }
 #endif
 
-#if 0
-int VioPipeLine::GetMultInfo(uint32_t info_type, std::vector<void*> &data) {
-  int ret, index, pipe_id;
+int VioPipeLine::GetMultiPymInfo(
+    std::vector<std::shared_ptr<PymImageFrame>> &pym_images) {
+  int ret = -1;
+  int index, pipe_id;
   std::shared_ptr<VpsModule> vps_module = nullptr;
   std::pair<int, std::shared_ptr<VpsModule>> vps_pair;
-  int size = data.size();
-  if (size > pipe_sync_num_) {
-    LOGE << "vector size is error!";
-      return -1;
-  }
+  std::vector<void*> pvio_images;
+  void *pvio_image = nullptr;
 
   for (index = 0; index < pipe_sync_num_; index++) {
-    CHECK_PARAMS_VALID(data[index]);
+    auto pym_image_frame_ptr = std::make_shared<PymImageFrame>();
     vps_pair = vps_module_list_[index];
     pipe_id = vps_pair.first;
     vps_module = vps_pair.second;
-    ret = vps_module->VpsGetInfo(info_type, data[index]);
+    pvio_image = vps_module->VpsCreatePymAddrInfo();
+    if (pvio_image == nullptr) {
+      LOGE << "vps module create pym addr failed, pipe_id: " << pipe_id;
+      goto err;
+    }
+    pvio_images.push_back(pvio_image);
+    pym_image_frame_ptr->channel_id = pipe_id;
+    pym_image_frame_ptr->context = pvio_image;
+    ret = vps_module->VpsGetInfo(IOT_VIO_PYM_INFO, pvio_image);
     if (ret) {
       LOGE << "vps module get info failed, pipe_id: " << pipe_id;
+      goto err;
+    }
+    vps_module->VpsConvertPymInfo(pvio_image, *pym_image_frame_ptr);
+    pym_images.push_back(pym_image_frame_ptr);
+    auto frame_id = pym_image_frame_ptr->frame_id;
+    auto ts = pym_image_frame_ptr->time_stamp;
+    pr_debug("pipe_id: %d frame_id: %lu ts: %lu\n", pipe_id, frame_id, ts);
+  }
+  return 0;
+
+err:
+  for (size_t i = 0; i < pvio_images.size(); i++) {
+    pvio_image = pvio_images[i];
+    if (pvio_image) {
+      std::free(pvio_image);
+      pvio_image = nullptr;
+    }
+  }
+  pvio_images.clear();
+  return ret;
+}
+
+int VioPipeLine::FreeMultiPymInfo(
+    std::vector<std::shared_ptr<PymImageFrame>> &pym_images) {
+  int ret, index, pipe_id;
+  std::shared_ptr<VpsModule> vps_module = nullptr;
+  std::pair<int, std::shared_ptr<VpsModule>> vps_pair;
+  void *pvio_image = nullptr;
+
+  for (index = 0; index < pipe_sync_num_; index++) {
+    vps_pair = vps_module_list_[index];
+    pipe_id = vps_pair.first;
+    vps_module = vps_pair.second;
+    pvio_image = pym_images[index]->context;
+    if (pvio_image == nullptr) {
+      LOGE << "pvio_image pointer is NULL";
+      return -1;
+    }
+    ret = vps_module->VpsFreeInfo(IOT_VIO_PYM_INFO, pvio_image);
+    if (ret) {
+      LOGE << "vps module free info failed, pipe_id: " << pipe_id;
       return ret;
     }
+    free(pvio_image);
+    pvio_image = nullptr;
+    pym_images[index] = nullptr;
   }
   return 0;
 }
-#endif
 
-int VioPipeLine::GetMultInfo(uint32_t info_type, void *data) {
-  /* TODO */
+int VioPipeLine::GetMultiFbSrcInfo(
+    std::vector<std::shared_ptr<SrcImageFrame>> &src_images) {
+  int ret = -1;
+  int index, pipe_id;
+  std::shared_ptr<VpsModule> vps_module = nullptr;
+  std::pair<int, std::shared_ptr<VpsModule>> vps_pair;
+  std::vector<void*> pvio_images;
+  void *pvio_image = nullptr;
 
+  for (index = 0; index < pipe_sync_num_; index++) {
+    auto src_image_frame_ptr = std::make_shared<SrcImageFrame>();
+    vps_pair = vps_module_list_[index];
+    pipe_id = vps_pair.first;
+    vps_module = vps_pair.second;
+    pvio_image = vps_module->VpsCreateSrcAddrInfo();
+    if (pvio_image == nullptr) {
+      LOGE << "vps module create src addr failed, pipe_id: " << pipe_id;
+      goto err;
+    }
+    pvio_images.push_back(pvio_image);
+    src_image_frame_ptr->channel_id = pipe_id;
+    src_image_frame_ptr->context = pvio_image;
+    ret = vps_module->VpsGetInfo(IOT_VIO_FEEDBACK_SRC_INFO, pvio_image);
+    if (ret) {
+      LOGE << "vps module get feedback src info failed, pipe_id: " << pipe_id;
+      goto err;
+    }
+    vps_module->VpsConvertSrcInfo(pvio_image, *src_image_frame_ptr);
+    src_images.push_back(src_image_frame_ptr);
+  }
   return 0;
+
+err:
+  for (size_t i = 0; i < pvio_images.size(); i++) {
+    pvio_image = pvio_images[i];
+    if (pvio_image) {
+      std::free(pvio_image);
+      pvio_image = nullptr;
+    }
+  }
+  pvio_images.clear();
+  return ret;
 }
 
-int VioPipeLine::SetMultInfo(uint32_t info_type, void *data) {
-  /* TODO */
+int VioPipeLine::SetMultiFbPymInfo(
+    std::vector<std::shared_ptr<SrcImageFrame>> &src_images) {
+  int ret = -1;
+  int index, pipe_id;
+  std::shared_ptr<VpsModule> vps_module = nullptr;
+  std::pair<int, std::shared_ptr<VpsModule>> vps_pair;
+  void *pvio_image = nullptr;
 
-  return 0;
-}
-
-int VioPipeLine::FreeMultInfo(uint32_t info_type, void *data) {
-  /* TODO */
-
+  for (index = 0; index < pipe_sync_num_; index++) {
+    pvio_image = src_images[index]->context;
+    HOBOT_CHECK(pvio_image) << "pvio_image is nullptr";
+    vps_pair = vps_module_list_[index];
+    pipe_id = vps_pair.first;
+    vps_module = vps_pair.second;
+    ret = vps_module->VpsSetInfo(IOT_VIO_FEEDBACK_PYM_PROCESS, pvio_image);
+    if (ret) {
+      LOGE << "vps module set feedback src pym process failed"
+        << " pipe_id: " << pipe_id;
+      return ret;
+    }
+  }
   return 0;
 }
 

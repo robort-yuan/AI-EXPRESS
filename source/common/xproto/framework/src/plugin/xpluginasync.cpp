@@ -25,23 +25,35 @@ namespace vision {
 namespace xproto {
 
 int XPluginAsync::Init() {
-  for (auto &msginfo : msg_map_) {
-    XPlugin::RegisterMsg(msginfo.first);
-  }
+  LOGI << "XPluginAsync::Init";
   return 0;
 }
 
 void XPluginAsync::RegisterMsg(const std::string &type,
                                XProtoMessageFunc callback) {
+  std::lock_guard<std::mutex> lock(msg_map_mutex_);
   HOBOT_CHECK(msg_map_.count(type) == 0)
       << "type:" << type << " already registered.";
+  XPlugin::RegisterMsg(type);
   msg_map_[type] = callback;
 }
 
+void XPluginAsync::UnRegisterMsg(const std::string &type) {
+  std::lock_guard<std::mutex> lock(msg_map_mutex_);
+  auto iter = msg_map_.find(type);
+  if (iter == msg_map_.end()) {
+    return;
+  }
+  XPlugin::UnRegisterMsg(type);
+  msg_map_.erase(iter);
+}
+
 int XPluginAsync::DeInit() {
+  std::lock_guard<std::mutex> lock(msg_map_mutex_);
   for (auto &msginfo : msg_map_) {
     XPlugin::UnRegisterMsg(msginfo.first);
   }
+  msg_map_.clear();
   return 0;
 }
 
@@ -73,10 +85,33 @@ void XPluginAsync::SetPluginMsgLimit(int msg_limit_count) {
   msg_limit_count_ = msg_limit_count;
 }
 
+int XPluginAsync::GetMsgMonitorTime() {
+  std::lock_guard<std::mutex> lock(msg_monitor_mutex_);
+  return msg_monitor_time_;
+}
+
+void XPluginAsync::SetMsgMonitorTime(int msg_monitor_time) {
+  if (msg_monitor_time < 0) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(msg_limit_mutex_);
+  msg_monitor_time_ = msg_monitor_time;
+}
+
 void XPluginAsync::OnMsgDown(XProtoMessagePtr msg) {
   HOBOT_CHECK(msg_map_.count(msg->type()))
       << "No message type:" << msg->type() << " registered in " << desc();
+
+  auto plugin_start = std::chrono::system_clock::now();
   msg_map_[msg->type()](msg);
+  auto plugin_stop = std::chrono::system_clock::now();
+  auto interval = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      plugin_stop - plugin_start)
+                      .count();
+  if (interval >= msg_monitor_time_) {
+    LOGW << "Plugin: " << desc() << ", MsgType = " << msg->type()
+         << ", cost time = " << interval << "(ms)";
+  }
 }
 
 XPluginAsync::XPluginAsync() {
