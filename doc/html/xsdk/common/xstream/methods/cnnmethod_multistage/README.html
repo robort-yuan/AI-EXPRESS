@@ -162,7 +162,7 @@
 <h2>背景<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h2>
 <p>CNNMethod主要用于人脸关键点，人脸朝向，人脸识别，活体检测等，通过前处理和后处理的组合，输出上层业务逻辑的需求。CNNMethod_multistage将CNN前后处理拆分成两个独立的method，前处理的主要目的是对输入的数据预处理并送进BPU中得到CNN网络的输出结果，即预处理+预测过程；后处理针对模型不同，将CNN网络输出结果封装为业务数据。大部分情况下前处理是可以复用的，将CNNMethod拆分为前处理和后处理两个Method，开发者可以针对不同的模型自行开发对应的后处理程序使用。
 因此在xstream中执行CNN模型的相关workflow如下：
-<img alt="cnnmethod_workflow" src="../../../../../_images/cnn1.png" /></p>
+<img alt="cnnmethod_workflow" src="../../../../../_images/cnn2.png" /></p>
 <p>目前程序已实现的前处理和后处理method包括下列几种：</p>
 <ul class="simple">
 <li><p>前处理：CNNLmkPreMethod、CNNImgPreMethod、CNNRectPreMethod</p></li>
