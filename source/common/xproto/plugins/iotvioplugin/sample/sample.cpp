@@ -85,27 +85,79 @@ static void signal_handle(int param) {
   }
 }
 
-int main() {
-  SetLogLevel(HOBOT_LOG_DEBUG);
+int main(int argc, char **argv) {
+  std::string vio_config_file;
+  std::string log_level;
+  int loop_mode = 0;
+  if (argc < 3) {
+    std::cout << "Usage: ./sample vio_config_file loop_mode"
+              << " [-i/-d/-w/-f] " << std::endl;
+  }
+  if (argv[1] == nullptr) {
+    std::cout << "set default vio config:"
+      <<" [./configs/vio_config.json.x3dev.fb]" << std::endl;
+    vio_config_file = "./configs/vio_config.json.x3dev.fb";
+  } else {
+    vio_config_file = argv[1];
+  }
+  if (argv[2] != nullptr) {
+    loop_mode = std::stoi(argv[2]);
+  }
+  if (argv[3] == nullptr) {
+    std::cout << "set default log level: [-i] ";
+    log_level = "-i";
+  } else {
+    log_level = argv[3];
+  }
+  if (log_level == "-i") {
+    SetLogLevel(HOBOT_LOG_INFO);
+  } else if (log_level == "-d") {
+    SetLogLevel(HOBOT_LOG_DEBUG);
+  } else if (log_level == "-w") {
+    SetLogLevel(HOBOT_LOG_WARN);
+  } else if (log_level == "-e") {
+    SetLogLevel(HOBOT_LOG_ERROR);
+  } else if (log_level == "-f") {
+    SetLogLevel(HOBOT_LOG_FATAL);
+  } else {
+    SetLogLevel(HOBOT_LOG_INFO);
+    LOGW << "set default log level: [-i] ";
+  }
 
   signal(SIGINT, signal_handle);
   signal(SIGPIPE, signal_handle);
   signal(SIGSEGV, signal_handle);
 
-  auto vio_plg = std::make_shared<VioPlugin>("./configs/vio_config.json");
+  auto vio_plg = std::make_shared<VioPlugin>(vio_config_file);
 
-  std::cout << "step 1" << std::endl;
   vio_plg->Init();
 
-  std::cout << "step 2" << std::endl;
   vio_plg->Start();
 
-  while (!g_ctx.exit) {
-    std::this_thread::sleep_for(milliseconds(40));
+  if (loop_mode == 0) {
+    while (!g_ctx.exit) {
+      std::this_thread::sleep_for(milliseconds(40));
+    }
+  } else {
+    std::this_thread::sleep_for(std::chrono::microseconds(1000 * 1000 * 5));
+    while (!g_ctx.exit) {
+      LOGW << "stop\n\n";
+
+      vio_plg->Stop();
+      LOGW << "stop done\n\n";
+      vio_plg->DeInit();
+      std::this_thread::sleep_for(std::chrono::microseconds(1000 * 1000 * 5));
+      vio_plg->Init();
+      LOGW << "init done\n\n";
+      vio_plg->Start();
+      LOGW << "start done\n\n";
+
+      std::this_thread::sleep_for(std::chrono::microseconds(1000 * 1000 * 5));
+    }
   }
 
-  std::cout << "step 3" << std::endl;
   vio_plg->Stop();
+  vio_plg->DeInit();
 
   return 0;
 }

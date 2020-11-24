@@ -31,8 +31,8 @@ link_directories(${CMAKE_SOURCE_DIR}/x3_prebuilt/lib
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 if (${PLATFORM_X3})
-set(BASE_LIBRARIES FasterRCNNMethod CNNMethod
-xstream-framework xproto xproto_msgtype MOTMethod FilterMethod MergeMethod vote_method BehaviorMethod
+set(BASE_LIBRARIES FasterRCNNMethod CNNMethod visualplugin
+xstream xproto xproto_msgtype MOTMethod FilterMethod MergeMethod vote_method BehaviorMethod
         FilterSkipFrameMethod
         plate_vote_method
         vote_method
@@ -52,3 +52,6 @@ install(DIRECTORY
         DESTINATION ${MY_OUTPUT_ROOT}/configs/)
 install(TARGETS ${PROJECT_NAME}
         DESTINATION ${MY_OUTPUT_ROOT}/)
+install(DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/data/
+        DESTINATION ${MY_OUTPUT_ROOT}/data/)

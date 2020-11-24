@@ -64,6 +64,9 @@ class Scheduler {  // 调度模块
 
   ThreadManager *GetEngine() const { return engine_.get(); }
 
+  // Get current task_num
+  int64_t GetTaskNum() const;
+
  private:
   bool IsNodeReadyToDo(const FrameworkDataPtr &framework_data, NodePtr node);
 
@@ -122,10 +125,16 @@ class Scheduler {  // 调度模块
   std::unordered_map<NodePtr, XStreamCallback> node_callbacks_;
   SchedulerConfigPtr scheduler_config_;
 
+  // get node output, prepare task for thread_
   std::shared_ptr<XThread> comm_node_daemon_;
+  // node calculation has been finished, prepare next node
   std::shared_ptr<XThread> thread_;
+  // time_out monitor thread
   std::shared_ptr<XThread> monitor_;
 
+  // pending_frame_nums
+  std::shared_ptr<std::atomic_ullong> pending_frames_;
+  // index: source_id; value: sequence_id
   std::vector<std::shared_ptr<std::atomic_ullong>> sequence_id_list_;
   std::atomic_ullong global_sequence_id_;
   bool is_init_{false};

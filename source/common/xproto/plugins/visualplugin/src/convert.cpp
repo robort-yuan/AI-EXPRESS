@@ -120,7 +120,6 @@ int Convertor::GetYUV(iot_venc_src_buf_t *frame_buf, VioMessage *vio_msg,
     first = false;
   }
 #endif
-
   return 0;
 }
 #endif

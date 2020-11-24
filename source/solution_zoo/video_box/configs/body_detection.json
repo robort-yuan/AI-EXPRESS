@@ -88,18 +88,6 @@
         "disappeared_track_id"
       ],
       "method_config_file": "merge_head_body.json"
-    },
-    {
-      "method_type": "CNNMethod",
-      "unique_name": "face_mask",
-      "inputs": [
-        "face_final_box",
-        "image"
-      ],
-      "outputs": [
-        "mask"
-      ],
-      "method_config_file": "mask.json"
     }
   ]
 }

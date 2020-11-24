@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>快速上手 &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>快速上手 &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../genindex.html" />
     <link rel="search" title="搜索" href="../../search.html" />
     <link rel="next" title="XStream算法SDK编程框架开发指南" href="xstream.html" />
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -65,7 +66,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -131,6 +133,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -169,7 +172,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>快速上手</li>
     
@@ -177,7 +180,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/BuildAll/doc/quick_start.md.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/BuildAll/doc/quick_start.md.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -213,8 +216,9 @@
 <h3>搭建软件开发环境<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
 <p><strong>a. Linux开发机环境准备</strong></p>
 <ul class="simple">
-<li><p>安装<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">3.15+</span></code>以上版本，安装方式如下：</p></li>
+<li><p>本地安装</p></li>
 </ul>
+<p>1).安装<code class="docutils literal notranslate"><span class="pre">CMake</span> <span class="pre">3.15+</span></code>以上版本。安装方式如下：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz <span class="se">\</span>
     <span class="o">&amp;&amp;</span> tar -zxvf cmake-3.17.2.tar.gz <span class="se">\</span>
     <span class="o">&amp;&amp;</span> <span class="nb">cd</span> cmake-3.17.2 <span class="se">\</span>
@@ -225,17 +229,24 @@
     <span class="o">&amp;&amp;</span> rm -rf cmake-3.17* 
 </pre></div>
 </div>
-<ul class="simple">
-<li><p>下载并安装芯片交叉编译工具<a class="reference external" href="https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2">gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu</a>，推荐安装路径:<code class="docutils literal notranslate"><span class="pre">/opt/</span></code>，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
-具体修改内容：</p></li>
-</ul>
+<p>2).安装交叉编译工具链。</p>
+<p>下载并安装芯片交叉编译工具<a class="reference external" href="https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2">gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu</a>，推荐安装路径:<code class="docutils literal notranslate"><span class="pre">/opt/</span></code>，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
+具体修改内容：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>set<span class="o">(</span>CMAKE_C_COMPILER /opt/<span class="si">${</span><span class="nv">工具链目录名</span><span class="si">}</span>/bin/aarch64-linux-gnu-gcc<span class="o">)</span>
 set<span class="o">(</span>CMAKE_CXX_COMPILER /opt/<span class="si">${</span><span class="nv">工具链目录名</span><span class="si">}</span>/bin/aarch64-linux-gnu-g++<span class="o">)</span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p>使用Docker环境</p></li>
+</ul>
+<p>获取镜像及启动容器</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker pull hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+docker run -i -t hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+</pre></div>
+</div>
 <p><strong>b. Windows开发机环境准备</strong></p>
 <ul class="simple">
-<li><p>下载开发板系统镜像及烧录工具：<a class="reference external" href="https://developer.horizon.ai/forum/id=5f8d53b7bec8bc98cb72d963">开发板系统镜像及烧录工具下载地址</a></p></li>
+<li><p>下载开发板系统镜像及烧录工具：<a class="reference external" href="https://developer.horizon.ai/forum/id=5f156192740aaf0beb3119dd">开发板系统镜像及烧录工具下载地址</a></p></li>
 </ul>
 <p>各文件说明如下：</p>
 <p><strong>注意：该文档列的工具和镜像版本未保证是最新版本，最新版本请联系地平线获取</strong>：</p>
@@ -248,7 +259,7 @@ set<span class="o">(</span>CMAKE_CXX_COMPILER /opt/<span class="si">${</span><sp
 </thead>
 <tbody>
 <tr>
-<td>disk_X3SDB-Linux-0922wb_2G.img</td>
+<td>disk_X3SDB-Linux-1023wb.img</td>
 <td align="right">x3sdb开发板系统镜像文件</td>
 </tr>
 <tr>
@@ -308,6 +319,28 @@ set<span class="o">(</span>CMAKE_CXX_COMPILER /opt/<span class="si">${</span><sp
 <div class="section" id="id9">
 <h3>编译<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h3>
 <p>代码仓库提供了编译一键脚本build.sh，git clone代码后可直接编译。 编译时需要指定平台信息即可，具体编译如下：</p>
+<ul class="simple">
+<li><p>本地环境</p></li>
+</ul>
+<p>本地环境可以直接编译</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> AI-EXPRESS
+bash build.sh x3
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Docker环境</p></li>
+</ul>
+<p>1).下载代码后修改ai_express_release/CMakeLists.txt，注释掉文件开头的工具链设置项。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1">#set(CMAKE_C_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc)</span>
+<span class="c1">#set(CMAKE_CXX_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++)</span>
+</pre></div>
+</div>
+<p>2).设置交叉编译工具链环境变量：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;export CC=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc&quot;</span> &gt;&gt; ~/.bashrc
+<span class="nb">echo</span> <span class="s2">&quot;export CXX=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++&quot;</span>  &gt;&gt; ~/.bashrc
+</pre></div>
+</div>
+<p>3).编译</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> AI-EXPRESS
 bash build.sh x3
 </pre></div>
@@ -400,19 +433,32 @@ sh run_ut.sh
 </div>
 <div class="section" id="xstreamxproto">
 <h2>4.生成xstream和xproto库<a class="headerlink" href="#xstreamxproto" title="永久链接至标题">¶</a></h2>
-<p>AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64/Ubuntu/CentOS,3种平台。
-以需要生成CentOS平台下的xstream和xproto库为例</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> AI-EXPRESS
-bash xstream_xproto_build.sh centos
+<p>AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64(默认)/Ubuntu/CentOS，3种平台。</p>
+<p>以生成CentOS平台下的xstream库为例:</p>
+<ul class="simple">
+<li><p>首先 修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关<code class="docutils literal notranslate"><span class="pre">X86_ARCH</span></code>和<code class="docutils literal notranslate"><span class="pre">X86_CENTOS</span></code>为<code class="docutils literal notranslate"><span class="pre">ON</span></code></p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>option<span class="o">(</span>X86_ARCH <span class="s2">&quot;x86 architecture&quot;</span> ON<span class="o">)</span>
+option<span class="o">(</span>X86_CENTOS <span class="s2">&quot;centos release&quot;</span> ON<span class="o">)</span>
 </pre></div>
 </div>
-<p>编译结束后，AI-EXPRESS工程根目录下会生成lib_aiexpress目录，包含xstream库和xproto库及使用框架的样例代码及样例代码编译部署文档。</p>
-<p>xstream库头文件目录：lib_aiexpress/include/xstream/include</p>
-<p>xstream库文件：lib_aiexpress/liblibxstream.so</p>
-<p>xstream库样例代码：lib_aiexpress/example/xstream</p>
-<p>xproto库头文件目录：lib_aiexpress/include/xproto/include</p>
-<p>xproto库文件：lib_aiexpress/liblibxproto.so</p>
-<p>xproto库样例代码：lib_aiexpress/example/xproto</p>
+<p>(默认编译xstream会生成libxstream.a，如果需要生成libxstream.so，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项<code class="docutils literal notranslate"><span class="pre">BUILD_SHARED_LIBS</span></code>为<code class="docutils literal notranslate"><span class="pre">true</span></code>，即可。)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>set<span class="o">(</span>BUILD_SHARED_LIBS <span class="nb">true</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>如果需要生成Ubuntu平台下的xstream库，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关<code class="docutils literal notranslate"><span class="pre">X86_ARCH</span></code>为<code class="docutils literal notranslate"><span class="pre">ON</span></code>，然后编译即可。</p>
+<p>如果对CMakeLists.txt不做任何修改，则默认使用linaro-aarch64交叉编译工具链进行编译。</p>
+<ul class="simple">
+<li><p>单独编译xstream:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> AI-EXPRESS/source/common/xstream/framework
+mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build <span class="o">&amp;&amp;</span> cmake .. <span class="o">&amp;&amp;</span> make -j
+make install
+</pre></div>
+</div>
+<p>编译结束后，AI-EXPRESS/source/common/xstream/framework下会生成output目录，output目录包含libxstream.a及头文件</p>
+<p>xstream库的使用教程可参考AI-EXPRESS/source/common/xstream/framework/tutorials.</p>
+<p>编译xproto库方法，与xstream相同。</p>
 </div>
 <div class="section" id="id16">
 <h2>5.AIExpress框架文档<a class="headerlink" href="#id16" title="永久链接至标题">¶</a></h2>
@@ -451,11 +497,19 @@ bash xstream_xproto_build.sh centos
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -466,7 +520,6 @@ bash xstream_xproto_build.sh centos
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

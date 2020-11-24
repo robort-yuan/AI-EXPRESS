@@ -3,40 +3,40 @@ AIExpress 统一编译开发测试指南
 
 - [介绍](#介绍)
 - [开发](#开发)
-    - [创建统一编译工程](#创建统一编译工程)
-    - [准备交叉编译工具链](#准备交叉编译工具链)
-    - [代码编译](#代码编译)
-    - [代码修改](#代码修改)
-        - [创建本地分支](#创建本地分支)
-        - [修改代码](#修改代码)
-    - [代码评审](#代码评审)
-    - [代码提交](#代码提交)
+  - [创建统一编译工程](#创建统一编译工程)
+  - [准备交叉编译工具链](#准备交叉编译工具链)
+  - [代码编译](#代码编译)
+  - [代码修改](#代码修改)
+    - [创建本地分支](#创建本地分支)
+    - [修改代码](#修改代码)
+  - [代码评审](#代码评审)
+  - [代码提交](#代码提交)
 - [测试](#测试)
-    - [创建部署包](#创建部署包)
-    - [上板运行](#上板运行)
+  - [创建部署包](#创建部署包)
+  - [上板运行](#上板运行)
 - [覆盖率统计](#覆盖率统计)
-    - [编译](#编译)
-    - [上板运行](#上板运行-1)
-    - [生成报表](#生成报表)
+  - [编译](#编译)
+  - [上板运行](#上板运行-1)
+  - [生成报表](#生成报表)
 - [对外发版](#对外发版)
-    - [打tag](#打tag)
-    - [打包](#打包)
-    - [编译](#编译-1)
-    - [部署](#部署)
-    - [运行](#运行)
-    - [使用发版包进行开发及测试](#使用发版包进行开发及测试)
+  - [打tag](#打tag)
+  - [打包](#打包)
+  - [编译](#编译-1)
+  - [部署](#部署)
+  - [运行](#运行)
+  - [使用发版包进行开发及测试](#使用发版包进行开发及测试)
 - [常见问题](#常见问题)
-    - [开发流程相关](#开发流程相关)
-        - [arc land 报 No pushable remote "iot" exists](#arc-land-报-no-pushable-remote-iot-exists)
-        - [cmake 工程结构](#cmake-工程结构)
-    - [硬件相关](#硬件相关)
-        - [hsp2610串口识别不出来](#hsp2610串口识别不出来)
-        - [CAM 报错](#cam-报错)
-        - [IAR 报错](#iar-报错)
-    - [应用开发相关](#应用开发相关)
-        - [使用valgrind](#使用valgrind)
-        - [gdb/valgrind调试应用程序被killed掉](#gdbvalgrind调试应用程序被killed掉)
-        - [valgrind跑程序load模型失败](#valgrind跑程序load模型失败)
+  - [开发流程相关](#开发流程相关)
+    - [arc land 报 No pushable remote "iot" exists](#arc-land-报-no-pushable-remote-iot-exists)
+    - [cmake 工程结构](#cmake-工程结构)
+  - [硬件相关](#硬件相关)
+    - [hsp2610串口识别不出来](#hsp2610串口识别不出来)
+    - [CAM 报错](#cam-报错)
+    - [IAR 报错](#iar-报错)
+  - [应用开发相关](#应用开发相关)
+    - [使用valgrind](#使用valgrind)
+    - [gdb/valgrind调试应用程序被killed掉](#gdbvalgrind调试应用程序被killed掉)
+    - [valgrind跑程序load模型失败](#valgrind跑程序load模型失败)
 
 <!-- /TOC -->
 
@@ -220,19 +220,19 @@ root@X2_96BOARD:/userdata/data/repos/xstream_all/deploy_dev# sh run.sh grading_m
 ```
 bash BuildAll/build_coverage_test.sh
 ```
-该脚本会为每个源文件输出一个配套的gcno文件，以xstream-framework为例：
+该脚本会为每个源文件输出一个配套的gcno文件，以xstream为例：
 
 ```
-[root@gpu03 xstream_all]$ ls build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/*.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/method.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/method_manager.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/node.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/profiler.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/scheduler.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/thread_pool.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/xstream_config.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/xstream.cpp.gcno
-build/xsdk/common/xstream/framework/CMakeFiles/xstream-framework.dir/src/xstream_data.cpp.gcno
+[root@gpu03 xstream_all]$ ls build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/*.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/method.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/method_manager.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/node.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/profiler.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/scheduler.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/thread_pool.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/xstream_config.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/xstream.cpp.gcno
+build/xsdk/common/xstream/framework/CMakeFiles/xstream.dir/src/xstream_data.cpp.gcno
 ```
 
 ## 上板运行

@@ -11,11 +11,7 @@
 #include "rtspclient/AudioG711Sink.h"
 #include "rtspclient/H264Sink.h"
 #include "rtspclient/H265Sink.h"
-#include "rtspclient/rtspclient.h"
-
-extern "C" {
-#include "rtspclient/sps_pps.h"
-}
+#include "rtspclient/SPSInfoMgr.h"
 
 // Forward function definitions:
 
@@ -79,12 +75,14 @@ StreamClientState::~StreamClientState() {
 }
 
 // Implementation of "ourRTSPClient":
-void ourRTSPClient::SetOutputFileName(const std::string &file_name) {
+void ourRTSPClient::SetOutputFileName(const bool save_stream,
+                                      const std::string &file_name) {
   file_name_ = file_name;
+  save_stream_ = save_stream;
 };
 
-const std::string &ourRTSPClient::GetOutputFileName(void) {
-  return file_name_;
+std::tuple<bool, std::string> ourRTSPClient::GetOutputFileName(void) {
+  return std::make_tuple(save_stream_, file_name_);
 };
 
 void ourRTSPClient::SetChannel(int channel) { channel_ = channel; };
@@ -106,15 +104,11 @@ ourRTSPClient::ourRTSPClient(UsageEnvironment &env, char const *rtspURL,
                  tunnelOverHTTPPortNum, -1) {
   tcp_flag_ = false;
   has_shut_down = false;
+  save_stream_ = false;
 }
 
 ourRTSPClient::~ourRTSPClient() {
   LOGI << "channel " << channel_ << " ~ourRTSPClient()";
-  if (!has_shut_down) {
-    LOGI << "channel " << channel_ << " ~ourRTSPClient() call shutdownStream";
-    shutdownStream(this);
-  }
-
   LOGI << "~ourRTSPClient(), call media pipeline deinit, channel:" << channel_;
   auto media =
       horizon::vision::MediaPipeManager::GetInstance().GetPipeLine()[channel_];
@@ -149,22 +143,119 @@ void ourRTSPClient::Stop() {
 static unsigned rtspClientCount =
     0;  // Counts how many streams (i.e., "RTSPClient"s) are currently in use.
 
+static void copyUsernameOrPasswordStringFromURL(char *dest, char const *src,
+                                                unsigned len) {
+  // Normally, we just copy from the source to the destination.  However, if the
+  // source contains
+  // %-encoded characters, then we decode them while doing the copy:
+  while (len > 0) {
+    int nBefore = 0;
+    int nAfter = 0;
+
+    if (*src == '%' && len >= 3 &&
+        sscanf(src + 1, "%n%2hhx%n", &nBefore, dest, &nAfter) == 1) {
+      unsigned codeSize = nAfter - nBefore;  // should be 1 or 2
+
+      ++dest;
+      src += (1 + codeSize);
+      len -= (1 + codeSize);
+    } else {
+      *dest++ = *src++;
+      --len;
+    }
+  }
+  *dest = '\0';
+}
+
+// Parse the URL username and password, return url without username and password
+static void parseRTSPURL(char const *url, char *&username, char *&password,
+                         char *&urlNoPassword) {
+  unsigned prefixLength = 0;
+  char const *from = url;
+
+  do {
+    // Parse the URL as
+    // "rtsp://[<username>[:<password>]@]<server-address-or-name>[:<port>][/<stream-name>]"
+    // (or "rtsps://...")
+    char const *prefix1 = "rtsp://";
+    unsigned const prefix1Length = 7;
+    char const *prefix2 = "rtsps://";
+    unsigned const prefix2Length = 8;
+
+    if (strncasecmp(url, prefix1, prefix1Length) == 0) {
+      prefixLength = prefix1Length;
+    } else if (strncasecmp(url, prefix2, prefix2Length) == 0) {
+      prefixLength = prefix2Length;
+    } else {
+      break;
+    }
+
+    from = &url[prefixLength];
+
+    // Check whether "<username>[:<password>]@" occurs next.
+    // We do this by checking whether '@' appears before the end of the URL, or
+    // before the first '/'.
+    username = password = NULL;  // default return values
+    char const *colonPasswordStart = NULL;
+    char const *lastAtPtr = NULL;
+    for (char const *p = from; *p != '\0' && *p != '/'; ++p) {
+      if (*p == ':' && colonPasswordStart == NULL) {
+        colonPasswordStart = p;
+      } else if (*p == '@') {
+        lastAtPtr = p;
+      }
+    }
+
+    if (lastAtPtr != NULL) {
+      // We found <username> (and perhaps <password>).  Copy them into
+      // newly-allocated result strings:
+      if (colonPasswordStart == NULL || colonPasswordStart > lastAtPtr)
+        colonPasswordStart = lastAtPtr;
+
+      char const *usernameStart = from;
+      unsigned usernameLen = colonPasswordStart - usernameStart;
+      username = new char[usernameLen + 1];  // allow for the trailing '\0'
+      copyUsernameOrPasswordStringFromURL(username, usernameStart, usernameLen);
+
+      char const *passwordStart = colonPasswordStart;
+      if (passwordStart < lastAtPtr) ++passwordStart;  // skip over the ':'
+      unsigned passwordLen = lastAtPtr - passwordStart;
+      password = new char[passwordLen + 1];  // allow for the trailing '\0'
+      copyUsernameOrPasswordStringFromURL(password, passwordStart, passwordLen);
+
+      from = lastAtPtr + 1;  // skip over the '@'
+    }
+  } while (0);
+
+  urlNoPassword = new char[strlen(url) + 1];
+  strncpy(urlNoPassword, url, prefixLength);
+  strncat(urlNoPassword + prefixLength, from, strlen(from));
+}
+
 ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
                        char const *rtspURL, const bool tcp_flag,
-                       const std::string &file_name) {
+                       const int frame_max_size, const std::string &file_name,
+                       const bool save_stream) {
+  char *username = NULL;
+  char *password = NULL;
+  char *urlWithoutPassword = NULL;
+
+  parseRTSPURL(rtspURL, username, password, urlWithoutPassword);
+
   // Begin by creating a "RTSPClient" object.  Note that there is a separate
   // "RTSPClient" object for each stream that we wish to receive (even if more
   // than stream uses the same "rtsp://" URL).
   ourRTSPClient *rtspClient = ourRTSPClient::createNew(
-      env, rtspURL, RTSP_CLIENT_VERBOSITY_LEVEL, progName);
+      env, urlWithoutPassword, RTSP_CLIENT_VERBOSITY_LEVEL, progName);
   if (rtspClient == NULL) {
     env << "Failed to create a RTSP client for URL \"" << rtspURL
         << "\": " << env.getResultMsg() << "\n";
     return nullptr;
   }
-  rtspClient->SetOutputFileName(file_name);
+  rtspClient->SetOutputFileName(save_stream, file_name);
   rtspClient->SetChannel(rtspClientCount);
   rtspClient->SetTCPFlag(tcp_flag);
+  rtspClient->SetFrameMaxSize(frame_max_size);
 
   env << "Set output file name:" << file_name.c_str() << "\n";
 
@@ -175,7 +266,13 @@ ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
   // asynchronously; we do not block, waiting for a response. Instead, the
   // following function call returns immediately, and we handle the RTSP
   // response later, from within the event loop:
-  rtspClient->sendDescribeCommand(continueAfterDESCRIBE);
+  Authenticator rtspAuthenticator(username, password);
+  rtspClient->sendDescribeCommand(continueAfterDESCRIBE, &rtspAuthenticator);
+
+  if (username) delete[] username;
+  if (password) delete[] password;
+  if (urlWithoutPassword) delete[] urlWithoutPassword;
+
   return rtspClient;
 }
 
@@ -379,46 +476,17 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode,
          << ", resolution:" << scs.subsession->videoWidth() << ", "
          << scs.subsession->videoHeight();
 
-    int width = scs.subsession->videoWidth();
-    int height = scs.subsession->videoHeight();
-    if (width == 0) {
-      width = 1920;
-      height = 1080;
-      LOGW << "channel:" << our_rtsp_client->GetChannel()
-           << " recv video width is 0 from sdp, analytics resolution from sps";
-#if 0
-      if (strcmp(scs.subsession->codecName(), "H264") == 0) {
-        unsigned int num = 0;
-        SPropRecord *record = parseSPropParameterSets(
-            scs.subsession->fmtp_spropparametersets(), num);
-        if (num > 0) {
-          SPropRecord sps = record[0];
-          // SPropRecord pps = record[1];
-          struct get_bit_context objBit;
-          memset(&objBit, 0, sizeof(objBit));
-          objBit.buf = reinterpret_cast<uint8_t *>(sps.sPropBytes) + 1;
-          objBit.buf_size = sps.sPropLength;
-          struct SPS objSps;
-          memset(&objSps, 0, sizeof(objSps));
-          if (h264dec_seq_parameter_set(&objBit, &objSps) == 0) {
-            width = h264_get_width(&objSps);
-            height = h264_get_height(&objSps);
-            LOGW << "sps anlytics get width:" << width << " height:" << height;
-          }
-        }
-        delete[] record;
-      }
-#endif
-    }
-
-    int buffer_size = 200 * 1024;
+    int buffer_size = our_rtsp_client->GetFrameMaxSize();
     int buffer_count = 8;
-    if (width > 1920 && height > 1080) {
-      buffer_size = 1024 * 1024;
+    if (buffer_size > 500) {
       buffer_count = 6;
-      LOGW << "channel:" << our_rtsp_client->GetChannel()
-           << " relloc buffer size 1024*1024";
     }
+    if (buffer_size > 1024) {
+      LOGD << "rtsp config channel:" << our_rtsp_client->GetChannel()
+           << " max frame size:" << buffer_size;
+      buffer_size = 1024;
+    }
+    buffer_size = buffer_size * 1024;
 
     auto media = horizon::vision::MediaPipeManager::GetInstance()
                      .GetPipeLine()[our_rtsp_client->GetChannel()];
@@ -460,13 +528,7 @@ void continueAfterSETUP(RTSPClient *rtspClient, int resultCode,
       break;
     }
 
-    // our_rtsp_client->SetPayloadType(pay_load);
     media->SetDecodeType(pay_load);
-    media->SetDecodeResolution(width, height);
-
-    media->Init();
-    media->Start();
-
     env << *rtspClient << "Created a data sink for the \"" << *scs.subsession
         << "\" subsession\n";
     scs.subsession->miscPtr =

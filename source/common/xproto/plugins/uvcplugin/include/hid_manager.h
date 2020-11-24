@@ -15,6 +15,8 @@
 #include <thread>
 #include <vector>
 
+
+#include "hobot_vision/blocking_queue.hpp"
 #include "./smart_manager.h"
 #include "json/json.h"
 #include "xproto/message/pluginflow/flowmsg.h"
@@ -30,32 +32,46 @@ namespace xproto {
 namespace Uvcplugin {
 using horizon::vision::xproto::XProtoMessagePtr;
 
+#define HID_MAX_PACKET_SIZE (1024)
+#define HID_BUFFER_SIZE (10*1024*1024)  // 10M bytes
+
 class HidManager : public SmartManager {
  public:
   HidManager() = delete;
   explicit HidManager(std::string config_path);
   ~HidManager();
+
   virtual int Init();
+  virtual int DeInit();
   virtual int Start();
   virtual int Stop();
 
   virtual int FeedSmart(XProtoMessagePtr msg, int ori_image_width,
                         int ori_image_height, int dst_image_width,
                         int dst_image_height);
+  int FeedInfo(const XProtoMessagePtr& msg);
 
  private:
   int Send(const std::string &proto_str);
   void SendThread();
+  void RecvThread();
   int Serialize(SmartMessagePtr smart_msg, int ori_image_width,
                 int ori_image_height, int dst_image_width,
                 int dst_image_height);
 
+ public:
+  // AP->CP info buffer
+  bool IsApMode() { return ap_mode_;}
+  bool SetApMode(bool set) { return ap_mode_ = set;}
+  hobot::vision::BlockingQueue<std::string> pb_ap2cp_info_queue_;
+
  private:
+  bool ap_mode_ = false;
   bool stop_flag_;
   std::string config_path_;
   Json::Value config_;
   std::shared_ptr<std::thread> thread_;
-
+  std::shared_ptr<std::thread> recv_thread_;
   enum SmartType { SMART_FACE, SMART_BODY, SMART_VEHICLE };
   SmartType smart_type_ = SMART_BODY;
 
@@ -66,8 +82,15 @@ class HidManager : public SmartManager {
   std::queue<std::string> pb_buffer_queue_;
   std::condition_variable condition_;
 
+  // CP->AP info buffer
+  hobot::vision::BlockingQueue<std::string> pb_cp2ap_info_queue_;
+
+  typedef struct {
+    char null_array[HID_MAX_PACKET_SIZE];
+  } buffer_offset_size_t;
   hobot::CThreadPool serialize_thread_;
   bool print_timestamp_ = false;
+  int Recv(char *recv_data);
 };
 
 }  // namespace Uvcplugin

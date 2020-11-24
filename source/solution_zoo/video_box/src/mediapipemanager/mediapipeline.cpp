@@ -12,10 +12,12 @@
 namespace horizon {
 namespace vision {
 MediaPipeLine::MediaPipeLine(uint32_t gp_id0, uint32_t gp_id1)
-    : vdec_group_id_(gp_id0), vps_group_id_(gp_id1), decode_type_(PT_H264) {
+    : vdec_group_id_(gp_id0),
+      vps_group_id_(gp_id1),
+      decode_type_(RTSP_Payload_NONE) {
   vps_module_ = std::make_shared<VpsModule>();
   vdec_module_ = std::make_shared<VdecModule>();
-  // vot_module_ = std::make_shared<VotModule>();
+
   struct timeval tv;
   gettimeofday(&tv, NULL);
   last_recv_data_time_ = (uint64_t)tv.tv_sec;
@@ -24,36 +26,38 @@ MediaPipeLine::MediaPipeLine(uint32_t gp_id0, uint32_t gp_id1)
 int MediaPipeLine::Init() {
   if (init_) return 0;
 
-  int ret = 0;
   PipeModuleInfo module_info;
-  // module_info.input_height = 1088;
-  // module_info.input_width = 1920;
-  // height_ = 2160;
-  // width_ = 3840;
   module_info.input_height = height_;
   module_info.input_width = width_;
-  LOGW << "media pipeline input video width:" << width_
+  LOGD << "media pipeline input video width:" << width_
        << " height:" << height_;
   module_info.output_height = 1080;
   module_info.output_width = 1920;
-  // module_info.frame_depth = 4;
   module_info.frame_depth = 2;
   module_info.input_encode_type = decode_type_;
-  LOGW << "vdec frame_depth:" << module_info.frame_depth;
-  ret = vdec_module_->Init(vdec_group_id_, &module_info);
-  // module_info.frame_depth = 6;
+  LOGD << "vdec frame_depth:" << module_info.frame_depth;
+  int ret = vdec_module_->Init(vdec_group_id_, &module_info);
+  if (ret != 0) {
+    LOGE << "vdec module init fail";
+    return ret;
+  }
   module_info.frame_depth = 4;
-  LOGW << "vps frame_depth:" << module_info.frame_depth;
+  LOGD << "vps frame_depth:" << module_info.frame_depth;
   ret = vps_module_->Init(vps_group_id_, &module_info);
-  // ret = vot_module_->Init(vps_group_id_, &module_info);
+  if (ret != 0) {
+    LOGE << "vps module init fail";
+    return ret;
+  }
 
   init_ = true;
-  return ret;
+
+  return 0;
 }
+
+bool MediaPipeLine::InitFlag() { return init_; }
 
 int MediaPipeLine::Start() {
   if (running_) return 0;
-
   if (!init_) return -1;
 
   running_ = true;
@@ -66,9 +70,11 @@ int MediaPipeLine::Start() {
   return 0;
 }
 
+bool MediaPipeLine::StartFlag() { return running_; }
+
 int MediaPipeLine::Input(void *data) {
   if (!running_) {
-    LOGI << "channel:" << vdec_group_id_ << " has not running, input error";
+    LOGE << "channel:" << vdec_group_id_ << " has not running, input error";
     return -1;
   }
 
@@ -83,6 +89,7 @@ int MediaPipeLine::Input(void *data) {
     promise_.set_value(ret);
     LOGI << "promise_ set_value";
   }
+
   return 0;
 }
 
@@ -90,6 +97,7 @@ int MediaPipeLine::Output(void **data) {
   if (!running_) {
     return -5;
   }
+  static int decode_frame = 0;
   int ret = 0;
   hb_vio_buffer_t hb_vio_buf;
   void *data_temp = nullptr;
@@ -102,6 +110,15 @@ int MediaPipeLine::Output(void **data) {
   if (data_temp == nullptr) {
     LOGE << "data_temp is nullptr";
     return -2;
+  }
+
+  if (frame_drop_) {
+    decode_frame++;
+    if (decode_frame > frame_drop_interval_) {
+      vdec_module_->OutputBufferFree(data_temp);
+      decode_frame = 0;
+      return -2;
+    }
   }
 
   VIDEO_FRAME_S *video_frame = (VIDEO_FRAME_S *)(data_temp);
@@ -133,7 +150,7 @@ int MediaPipeLine::Output(void **data) {
     *data = nullptr;
     return -3;
   }
-  // vot_module_->Input(*data);
+
   return 0;
 }
 
@@ -161,6 +178,7 @@ int MediaPipeLine::DeInit() {
   vps_module_->DeInit();
   vdec_module_->DeInit();
   init_ = false;
+  decode_type_ = RTSP_Payload_NONE;
   return 0;
 }
 

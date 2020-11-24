@@ -133,7 +133,7 @@ class WhiteListsModule : public ListsModule {
   }
 };
 
-struct SlotInfo {
+struct SlotFilterInfo {
   std::string name;
   std::string type;
   std::string group;
@@ -261,7 +261,7 @@ struct FilterParam : public xstream::InputParam {
   int enable_flag = 0;
   // 0:valid 1:filter 2:invisible 3:disappeared 4:invalid
   int filter_status = 1;
-  std::map<uint32_t, SlotInfo> slot_info_;
+  std::map<uint32_t, SlotFilterInfo> slot_info_;
   Json::Value config_jv_all_;  // contain all params
   Json::Value config_jv;       // contain param updated
   std::string Format() override;

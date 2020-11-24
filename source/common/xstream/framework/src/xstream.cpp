@@ -175,4 +175,7 @@ int64_t XStreamFlow::AsyncPredict(InputDataPtr input) {
   return scheduler_->Input(input, nullptr);
 }
 
+  int64_t XStreamFlow::GetTaskNum() {
+    return scheduler_->GetTaskNum();
+  }
 }  // namespace xstream

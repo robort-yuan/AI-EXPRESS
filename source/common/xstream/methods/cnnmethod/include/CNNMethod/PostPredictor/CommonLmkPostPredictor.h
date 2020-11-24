@@ -14,7 +14,9 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 #include "CNNMethod/PostPredictor/PostPredictor.h"
+#include "CNNMethod/CNNConst.h"
 
 namespace xstream {
 
@@ -35,11 +37,26 @@ class CommonLmkPostPredictor : public PostPredictor {
                        const std::vector<std::vector<uint32_t>> &nhwc,
                        const std::vector<std::vector<uint32_t>> &shifts);
 
+  BaseDataPtr Lmk4Post(const std::vector<std::vector<int8_t>> &mxnet_outs,
+                       const hobot::vision::BBox &box);
+
+  void Lmks4PostProcess(const float *vector_pred,
+                        const hobot::vision::BBox &box,
+                        std::vector<hobot::vision::Point> &lmks4,
+                        int axis);
+
+  int CalIndex(int k, int i);
+
   int CalIndex(int k, int i, int j);
   size_t lmk_num_;
   int feature_w_;
   int feature_h_;
   int i_o_stride_;
+  std::string post_fn_;
+  int vector_size_;
+  NormMethod norm_type_;
+  float expand_scale_;
+  float aspect_ratio_;
 };
 }  // namespace xstream
 #endif  // INCLUDE_CNNMETHOD_POSTPREDICTOR_HANDLMKPOSTPREDICTOR_H_

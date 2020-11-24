@@ -58,8 +58,6 @@ VideoFeedbackProduce::VideoFeedbackProduce(const char *vio_cfg_file)
       << "VideoFeedbackProduce: Create VioPipeLine failed";
   auto ret = vio_pipeline_->Init();
   HOBOT_CHECK(ret == 0) << "vio pipeline init failed!";
-  ret = vio_pipeline_->Start();
-  HOBOT_CHECK(ret == 0) << "vio pipeline start failed!";
 #endif
 }
 
@@ -69,7 +67,6 @@ VideoFeedbackProduce::~VideoFeedbackProduce() {
   hb_vio_deinit();
 #elif defined(X3_IOT_VIO)
   if (vio_pipeline_) {
-    vio_pipeline_->Stop();
     vio_pipeline_->DeInit();
   }
 #endif

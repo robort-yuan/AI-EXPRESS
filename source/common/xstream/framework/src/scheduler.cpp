@@ -67,6 +67,8 @@ int Scheduler::Init(XStreamConfigPtr config,
   for (size_t i = 0; i < scheduler_config_->GetSourceNumber(); ++i)
     sequence_id_list_.push_back(std::make_shared<std::atomic_ullong>(0));
 
+  pending_frames_ = std::make_shared<std::atomic_ullong>(0);
+
   if (0 != CreateNodes()) {
     LOGE << "CreateNodes failed";
     return -1;
@@ -202,7 +204,12 @@ int64_t Scheduler::Input(InputDataPtr input, void *sync_context) {
     }
   }
 
-  return (ret >= 0) ? framework_data->sequence_id_ : ret;
+  if (ret >= 0) {
+    (*pending_frames_)++;
+    return framework_data->sequence_id_;
+  } else {
+    return ret;
+  }
 }
 
 OutputDataPtr Scheduler::SingleOutput(FrameworkDataPtr framework_data,
@@ -415,6 +422,7 @@ int Scheduler::Schedule4SlotImp2(FrameworkDataPtr framework_data,
     // 此帧结束，置帧数据状态为ready
     LOGD << "FrameworkDataState_Ready";
     framework_data->state_ = FrameworkDataState_Ready;
+    (*pending_frames_)--;
     // 2.1 同步处理结果
     if (framework_data->sync_context_ != nullptr) {
       auto promise = static_cast<std::promise<std::vector<OutputDataPtr>> *>(
@@ -546,6 +554,10 @@ void Scheduler::Monitor(FrameworkDataPtr framework_data,
         std::bind(&Scheduler::Monitor, this, framework_data, start, interval));
     }
   }
+}
+
+int64_t Scheduler::GetTaskNum() const {
+  return *pending_frames_;
 }
 
 }  // namespace xstream

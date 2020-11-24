@@ -246,7 +246,7 @@ typedef struct {
   /* source layer flag, 0:source, 1:bilinear, 2:gaussian, only for down scale layers */
   uint32_t basic_layer;
   /* source basic layer index, only for down scale */
-  int32_t stride; /* output line stride, must be aligned to 16 */
+  int32_t stride; /* output line stride, up-sample layer must be aligned to 4, other layers must be aligned to 2 */
 } hbsim_ayers_roi_layer_config;
 
 typedef struct {
@@ -255,7 +255,7 @@ typedef struct {
   int32_t output_length_h;
   int32_t output_length_w;
   /* ROI is for output */
-  int32_t stride; /* output line stride, must be aligned to 16 */
+  int32_t stride; /* output line stride, up-sample layer must be aligned to 4, other layers must be aligned to 2 */
 } hbsim_ayers_basic_layer_config;
 
 typedef struct {
@@ -337,10 +337,14 @@ HBDK_PUBLIC hbrt_error_t hbsimPyramidGetResultAyers(hbsim_pyramid_handle pym_han
  * INPUT DATA FORMAT
  *
  * 64          bytes: functioncall for ROI0
+ * {
  * 16*(N+2)/3  bytes: coordinates of tracking points in ROI0 (*1)
  * 16          bytes: magic num 0
+ * } (optional)
+ * {
  * 16*(N+2)/3  bytes: prior estimated coordinates            (*1)
  * 16          bytes: magic num 1
+ * } (optional)
  * 64          bytes: functioncall for ROI1
  * ...
  * ...
@@ -434,19 +438,17 @@ typedef struct {
   /* magic num[3] denotes the end of output data of one ROI */
   /* magic num[4] denotes the end of output data pack of all ROIs */
 
-  uint32_t inst_addr;
-  /* inst_address with regard to 'vaddr_of_paddr0'*/
-  /* if inst_addr is set to be 0, simulator will use internal embedded instruction and inst_num in config will not be
+  const void *inst_addr;
+  /* if inst_addr is set to be null, simulator will use internal embedded instruction and inst_num in config will not be
    * used either */
+
   uint32_t inst_num;
   /* number of inst, inst bytesize / 16 */
-
-  void *vaddr_of_paddr0; /* base virtual address of all addresses in function call and instruction */
 } hbsim_optical_flow_config;
 
 typedef struct {
-  uint32_t previous_frames_addr[5];
-  uint32_t current_frames_addr[5];
+  const void *previous_frames_addr[5];
+  const void *current_frames_addr[5];
   uint32_t roi_num_in;
 } hbsim_optical_flow_input;
 
@@ -503,15 +505,8 @@ typedef struct {
   /* enable writing optical flow result */
   /* section 2 */
 
-  uint32_t harris_addr;
-  /* output address for harris corner detection */
   uint32_t epsilon;
   /* threshold for optical flow iterative optimization */
-  uint32_t result_addr;
-  /* output address for optical flow result */
-  uint32_t conf_addr;
-  /* output address for confidence result */
-  /* section 3 */
 
   uint32_t src_step_w;
   uint32_t src_step_h;
@@ -525,7 +520,9 @@ typedef struct {
 
 HBDK_PUBLIC hbrt_error_t hbsimOpticalFlowGenFunccallAyers(void *fc, const hbsim_optical_flow_fc_config *config);
 
-HBDK_PUBLIC hbrt_error_t hbsimOpticalFlowProcessAyers(hbsim_optical_flow_handle handle, uint32_t fc_addr);
+HBDK_PUBLIC hbrt_error_t hbsimOpticalFlowProcessAyers(hbsim_optical_flow_handle handle, const void *fc_addr,
+                                                      void **flow_output_addr, void **harris_output_addr,
+                                                      void **conf_output_addr);
 
 HBDK_PUBLIC hbrt_error_t hbsimOpticalFlowReleaseAyers(hbsim_optical_flow_handle handle);
 

@@ -1,0 +1,105 @@
+# 版本说明  版本 2.7.0
+       
+<h2>        故事
+</h2>
+<ul>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-568'>XPPXROC-568</a>] -         apa示例
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-650'>XPPXROC-650</a>] -         USB Camera产品方向
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-691'>XPPXROC-691</a>] -         小米智能camera
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-739'>XPPXROC-739</a>] -         视频盒子
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-743'>XPPXROC-743</a>] -         竞品调研
+</li>
+</ul>
+                                                                                                        
+<h2>        任务
+</h2>
+<ul>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-189'>XPPXROC-189</a>] -         NVIDIA AI组件调研
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-240'>XPPXROC-240</a>] -         测试覆盖率完整提升，function/line 覆盖率 &gt; 80%
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-358'>XPPXROC-358</a>] -         添加gtest
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-378'>XPPXROC-378</a>] -         【Python API】Python API开发和维护
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-664'>XPPXROC-664</a>] -         xproto tutorials的实现
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-678'>XPPXROC-678</a>] -         代码风格整理
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-679'>XPPXROC-679</a>] -         xstream添加Method运行状态监视功能
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-680'>XPPXROC-680</a>] -         xproto添加plugin运行状态监视功能
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-724'>XPPXROC-724</a>] -         vehicle solution段错误退出
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-725'>XPPXROC-725</a>] -         XStream-Framework tutorials更新
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-740'>XPPXROC-740</a>] -         X3支持本地视频转发
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-748'>XPPXROC-748</a>] -         客户回灌评测
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-749'>XPPXROC-749</a>] -         kps抖动优化
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-757'>XPPXROC-757</a>] -         bpu-predict升级至工具链1.1.17版本
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-758'>XPPXROC-758</a>] -         xproto tutorial设计
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-764'>XPPXROC-764</a>] -         xproto tutorial-stage1
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-765'>XPPXROC-765</a>] -         xproto tutorial-stage2
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-766'>XPPXROC-766</a>] -         xproto tutorial-stage3
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-768'>XPPXROC-768</a>] -         预测Method的重构设计
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-769'>XPPXROC-769</a>] -         开源视频盒子solution
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-770'>XPPXROC-770</a>] -         将xstream的tutorials添加测试用例覆盖率脚本
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-771'>XPPXROC-771</a>] -         测试覆盖率不考虑hobotsdk引擎相关的代码文件
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-774'>XPPXROC-774</a>] -         镜像升级至1023的版本
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-777'>XPPXROC-777</a>] -         集成106点人脸检测模型
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-778'>XPPXROC-778</a>] -         小米智能摄像头集成手势识别
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-779'>XPPXROC-779</a>] -         Python实现Method的整体设计
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-780'>XPPXROC-780</a>] -         Fast-DDS性能评测
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-781'>XPPXROC-781</a>] -         XStream调度性能评测
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-783'>XPPXROC-783</a>] -         对外脚本去除tv_dance_xxx
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-784'>XPPXROC-784</a>] -         集成工具链1.1.18c版本
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-785'>XPPXROC-785</a>] -         vio支持启停功能
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-788'>XPPXROC-788</a>] -         多路图像视频编码改为多路编码模式
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-789'>XPPXROC-789</a>] -         文档添加XStream与XProto示例的说明
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-791'>XPPXROC-791</a>] -         优化手部关键点策略
+</li>
+</ul>
+                                        
+<h2>        子任务
+</h2>
+<ul>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-690'>XPPXROC-690</a>] -         前端web 支持多路展示
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-736'>XPPXROC-736</a>] -         代码覆盖率包含xStream framework的示例
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-751'>XPPXROC-751</a>] -         感知结果保存到本地
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-759'>XPPXROC-759</a>] -         支持本地原图以及apa图回灌
+</li>
+<li>[<a href='https://jira.hobot.cc:8443/browse/XPPXROC-762'>XPPXROC-762</a>] -         集成关键点滤波策略
+</li>
+</ul>
+                        

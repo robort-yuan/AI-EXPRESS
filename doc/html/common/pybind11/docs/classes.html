@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Object-oriented code &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>Object-oriented code &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../../genindex.html" />
     <link rel="search" title="搜索" href="../../../search.html" /> 
 </head>
@@ -49,7 +50,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -63,7 +64,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,6 +73,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -94,6 +96,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,7 +135,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Object-oriented code</li>
     
@@ -140,7 +143,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../../_sources/common/pybind11/docs/classes.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../../_sources/common/pybind11/docs/classes.rst.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -159,7 +162,7 @@
 <h2>Creating bindings for a custom type<a class="headerlink" href="#creating-bindings-for-a-custom-type" title="永久链接至标题">¶</a></h2>
 <p>Let’s now look at a more complex example where we’ll create bindings for a
 custom C++ data structure named <code class="docutils literal notranslate"><span class="pre">Pet</span></code>. Its definition is given below:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Pet</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Pet</span> <span class="p">{</span>
     <span class="n">Pet</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span><span class="p">)</span> <span class="o">:</span> <span class="n">name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
     <span class="kt">void</span> <span class="n">setName</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name_</span><span class="p">)</span> <span class="p">{</span> <span class="n">name</span> <span class="o">=</span> <span class="n">name_</span><span class="p">;</span> <span class="p">}</span>
     <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">getName</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">name</span><span class="p">;</span> <span class="p">}</span>
@@ -351,12 +354,12 @@ just brings them on par.</p>
 <span id="inheritance"></span><h2>Inheritance and automatic downcasting<a class="headerlink" href="#inheritance-and-automatic-downcasting" title="永久链接至标题">¶</a></h2>
 <p>Suppose now that the example consists of two data structures with an
 inheritance relationship:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Pet</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Pet</span> <span class="p">{</span>
     <span class="n">Pet</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span><span class="p">)</span> <span class="o">:</span> <span class="n">name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="nl">Dog</span> <span class="p">:</span> <span class="n">Pet</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">Dog</span> <span class="o">:</span> <span class="n">Pet</span> <span class="p">{</span>
     <span class="n">Dog</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span><span class="p">)</span> <span class="o">:</span> <span class="n">Pet</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">bark</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;woof!&quot;</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
@@ -413,11 +416,11 @@ inheritance relationship. This is reflected in Python:</p>
 type behind a base pointer, Python only sees a <code class="docutils literal notranslate"><span class="pre">Pet</span></code>. In C++, a type is only
 considered polymorphic if it has at least one virtual function and pybind11
 will automatically recognize this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">PolymorphicPet</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">PolymorphicPet</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="o">~</span><span class="n">PolymorphicPet</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">struct</span> <span class="nl">PolymorphicDog</span> <span class="p">:</span> <span class="n">PolymorphicPet</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nc">PolymorphicDog</span> <span class="o">:</span> <span class="n">PolymorphicPet</span> <span class="p">{</span>
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">bark</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;woof!&quot;</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
 
@@ -452,7 +455,7 @@ not even be aware of.</p>
 <h2>Overloaded methods<a class="headerlink" href="#overloaded-methods" title="永久链接至标题">¶</a></h2>
 <p>Sometimes there are several overloaded C++ methods with the same name taking
 different kinds of input arguments:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Pet</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Pet</span> <span class="p">{</span>
     <span class="n">Pet</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">name</span><span class="p">,</span> <span class="kt">int</span> <span class="n">age</span><span class="p">)</span> <span class="o">:</span> <span class="n">name</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">age</span><span class="p">(</span><span class="n">age</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
 
     <span class="kt">void</span> <span class="n">set</span><span class="p">(</span><span class="kt">int</span> <span class="n">age_</span><span class="p">)</span> <span class="p">{</span> <span class="n">age</span> <span class="o">=</span> <span class="n">age_</span><span class="p">;</span> <span class="p">}</span>
@@ -504,8 +507,8 @@ syntax to cast the overloaded function:</p>
 The return type and class are deduced. This avoids the additional noise of
 <code class="docutils literal notranslate"><span class="pre">void</span> <span class="pre">(Pet::*)()</span></code> as seen in the raw cast. If a function is overloaded based
 on constness, the <code class="docutils literal notranslate"><span class="pre">py::const_</span></code> tag should be used:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Widget</span> <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span> <span class="n">y</span><span class="p">);</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Widget</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span> <span class="n">y</span><span class="p">);</span>
     <span class="kt">int</span> <span class="nf">foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">float</span> <span class="n">y</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
 <span class="p">};</span>
 
@@ -541,8 +544,8 @@ for specifying keyword and default arguments also works.</p>
 <h2>Enumerations and internal types<a class="headerlink" href="#enumerations-and-internal-types" title="永久链接至标题">¶</a></h2>
 <p>Let’s now suppose that the example class contains an internal enumeration type,
 e.g.:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Pet</span> <span class="p">{</span>
-    <span class="k">enum</span> <span class="n">Kind</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nc">Pet</span> <span class="p">{</span>
+    <span class="k">enum</span> <span class="nc">Kind</span> <span class="p">{</span>
         <span class="n">Dog</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">Cat</span>
     <span class="p">};</span>
@@ -626,11 +629,19 @@ etc.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -641,7 +652,6 @@ etc.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

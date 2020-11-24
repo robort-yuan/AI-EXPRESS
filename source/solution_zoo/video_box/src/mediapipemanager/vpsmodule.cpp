@@ -4,6 +4,7 @@
  * @Author:
  * @Mail: @horizon.ai
  */
+
 #include "mediapipemanager/vpsmodule.h"
 
 #include <fstream>
@@ -50,24 +51,6 @@ int VpsModule::Init(uint32_t group_id, const PipeModuleInfo *module_info) {
     LOGE << "HB_VPS_SetChnAttr Failed. ret = " << ret;
     return ret;
   }
-//  ret = HB_VPS_SetChnAttr(group_id, 2, &chn_attr);
-//  if (ret) {
-//    LOGE << "HB_VPS_SetChnAttr Failed. ret = " << ret;
-//    return ret;
-//  }
-
-//  VPS_CROP_INFO_S chn_crop_info;
-//  memset(&chn_crop_info, 0, sizeof(VPS_CROP_INFO_S));
-//  chn_crop_info.en = 1;
-//  chn_crop_info.cropRect.x = 0;
-//  chn_crop_info.cropRect.y = 0;
-//  chn_crop_info.cropRect.width = 1920;
-//  chn_crop_info.cropRect.height = 1080;
-//  ret = HB_VPS_SetChnCrop(group_id, 2, &chn_crop_info);
-//  if (ret) {
-//    LOGE << "HB_VPS_SetChnCrop Failed. ret = " << ret;
-//    return ret;
-//  }
 
   VPS_PYM_CHN_ATTR_S pym_chn_attr;
   memset(&pym_chn_attr, 0, sizeof(VPS_PYM_CHN_ATTR_S));
@@ -76,11 +59,11 @@ int VpsModule::Init(uint32_t group_id, const PipeModuleInfo *module_info) {
   pym_chn_attr.us_layer_en = 0;
   pym_chn_attr.frame_id = 0;
   pym_chn_attr.frameDepth = module_info->frame_depth;
-  // pym_chn_attr.ds_info[5].factor = 32;
-  // pym_chn_attr.ds_info[5].roi_x = 0;
-  // pym_chn_attr.ds_info[5].roi_y = 0;
-  // pym_chn_attr.ds_info[5].roi_width = 900;
-  // pym_chn_attr.ds_info[5].roi_height = 540;
+  pym_chn_attr.ds_info[5].factor = 32;
+  pym_chn_attr.ds_info[5].roi_x = 0;
+  pym_chn_attr.ds_info[5].roi_y = 0;
+  pym_chn_attr.ds_info[5].roi_width = 960;
+  pym_chn_attr.ds_info[5].roi_height = 540;
   // pym_chn_attr.ds_info[6].factor = 32;
   // pym_chn_attr.ds_info[6].roi_x = 0;
   // pym_chn_attr.ds_info[6].roi_y = 0;
@@ -91,7 +74,7 @@ int VpsModule::Init(uint32_t group_id, const PipeModuleInfo *module_info) {
     LOGE << "HB_VPS_SetPymChnAttr Failed. ret = " << ret;
     return ret;
   }
-//  HB_VPS_EnableChn(group_id, 2);
+
   HB_VPS_EnableChn(group_id, 6);
   return ret;
 }
@@ -118,15 +101,7 @@ int VpsModule::Output(void **data) {
   }
   buffer_index_++;
   *data = &buffers_[index];
-  // static int count= 0;
-  // std::ofstream outfile;
-  // outfile.open("image_pym" + std::to_string(count++) + ".yuv", std::ios::ate
-  // | std::ios::out | std::ios::binary); printf("pym layer 4 h:%d  w:%d\n",
-  // pym_buf_.pym[1].height, pym_buf_.pym[1].width);
-  // outfile.write(reinterpret_cast<char *>(pym_buf_.pym[1].addr[0]),
-  // pym_buf_.pym[1].height*pym_buf_.pym[1].width);
-  // outfile.write(reinterpret_cast<char *>(pym_buf_.pym[1].addr[1]),
-  // pym_buf_.pym[1].height*pym_buf_.pym[1].width/2); outfile.close();
+
   return ret;
 }
 

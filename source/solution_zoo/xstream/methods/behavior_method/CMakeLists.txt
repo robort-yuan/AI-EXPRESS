@@ -15,7 +15,7 @@ set(SOURCE_FILES
 
 add_library(BehaviorMethod STATIC ${SOURCE_FILES})
 
-set(BASE_LIBRARIES xstream-framework hobotlog jsoncpp opencv_world)
+set(BASE_LIBRARIES xstream hobotlog jsoncpp opencv_world)
 target_link_libraries(${PROJECT_NAME} ${BASE_LIBRARIES})
 
 add_subdirectory(test)

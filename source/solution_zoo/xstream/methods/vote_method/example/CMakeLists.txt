@@ -4,7 +4,7 @@ include_directories(
     include
 )
 
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream -Wl,--no-whole-archive)
 
 add_executable(${target_name}_example
     main.cpp

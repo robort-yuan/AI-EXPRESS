@@ -5,9 +5,9 @@
   "password": "123456",
   "smart_type": 2,
   "video_type": 1,
-  "image_width": 1920,
-  "image_height": 1080,
-  "layer": 0,
+  "image_width": 960,  // please do not modify
+  "image_height": 540, // please do not modify
+  "layer": 4,          // please do not modify
   "720p_layer": 5,
   "1080p_layer": 4,
   "2160p_layer": 0,
@@ -25,5 +25,8 @@
   "h264_encode_time": 0,
   "smart_transfer_mode": 0,
   "rndis_port": 9999,
-  "smart_transfer_mode_desc": "0: hid, 1: rndis"
+  "smart_transfer_mode_desc": "0: hid, 1: rndis",
+  "ap_mode": false,
+  "input_h264_filename": "test.264",
+  "local_forward": 0
 }

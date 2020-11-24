@@ -17,6 +17,7 @@
 #include "SnapShotMethod/SnapShotMethod.h"
 #include "CNNMethod/CNNMethod.h"
 #include "vote_method/vote_method.h"
+#include "FaceSnapFilterMethod/FaceSnapFilterMethod.h"
 
 namespace xstream {
 namespace method_factory {
@@ -25,6 +26,8 @@ MethodPtr CreateMethod(const std::string &method_name) {
     return MethodPtr(new MOTMethod());
   } else if ("FasterRCNNMethod" == method_name) {
     return MethodPtr(new FasterRCNNMethod());
+  } else if ("FaceSnapFilterMethod" == method_name) {
+    return MethodPtr(new FaceSnapFilterMethod());
   } else if ("GradingMethod" == method_name) {
     return MethodPtr(new GradingMethod());
   } else if ("SnapShotMethod" == method_name) {

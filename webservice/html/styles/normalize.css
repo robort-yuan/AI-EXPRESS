@@ -352,3 +352,22 @@ template {
   1% {opacity: 1;}
   100% {opacity: 1;}
 }
+
+.cont-url li {
+  margin-top: 10px;
+  border: none;
+}
+
+.pathchoice {
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  width: 100px;
+  background: #eee;
+  padding: 5px;
+}
+
+.pathchoice option {
+  border: none;
+  background: #fff;
+}

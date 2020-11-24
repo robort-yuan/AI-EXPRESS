@@ -108,7 +108,9 @@ int VinModule::CamInit() {
     ret = HbEnableSensorClk(mipi_idx);
     if (ret) {
     LOGE << "hb enable sensor clk, ret: " << ret
-      << " sensor_id: " << sensor_id << " mipi_idx: " << mipi_idx;
+      << " pipe_id: " << pipe_id
+      << " sensor_id: " << sensor_id
+      << " mipi_idx: " << mipi_idx;
       return ret;
     }
   }
@@ -116,13 +118,17 @@ int VinModule::CamInit() {
       mipi_idx, serdes_idx, serdes_port);
   if (ret < 0) {
     LOGE << "hb sensor init error, ret: " << ret
-      << " sensor_id: " << sensor_id << " mipi_idx: " << mipi_idx;
+      << " pipe_id: " << pipe_id
+      << " sensor_id: " << sensor_id
+      << " mipi_idx: " << mipi_idx;
     return ret;
   }
   ret = HbMipiInit(sensor_id, mipi_idx);
   if (ret < 0) {
     LOGE << "hb mipi init error, ret: " << ret
-      << " sensor_id: " << sensor_id << " mipi_idx: " << mipi_idx;
+      << " pipe_id: " << pipe_id
+      << " sensor_id: " << sensor_id
+      << " mipi_idx: " << mipi_idx;
     return ret;
   }
   cam_init_flag_ = true;
@@ -189,13 +195,14 @@ int VinModule::CamStop() {
   int pipe_id = pipe_id_;
   int mipi_idx = vio_cfg_.vin_cfg.mipi_info.mipi_index;
 
-  LOGD << "Enter cam stop, pipe_id: " << pipe_id;
+  LOGD << "Enter sensor stop, pipe_id: " << pipe_id;
   ret = HbSensorStop(pipe_id);
   if (ret < 0) {
     LOGE << "hb sensor stop error, ret: " << ret
       << " pipe_id: " << pipe_id << " mipi_idx: " << mipi_idx;
     return ret;
   }
+  LOGD << "Enter mipi stop, mipi_idx: " << mipi_idx;
   ret = HbMipiStop(mipi_idx);
   if (ret < 0) {
     LOGE << "hb mipi stop error, ret: " << ret
@@ -209,6 +216,7 @@ int VinModule::CamStop() {
 int VinModule::HbSensorInit(int dev_id, int sensor_id, int bus, int port,
     int mipi_idx, int sedres_index, int sedres_port) {
   int ret = -1;
+  int extra_mode = vio_cfg_.vin_cfg.sensor_info.extra_mode;
   MIPI_SENSOR_INFO_S *snsinfo = NULL;
 
   snsinfo = &cam_params_.sensor_info;
@@ -216,6 +224,9 @@ int VinModule::HbSensorInit(int dev_id, int sensor_id, int bus, int port,
   HbMipiGetSnsAttrBySns(static_cast<MipiSensorType>(sensor_id),
       snsinfo);
 
+  if (sensor_id == kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED) {
+    HB_MIPI_SetExtraMode(snsinfo, extra_mode);
+  }
   HB_MIPI_SetBus(snsinfo, bus);
   HB_MIPI_SetPort(snsinfo, port);
   HB_MIPI_SensorBindSerdes(snsinfo, sedres_index, sedres_port);
@@ -360,7 +371,7 @@ int VinModule::HbMipiStop(int mipi_idx) {
 int VinModule::VinStart() {
   int ret = -1;
   int pipe_id = pipe_id_;
-  LOGD << "Enter vinmodule start, pipe_id: " << pipe_id;
+  LOGD << "Enter vinmodule start, pipe_id:" << pipe_id;
 
   ret = HB_VIN_EnableChn(pipe_id, 0);  // dwe start
   if (ret < 0) {
@@ -612,6 +623,7 @@ int VinModule::HbMipiGetSnsAttrBySns(MipiSensorType sensor_type,
           sizeof(MIPI_SENSOR_INFO_S));
       break;
     case kOV10635_30FPS_720p_960_YUV:
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
       memcpy(pst_sns_attr,
           &SENSOR_2LANE_OV10635_30FPS_YUV_720P_960_INFO,
           sizeof(MIPI_SENSOR_INFO_S));
@@ -689,6 +701,11 @@ int VinModule::HbMipiGetMipiAttrBySns(MipiSensorType sensor_type,
           &MIPI_2LANE_OV10635_30FPS_YUV_720P_960_ATTR,
           sizeof(MIPI_ATTR_S));
       break;
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
+      memcpy(pst_mipi_attr,
+          &MIPI_2LANE_OV10635_30FPS_YUV_LINE_CONCATE_720P_960_ATTR,
+          sizeof(MIPI_ATTR_S));
+      break;
     case kS5KGM1SP_30FPS_4000x3000_RAW10:
       memcpy(pst_mipi_attr,
           &MIPI_SENSOR_S5KGM1SP_30FPS_10BIT_LINEAR_ATTR,
@@ -731,6 +748,10 @@ int VinModule::HbVinGetDevAttrBySns(MipiSensorType sensor_type,
     case kOV10635_30FPS_720p_954_YUV:
     case kOV10635_30FPS_720p_960_YUV:
       memcpy(pstDevAttr, &DEV_ATTR_OV10635_YUV_BASE,
+          sizeof(VIN_DEV_ATTR_S));
+      break;
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
+      memcpy(pstDevAttr, &DEV_ATTR_OV10635_YUV_LINE_CONCATE_BASE,
           sizeof(VIN_DEV_ATTR_S));
       break;
     case kSIF_TEST_PATTERN_1080P:
@@ -821,6 +842,10 @@ int VinModule::HbVinGetPipeAttrBySns(MipiSensorType sensor_type,
       memcpy(pstPipeAttr, &PIPE_ATTR_OV10635_YUV_BASE,
           sizeof(VIN_PIPE_ATTR_S));
       break;
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
+      memcpy(pstPipeAttr, &VIN_ATTR_OV10635_YUV_LINE_CONCATE_BASE ,
+          sizeof(VIN_PIPE_ATTR_S));
+      break;
     case kSIF_TEST_PATTERN_1080P:
       memcpy(pstPipeAttr, &PIPE_ATTR_TEST_PATTERN_1080P_BASE,
           sizeof(VIN_PIPE_ATTR_S));
@@ -865,6 +890,7 @@ int VinModule::HbVinGetDisAttrBySns(MipiSensorType sensor_type,
       break;
     case kOV10635_30FPS_720p_954_YUV:
     case kOV10635_30FPS_720p_960_YUV:
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
     case kSIF_TEST_PATTERN_YUV_720P:
       memcpy(pstDisAttr, &DIS_ATTR_OV10635_BASE, sizeof(VIN_DIS_ATTR_S));
       break;
@@ -900,6 +926,7 @@ int VinModule::HbVinGetLdcAttrBySns(MipiSensorType sensor_type,
       break;
     case kOV10635_30FPS_720p_954_YUV:
     case kOV10635_30FPS_720p_960_YUV:
+    case kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED:
     case kSIF_TEST_PATTERN_YUV_720P:
       memcpy(pstLdcAttr, &LDC_ATTR_OV10635_BASE, sizeof(VIN_LDC_ATTR_S));
       break;

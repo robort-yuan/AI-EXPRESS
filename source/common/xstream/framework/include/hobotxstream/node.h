@@ -95,6 +95,7 @@ class Node : public std::enable_shared_from_this<Node> {
   // node唯一名字，Note:"__INPUT__"内部预留使用了。
   std::string unique_name_;
   MethodManager method_manager_;
+  // call_back func, be called after Node complete process
   std::function<int(FrameworkDataPtr data, std::shared_ptr<Node> ready_node)>
       on_ready_;
   std::vector<int> input_slots_, output_slots_;
@@ -110,7 +111,7 @@ class Node : public std::enable_shared_from_this<Node> {
   void Handle(const FrameworkDataPtr &framework_data);
   //
   bool IsNeedSkip(const FrameworkDataPtr &framework_data);
-  //
+  // Node is disabled, get 'Fake' output based on DisableParam::Mode
   void FakeResult(const FrameworkDataPtr &framework_data);
   // 供timer以及Method的回调函数使用，把消息发给Node线程以便把结果写回并推送给scheduler
   void PostResult(FrameworkDataShellPtr result);
@@ -121,15 +122,19 @@ class Node : public std::enable_shared_from_this<Node> {
   std::vector<std::vector<BaseDataPtr>> GetInputData(
       const FrameworkDataBatchPtr &data) const;
 
+  // set FrameworkDataBatch.datas_ as data (normal)
   void SetOutputData(FrameworkDataBatchPtr frameData,
                      const std::vector<std::vector<BaseDataPtr>> &data);
 
-  void SetTimeoutFlag(FrameworkDataBatchPtr frameData);
+  // set FrameworkDataBatch.datas_ as Time out
+  void SetOutputDataTimeout(FrameworkDataBatchPtr frameData);
 
   void CheckResult(const FrameworkData &frame_data);
 
+  // Node is disabled, schedule next node
   void OnFakeResult(FrameworkDataPtr result);
 
+  // set FrameworkDataShell data, and schedule next node
   void OnGetResult(FrameworkDataShellPtr result);
 };
 

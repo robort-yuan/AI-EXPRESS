@@ -1,0 +1,1079 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting Started with ware_module &mdash; AI Express用户手册 2.7.0 文档</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/overview.html">概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/quick_start.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/xstream.html">XStream算法SDK编程框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/xproto.html">XProto原型应用开发框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/solution.html">场景参考解决方案</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/tools.html">工具集</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/faq.html">常见问题</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/version.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../BuildAll/doc/copyright.html">版权声明</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AI Express用户手册</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Getting Started with ware_module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/common/waremodule/README.md.txt" rel="nofollow"> 查看页面源码</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started-with-ware-module">
+<h1>Getting Started with ware_module<a class="headerlink" href="#getting-started-with-ware-module" title="永久链接至标题">¶</a></h1>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>版本号</th>
+<th>时间</th>
+<th>作者</th>
+<th align="left">更新内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.0.22</td>
+<td>2019.8.6</td>
+<td>zhijun.yao</td>
+<td align="left">基于X1的IPC3.2识别模型及X2的V1.2模型提供底库管理和检索的能力</td>
+</tr>
+<tr>
+<td>***</td>
+<td></td>
+<td></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id1">
+<h1>功能设计<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
+<p>ware_module SDK提供底库管理和底库检索的功能,在xwarehouse的基础上增加库容限制的功能。</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="id2">
+<h1>接口设计<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h1>
+<p>对外提供C接口</p>
+<div class="section" id="id3">
+<h2>数据结构<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>接口使用的数据接口定义在ware_module.h头文件中，主要数据接口如下：</p>
+<p>一些常量定义：</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span>//id字符串长度限制
+#define ID_MAX_LENGTH (48)
+//uri字符串长度限制
+#define URI_MAX_LENGTH (256)
+//文件目录字符串长度限制
+#define PATH_MAX_LENGTH (128)
+// 版本信息长度限制
+#define VERSION_MAX_LENGTH (256)
+</pre></div>
+</div>
+<p>错误码：HobotXWHErrCode</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span>WARE_OK = 0,  // ok
+WARE_PARAM_ERR = 1000,              // 参数错误,字段为空，指针为空等
+WARE_INIT_FAIL = 1001,              // 初始化失败
+WARE_CREATE_TABLE_FAIL = 1002,      // 插入set信息失败
+WARE_DELETE_TABLE_FAIL = 1003,      // 删除set信息失败
+WARE_UPDATE_THRESHOLD_FAIL = 1004,  // 更新阈值失败
+WARE_LIST_TABLE_FAIL = 1005,        // list set失败
+WARE_LOAD_TABLE_FAIL = 1006,        // 加载数据库中的set信息失败
+WARE_SOURCETYPE_NOT_MATCH = 1007,   // 类型不匹配
+WARE_TABLE_INIT_FAIL = 1010,        // 分库初始化失败
+WARE_TABLE_EXIST = 1011,            // 分库已经存在
+WARE_TABLE_NOT_EXIST = 1012,        // 分库不存在
+WARE_FEATURE_SIZE_NOT_MATCH = 1013, // 特征向量大小不匹配
+WARE_ADD_RECORD_FAIL = 1014,        // 新增记录失败
+WARE_DELETE_RECORD_FAIL = 1015,     // 删除记录失败
+WARE_UPDATE_RECORD_FAIL = 1016,     // 更新记录失败
+WARE_ADD_FEATURE_FAIL = 1017,       // 新增特征失败
+WARE_DELETE_FEATURE_FAIL = 1018,    // 删除特征失败
+WARE_UPDATE_FEATURE_FAIL = 1019,    // 更新特征失败
+WARE_ID_EXIST = 1020,               // id已经存在
+WARE_ID_NOT_EXIST = 1021,           // id不存在
+WARE_DECRYPT_FAIL = 1022,           // 特征值解密失败
+WARE_OVER_LIMIT = 1023,             // 超过库容
+WARE_GET_LIMIT_FAIL = 1024,         // 获取库容大小失败
+WARE_GET_RECORD_FAIL = 1025,        // 获取记录失败
+WARE_NOT_INIT = 1026,               // ware_module未初始化
+</pre></div>
+</div>
+<p><strong>1、ware_store_t：数据源类型</strong></p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief 底库加载的数据源类型</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">enum</span> <span class="p">{</span>
+    <span class="sr">/* embedded database, load into memory and database */</span>
+    <span class="no">WARE_SQLITE</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="sr">/* only load into memory */</span>
+    <span class="no">WARE_MEMORY</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">ware_store_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>2、ware_table_t:数据源信息</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>table_name</td>
+<td>char[]</td>
+<td align="left">分库名</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td>char[]</td>
+<td align="left">模型名</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* table name, ID */</span>
+    <span class="n">char</span>    <span class="n">table_name</span><span class="o">[</span><span class="no">ID_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* model version, accord to actual */</span>
+    <span class="n">char</span>    <span class="n">model_version</span><span class="o">[</span><span class="no">VERSION_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_table_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>3、ware_feature_t:单个特征</strong></p>
+<p>单个特征保存的结构体</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>img_uri</td>
+<td>char[]</td>
+<td align="left">特征对应的uri,除了特征检索的时候可以为空，其他时候必须设置</td>
+</tr>
+<tr>
+<td>attr</td>
+<td>int</td>
+<td align="left">特征属性，bit0等于0为定点，等于1为浮点，bit1~bit5表示shift值, bit6等于0表示加密，等于1表示非加密，bit7~bit31 reserved</td>
+</tr>
+<tr>
+<td>size</td>
+<td>int</td>
+<td align="left">特征向量的大小，128</td>
+</tr>
+<tr>
+<td>feature</td>
+<td>void *</td>
+<td align="left">特征向量数组指针</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief 特征</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* key for feature, can empty */</span>
+    <span class="n">char</span>    <span class="n">img_uri</span><span class="o">[</span><span class="no">URI_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* feature attribute.</span>
+<span class="sr">     * bit0: feature type, 0-int, 1-float;</span>
+<span class="sr">     * bit1~5: shift value for int type</span>
+<span class="sr">     * bit6: 0-feature is encrypted; 1-not encrypted</span>
+<span class="sr">     * bit7~bit31 is reserved now</span>
+<span class="sr">     */</span>
+    <span class="sr">/*</span>
+<span class="sr">     * Fixed point encryption:   attr = (shift &lt;&lt; 1)</span>
+<span class="sr">     * Float point encryption:   attr = 1</span>
+<span class="sr">     * Fixed point unencryption: attr = (1 &lt;&lt; 6) | (shift &lt;&lt; 1)</span>
+<span class="sr">     * Float point unencryption: attr = (1 &lt;&lt; 6) | 1</span>
+<span class="sr">     */</span>
+    <span class="n">int</span>     <span class="kp">attr</span><span class="p">;</span>
+    <span class="sr">/* feature vector size */</span>
+    <span class="n">int</span>     <span class="n">size</span><span class="p">;</span>
+    <span class="sr">/* feature vector value */</span>
+    <span class="n">void</span>   <span class="o">*</span><span class="n">feature</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_feature_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>4、ware_record_t:记录(包含多个特征)</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>record_id</td>
+<td>char[]</td>
+<td align="left">记录id</td>
+</tr>
+<tr>
+<td>num</td>
+<td>int</td>
+<td align="left">特征个数</td>
+</tr>
+<tr>
+<td>features</td>
+<td>ware_feature_t *</td>
+<td align="left">特征数组指针</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* record id */</span>
+    <span class="n">char</span>    <span class="n">record_id</span><span class="o">[</span><span class="no">ID_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* feature number */</span>
+    <span class="n">int</span>     <span class="n">num</span><span class="p">;</span>
+    <span class="sr">/* feature value */</span>
+    <span class="n">ware_feature_t</span> <span class="o">*</span><span class="n">features</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_record_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>5、ware_ftr_list_t:获取记录下特征返回的结果</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ware_record</td>
+<td>ware_record_t</td>
+<td align="left">记录</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* feature list of single record */</span>
+    <span class="n">ware_record_t</span> <span class="n">ware_record</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_ftr_list_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>6、ware_record_list_t:获取分库下记录返回的结果</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>num</td>
+<td>int</td>
+<td align="left">记录个数</td>
+</tr>
+<tr>
+<td>record</td>
+<td>ware_record_t *</td>
+<td align="left">记录</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* record number */</span>
+    <span class="n">int</span> <span class="n">num</span><span class="p">;</span>
+    <span class="sr">/* record data */</span>
+    <span class="n">ware_record_t</span> <span class="o">*</span><span class="n">record</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_record_list_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>7、ware_score_t ：检索出来的单个结果信息</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>char[]</td>
+<td align="left">匹配到的id</td>
+</tr>
+<tr>
+<td>distance</td>
+<td>float</td>
+<td align="left">距离</td>
+</tr>
+<tr>
+<td>similar</td>
+<td>float</td>
+<td align="left">相似度</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief 检索的结果信息</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* match ID */</span>
+    <span class="n">char</span>    <span class="nb">id</span><span class="o">[</span><span class="no">ID_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* result distance */</span>
+    <span class="n">float</span>   <span class="n">distance</span><span class="p">;</span>
+    <span class="sr">/* result similar */</span>
+    <span class="n">float</span>   <span class="n">similar</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_score_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>8、ware_search_t ：检索结果</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>match</td>
+<td>bool</td>
+<td align="left">是否匹配到</td>
+</tr>
+<tr>
+<td>num</td>
+<td>int</td>
+<td align="left">返回的结果个数</td>
+</tr>
+<tr>
+<td>id_score</td>
+<td>ware_score_t*</td>
+<td align="left">ware_score_t数组指针</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief 检索的结果</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* search result */</span>
+    <span class="n">bool</span>          <span class="n">match</span><span class="p">;</span>
+    <span class="sr">/* result number */</span>
+    <span class="n">int</span>           <span class="n">num</span><span class="p">;</span>
+    <span class="sr">/* result detail */</span>
+    <span class="n">ware_score_t</span>  <span class="o">*</span><span class="n">id_score</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_search_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>9、ware_compare_t ：检索结果</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>match</td>
+<td>bool</td>
+<td align="left">是否匹配到</td>
+</tr>
+<tr>
+<td>distance</td>
+<td>float</td>
+<td align="left">距离</td>
+</tr>
+<tr>
+<td>similar</td>
+<td>float</td>
+<td align="left">相似度</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief 检索的结果</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* compare result */</span>
+    <span class="n">bool</span>    <span class="n">match</span><span class="p">;</span>
+    <span class="sr">/* result distance */</span>
+    <span class="n">float</span>   <span class="n">distance</span><span class="p">;</span>
+    <span class="sr">/* result similar */</span>
+    <span class="n">float</span>   <span class="n">similar</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_compare_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>10、ware_param_t ：检索参数</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>display_top_num</td>
+<td>int</td>
+<td align="left">需要返回topN的检索结果</td>
+</tr>
+<tr>
+<td>distance_threshold</td>
+<td>float</td>
+<td align="left">距离阈值</td>
+</tr>
+<tr>
+<td>similar_threshold</td>
+<td>float</td>
+<td align="left">相似度计算参数</td>
+</tr>
+<tr>
+<td>num</td>
+<td>int</td>
+<td align="left">待检索的特征数组大小</td>
+</tr>
+<tr>
+<td>features</td>
+<td>ware_feature_t *</td>
+<td align="left">待检索的特征数组指针</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* search match number */</span>
+    <span class="n">int</span>             <span class="n">display_top_num</span><span class="p">;</span>
+    <span class="sr">/* distance threshold, use default set -1 */</span>
+    <span class="n">float</span>           <span class="n">distance_threshold</span><span class="p">;</span>
+    <span class="sr">/* similar threshold, use default can set -1 */</span>
+    <span class="n">float</span>           <span class="n">similar_threshold</span><span class="p">;</span>
+    <span class="sr">/* feature number */</span>
+    <span class="n">int</span>             <span class="n">num</span><span class="p">;</span>
+    <span class="sr">/* feature value */</span>
+    <span class="n">ware_feature_t</span>  <span class="o">*</span><span class="n">features</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_param_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>11、ware_table_info_t : 分库信息</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>table_name</td>
+<td>char[]</td>
+<td align="left">分库名称</td>
+</tr>
+<tr>
+<td>model_version</td>
+<td>char[]</td>
+<td align="left">模型版本</td>
+</tr>
+<tr>
+<td>feature_size</td>
+<td>int</td>
+<td align="left">分库中保存的特征向量大小</td>
+</tr>
+<tr>
+<td>distance_threshold</td>
+<td>float</td>
+<td align="left">分库的距离阈值</td>
+</tr>
+<tr>
+<td>similar_threshold</td>
+<td>float</td>
+<td align="left">分库的相似度计算参数</td>
+</tr>
+<tr>
+<td>database_path</td>
+<td>char[]</td>
+<td align="left">该分库对应的db文件</td>
+</tr>
+<tr>
+<td>check_flag</td>
+<td>int</td>
+<td align="left">是否校验属性</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+    <span class="sr">/* table name */</span>
+    <span class="n">char</span>    <span class="n">table_name</span><span class="o">[</span><span class="no">ID_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* model version */</span>
+    <span class="n">char</span>    <span class="n">model_version</span><span class="o">[</span><span class="no">VERSION_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* feature size,128 or 256 */</span>
+    <span class="n">int</span>     <span class="n">feature_size</span><span class="p">;</span>
+    <span class="sr">/* distance threshold */</span>
+    <span class="n">float</span>   <span class="n">distance_threshold</span><span class="p">;</span>
+    <span class="sr">/* similar threshold */</span>
+    <span class="n">float</span>   <span class="n">similar_threshold</span><span class="p">;</span>
+    <span class="sr">/* directory path of table */</span>
+    <span class="n">char</span>    <span class="n">database_path</span><span class="o">[</span><span class="no">PATH_MAX_LENGTH</span><span class="o">]</span><span class="p">;</span>
+    <span class="sr">/* Whether or not to check attributes (currently only check race),0: no check,1: check race attributes */</span>
+    <span class="n">int</span>     <span class="n">check_flag</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_table_info_t</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><strong>12、ware_table_list_t ：获取分库信息返回的结果</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>字段名称</th>
+<th>类型</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>num</td>
+<td>int</td>
+<td align="left">分库个数</td>
+</tr>
+<tr>
+<td>table_info</td>
+<td>ware_table_info_t *</td>
+<td align="left">分库数组</td>
+</tr>
+</tbody>
+</table><div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief set信息</span>
+<span class="sr"> */</span>
+<span class="n">typedef</span> <span class="n">struct</span> <span class="p">{</span>
+  <span class="sr">/* table number */</span>
+  <span class="n">int</span> <span class="n">num</span><span class="p">;</span>
+  <span class="sr">/* table detail */</span>
+  <span class="n">ware_table_info_t</span> <span class="o">*</span><span class="n">table_info</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">ware_table_list_t</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>对外接口<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<p>对外接口的定义在ware_module.h头文件中</p>
+<p><strong>1、ware_module_get_version</strong></p>
+<p>获取SDK版本信息</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_get_version : get ware module version</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return char * : version string buffer</span>
+<span class="sr"> */</span>
+<span class="n">char</span> <span class="o">*</span><span class="n">ware_module_get_version</span><span class="p">(</span><span class="n">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>2、ware_module_init</strong></p>
+<p>初始化接口，指定数据源信息，
+当底库信息和记录保存在sqlite中时，如果目录下没有db文件，该接口会创建一个保存分库信息的db文件(warehouse.db)，如果目录下存在该db文件，则会加载该db文件并加载每个分库的记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_init : init warehouse module,create primary database</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] db_dir : database and ware_param.bin config file directory</span>
+<span class="sr"> * @param [in] store_type : database store type</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_init</span><span class="p">(</span><span class="n">char</span> <span class="o">*</span><span class="n">db_dir</span><span class="p">,</span> <span class="n">ware_store_t</span> <span class="n">store_type</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>3、ware_module_deinit</strong></p>
+<p>关闭SDK，释放资源</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_deinit : deinit warehouse module, release all resource</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_deinit</span><span class="p">(</span><span class="n">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>4、ware_module_create_table</strong></p>
+<p>新增一个分库,当数据源是sqlite时，该接口会在传入的目录下生成一个db文件，该文件会保存所有的记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_create_table : create a table(secondary database)</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] table_path : table directory</span>
+<span class="sr"> * @param [in] store_type : database store type</span>
+<span class="sr"> * @param [in] table : table information</span>
+<span class="sr"> * @param [in] feature_size : origin feature size:128/</span><span class="mi">256</span>
+ <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">check_flag</span> <span class="p">:</span> <span class="no">WARE_CHECK_NULL</span><span class="p">,</span> <span class="no">WARE_CHECK_RACE</span>
+
+ <span class="o">*</span> <span class="vi">@return</span> <span class="n">int</span> <span class="p">:</span> <span class="n">status</span> <span class="n">code</span> <span class="n">of</span> <span class="n">ware_error_t</span>
+ <span class="o">*/</span>
+<span class="n">int32_t</span> <span class="n">ware_module_create_table</span><span class="p">(</span><span class="n">char</span> <span class="o">*</span><span class="n">table_path</span><span class="p">,</span>
+                                 <span class="n">ware_store_t</span> <span class="n">store_type</span><span class="p">,</span>
+                                 <span class="n">ware_table_t</span> <span class="o">*</span><span class="n">table</span><span class="p">,</span>
+                                 <span class="n">int32_t</span> <span class="n">feature_size</span><span class="p">,</span>
+                                 <span class="n">ware_check_flag_t</span> <span class="n">check_flag</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>5、ware_module_destroy_table</strong></p>
+<p>删除分库，会删除对应的db文件</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_destroy_table : delete a table(secondary database)</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] table : table information</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_destroy_table</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">table</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>6、ware_module_list_table</strong></p>
+<p>列出所加载的分库，调用完要释放*table_list</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_list_table : list all table(secondary database)</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] table_list : table list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_list_table</span><span class="p">(</span><span class="n">ware_table_list_t</span> <span class="o">**</span><span class="n">table_list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>7、ware_module_release_table_list</strong></p>
+<p>释放ware_table_list_t指针，调用完ware_module_list_table接口后必须调用</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_release_table_list : release list pointer</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] table_list : table list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_release_table_list</span><span class="p">(</span><span class="n">ware_table_list_t</span> <span class="o">**</span><span class="n">table_list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>8、ware_module_set_threshold</strong></p>
+<p>设置分库阈值, 兼容旧接口，但不能调参</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_set_threshold : set threshold of table</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] distance_threshold : distance threshold</span>
+<span class="sr"> * @param [in] similar_threshold : calculate parameter for similar</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_set_threshold</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                  <span class="n">float</span> <span class="n">distance_threshold</span><span class="p">,</span>
+                                  <span class="n">float</span> <span class="n">similar_threshold</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>9、ware_module_add_feature</strong></p>
+<p>指定分库指定记录新增一个特征</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_add_feature : add feature to a specific record</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> * @param [in] ware_feature : feature data</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_add_feature</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                <span class="n">char</span> <span class="o">*</span><span class="n">record_id</span><span class="p">,</span>
+                                <span class="n">ware_feature_t</span> <span class="o">*</span><span class="n">ware_feature</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>10、ware_module_delete_feature</strong></p>
+<p>删除指定记录指定的特征</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_delete_feature : delete feature from a specific record</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> * @param [in] feature_uri : specified feature url</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_delete_feature</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                   <span class="n">char</span> <span class="o">*</span><span class="n">record_id</span><span class="p">,</span>
+                                   <span class="n">char</span> <span class="o">*</span><span class="n">feature_uri</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>11、ware_module_update_feature</strong></p>
+<p>更新指定记录的指定的特征</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_update_feature : delete feature from a specific record</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> * @param [in] ware_feature : feature data</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_update_feature</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                   <span class="n">char</span> <span class="o">*</span><span class="n">record_id</span><span class="p">,</span>
+                                   <span class="n">ware_feature_t</span> <span class="o">*</span><span class="n">ware_feature</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>12、ware_module_list_feature</strong></p>
+<p>列出记录下特征</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_list_feature : list all feature from a specific record</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> * @param [in] list : feature list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_list_feature</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                 <span class="n">char</span> <span class="o">*</span><span class="n">record_id</span><span class="p">,</span>
+                                 <span class="n">ware_ftr_list_t</span> <span class="o">**</span><span class="n">list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>13、ware_module_release_feature_list</strong></p>
+<p>释放内存，调用完ware_module_list_feature调用</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_list_feature : list all feature from a specific record</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> * @param [in] list : feature list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_release_feature_list</span><span class="p">(</span><span class="n">ware_ftr_list_t</span> <span class="o">**</span><span class="n">list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>14、ware_module_add_record</strong></p>
+<p>指定分库中新增一条记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_add_record : add record data to a specific table</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] ware_record : record data</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_add_record</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span> <span class="n">ware_record_t</span> <span class="o">*</span><span class="n">ware_record</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>15、ware_module_delete_record</strong></p>
+<p>删除记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_delete_record : delete a record from a specific table</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] record_id : record id</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_delete_record</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span> <span class="n">char</span> <span class="o">*</span><span class="n">record_id</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>16、ware_module_list_record</strong></p>
+<p>列出指定分库下所有的记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_list_record : list all record of a specific table</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] list : record list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_list_record</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span> <span class="n">ware_record_list_t</span> <span class="o">**</span><span class="n">list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>17、ware_module_release_record_list</strong></p>
+<p>释放内存，调用完ware_module_list_record后调用</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_release_record_list : release list pointer</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] list : record list</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_release_record_list</span><span class="p">(</span><span class="n">ware_record_list_t</span> <span class="o">**</span><span class="n">list</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>18、ware_module_update_record</strong></p>
+<p>更新记录</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_update_record : update a specified record data</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] ware_record : record data</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_update_record</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span> <span class="n">ware_record_t</span> <span class="o">*</span><span class="n">ware_record</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>19、ware_module_alloc_search</strong></p>
+<p>申请检索结果内存，多次检索请求调用一次就够了，检索前调用</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_alloc_search : alloc search result memory</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return ware_search_t * : a pointer to ware_search_t</span>
+<span class="sr"> */</span>
+<span class="n">ware_search_t</span> <span class="o">*</span><span class="n">ware_module_alloc_search</span><span class="p">(</span><span class="n">void</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>20、ware_module_search_record</strong></p>
+<p>检索</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_search_record : search a record from a specified table</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] ware_param : search parameter</span>
+<span class="sr"> * @param [in] ware_search : search result</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_search_record</span><span class="p">(</span><span class="n">ware_table_t</span> <span class="o">*</span><span class="n">ware_table</span><span class="p">,</span>
+                                  <span class="n">ware_param_t</span> <span class="o">*</span><span class="n">ware_param</span><span class="p">,</span>
+                                  <span class="n">ware_search_t</span> <span class="o">*</span><span class="n">ware_search</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>21、ware_module_release_record_search</strong></p>
+<p>释放内存，不需要每次调用完检索后调用</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_release_record_search : release search result pointer</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] ware_table : table information</span>
+<span class="sr"> * @param [in] ware_param : search parameter</span>
+<span class="sr"> * @param [in] ware_search : search result</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_release_record_search</span><span class="p">(</span><span class="n">ware_search_t</span> <span class="o">**</span><span class="n">ware_search</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>22、ware_module_compare_record</strong></p>
+<p>1比1比对接口</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">//</span><span class="o">**</span>
+  <span class="o">*</span> <span class="vi">@brief</span> <span class="n">ware_module_compare_record</span> <span class="p">:</span> <span class="n">compare</span> <span class="n">record</span>
+  <span class="o">*</span>
+  <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">ware_record1</span> <span class="p">:</span> <span class="n">record</span> <span class="n">data</span>
+  <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">ware_record2</span> <span class="p">:</span> <span class="n">record</span> <span class="n">data</span>
+  <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">distance_threshold</span> <span class="p">:</span> <span class="n">distance</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">as</span> <span class="n">a</span> <span class="n">calculate</span> <span class="n">factors</span>
+  <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">similar_threshold</span> <span class="p">:</span> <span class="n">similar</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">as</span> <span class="n">a</span> <span class="n">calculate</span> <span class="n">factors</span>
+  <span class="o">*</span> <span class="vi">@param</span> <span class="o">[</span><span class="k">in</span><span class="o">]</span> <span class="n">compare</span> <span class="p">:</span> <span class="n">compare</span> <span class="n">result</span>
+  <span class="o">*</span>
+  <span class="o">*</span> <span class="vi">@return</span> <span class="n">int</span> <span class="p">:</span> <span class="n">status</span> <span class="n">code</span> <span class="n">of</span> <span class="n">ware_error_t</span>
+  <span class="o">*/</span>
+ <span class="n">int32_t</span> <span class="n">ware_module_compare_record</span><span class="p">(</span><span class="n">ware_record_t</span> <span class="o">*</span><span class="n">ware_record1</span><span class="p">,</span>
+                                    <span class="n">ware_record_t</span> <span class="o">*</span><span class="n">ware_record2</span><span class="p">,</span>
+                                    <span class="n">float</span> <span class="n">distance_threshold</span><span class="p">,</span>
+                                    <span class="n">float</span> <span class="n">similar_threshold</span><span class="p">,</span>
+                                    <span class="n">ware_compare_t</span> <span class="o">*</span><span class="n">compare</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>23、ware_module_check_model_version</strong></p>
+<p>检测识别模型接口</p>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="sr">/**</span>
+<span class="sr"> * @brief ware_module_check_model_version : features whether re-register</span>
+<span class="sr"> *</span>
+<span class="sr"> * @param [in] current_model_version : current model version</span>
+<span class="sr"> * @param [in] last_model_version : last model version</span>
+<span class="sr"> * @param [out] is_update_db : true or false</span>
+<span class="sr"> *</span>
+<span class="sr"> * @return int : status code of ware_error_t</span>
+<span class="sr"> */</span>
+<span class="n">int32_t</span> <span class="n">ware_module_check_model_version</span><span class="p">(</span><span class="n">const</span> <span class="n">char</span> <span class="o">*</span><span class="n">current_model_version</span><span class="p">,</span>
+                                        <span class="n">const</span> <span class="n">char</span> <span class="o">*</span><span class="n">last_model_version</span><span class="p">,</span>
+                                        <span class="n">bool</span> <span class="o">*</span><span class="n">is_update_db</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h1>编译<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h1>
+<div class="highlight-ruby notranslate"><div class="highlight"><pre><span></span><span class="no">X1600平台</span>   <span class="o">.</span><span class="n n-Operator">/</span><span class="n">cicd</span><span class="o">/</span><span class="n">scipts</span><span class="o">/</span><span class="n">build_release</span><span class="o">.</span><span class="n">sh</span> <span class="n">x1600</span>
+<span class="no">Hisi平台</span>    <span class="o">.</span><span class="n n-Operator">/</span><span class="n">cicd</span><span class="o">/</span><span class="n">scipts</span><span class="o">/</span><span class="n">build_release</span><span class="o">.</span><span class="n">sh</span> <span class="n">hisi</span>
+<span class="n">hisiv500</span>   <span class="o">.</span><span class="n n-Operator">/</span><span class="n">cicd</span><span class="o">/</span><span class="n">scipts</span><span class="o">/</span><span class="n">build_release</span><span class="o">.</span><span class="n">sh</span> <span class="n">hisiv500</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="永久链接至标题">¶</a></h1>
+<p>详细的可以参考ware_sample.c</p>
+</div>
+<div class="section" id="id6">
+<h1>技术支持<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h1>
+<p>请联系zhijun.yao&#64;horizon.ai, yongchao.peng&#64;horizon.ai</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; 版权所有 2020, Horizon Robotics
+
+    </p>
+  </div>
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

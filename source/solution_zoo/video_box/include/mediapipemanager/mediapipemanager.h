@@ -1,10 +1,16 @@
+/**
+ * Copyright (c) 2020, Horizon Robotics, Inc.
+ * All rights reserved.
+ * @Author:
+ * @Mail: @horizon.ai
+ */
 #ifndef INCLUDE_MEDIAPIPEMANAGER_H_
 #define INCLUDE_MEDIAPIPEMANAGER_H_
 
+#include "mediapipemanager/meidapipeline.h"
+
 #include <mutex>
 #include <vector>
-
-#include "mediapipemanager/meidapipeline.h"
 
 namespace horizon {
 namespace vision {
@@ -17,7 +23,6 @@ public:
   int AddPipeLine(std::shared_ptr<MediaPipeLine> pipeline);
   const std::vector<std::shared_ptr<MediaPipeLine>> &GetPipeLine();
 
-protected:
 private:
   MediaPipeManager();
   MediaPipeManager(const MediaPipeManager &);
@@ -28,8 +33,6 @@ private:
   bool initialized_;
   uint32_t vp_max_pool_count_;
   std::vector<std::shared_ptr<MediaPipeLine>> media_pipelines_;
-  // Manager Group ID
-  // Manager Pipelines
 };
 
 }  // namespace vision

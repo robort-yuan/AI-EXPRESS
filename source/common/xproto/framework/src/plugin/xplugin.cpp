@@ -33,6 +33,10 @@ void XPlugin::PushMsg(XProtoMessagePtr msg) {
   XMsgQueue::Instance().PushMsg(msg);
 }
 
+int XPlugin::TryPushMsg(XProtoMessagePtr msg) {
+  return XMsgQueue::Instance().TryPushMsg(msg);
+}
+
 }  // namespace xproto
 }  // namespace vision
 }  // namespace horizon

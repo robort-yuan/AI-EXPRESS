@@ -13,6 +13,7 @@ option(PLATFORM_X2 "x2 platform" ON)
 option(PLATFORM_X3 "x3 platform" OFF)
 option(IOT_VIO_API "iot vio api" ON)
 option(X3_MEDIA_CODEC "x3 media codec" ON)
+option(BGR2I420_WITH_LIBYUV "bgr to i420 with libyuv" OFF)
 
 project(build_all)
 
@@ -37,7 +38,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     list(APPEND CMAKE_C_FLAGS "-O3")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ")
 else ()
-    list(APPEND CMAKE_C_FLAGS "-g -O0")
+    list(APPEND CMAKE_C_FLAGS "-g -O0 -fPIC ")
 endif()
 
 list(APPEND CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 ")
@@ -116,6 +117,8 @@ include_directories(
         source/solution_zoo/xstream/methods/vote_method/include
         source/solution_zoo/xstream/methods/FilterSkipFrameMethod/include
         source/solution_zoo/xstream/methods/ssd_method/include
+        source/solution_zoo/xstream/methods/FaceSnapFilterMethod/include
+        source/solution_zoo/xstream/methods/lowpassfiltermethod/include
         # other utilities
         source/common/xstream/imagetools/include
         deps/ipc_tracking/include
@@ -173,16 +176,13 @@ endif()
 add_subdirectory(source/common/xproto/plugins/websocketplugin)
 if (${PLATFORM_X3})
 add_subdirectory(source/common/xproto/plugins/uvcplugin)
+add_subdirectory(source/solution_zoo/video_box/)
 if (${X3_MEDIA_CODEC})
 add_subdirectory(source/common/xstream/media_codec)
 endif()
 endif()
 add_subdirectory(source/common/xstream/framework)
 add_subdirectory(source/common/xstream/vision_type)
-add_subdirectory(source/common/xstream/tutorials/stage1)
-add_subdirectory(source/common/xstream/tutorials/stage2)
-add_subdirectory(source/common/xstream/tutorials/stage3)
-add_subdirectory(source/common/xstream/tutorials/stage4)
 add_subdirectory(source/common/xstream/methods/fasterrcnnmethod)
 add_subdirectory(source/common/xstream/imagetools)
 add_subdirectory(source/common/viowrapper)
@@ -201,6 +201,8 @@ add_subdirectory(source/solution_zoo/xstream/methods/plate_vote_method)
 add_subdirectory(source/solution_zoo/xstream/methods/FilterSkipFrameMethod)
 add_subdirectory(source/solution_zoo/xstream/methods/vote_method)
 add_subdirectory(source/solution_zoo/xstream/methods/ssd_method)
+add_subdirectory(source/solution_zoo/xstream/methods/FaceSnapFilterMethod)
+add_subdirectory(source/solution_zoo/xstream/methods/lowpassfiltermethod)
 
 add_subdirectory(source/solution_zoo/face/)
 add_subdirectory(source/solution_zoo/body/)

@@ -139,7 +139,6 @@ bool UvcConfig::CheckConfig() {
   if (json_.isMember("bitrate")) {
     bitrate_ = json_["bitrate"].asInt();
   }
-
   if (json_.isMember("h264_encode_time")) {
     h264_encode_time_ = json_["h264_encode_time"].asInt();
   }

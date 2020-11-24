@@ -2,6 +2,9 @@
 <html>
 
 <head>
+  <!-- <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" /> -->
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1" />
@@ -20,21 +23,9 @@
 </head>
 
 <body>
-  <div class="wrapper">
-    <div class="video">
-      <div class="cont">
-        <div class="cam" id="cam">
-          <img class="logo1" src="../assets/images/usbcam-top.png" alt="">
-          <img class="logo2" src="../assets/images/aionhorizon.png" alt="">
-          <img src="" class="layer" id="video-1" alt="">
-          <canvas class="canvas" id="canvas-1"></canvas>
-          <canvas class="canvas" id="canvas-2"></canvas>
-          <ul class="canvas info-panel-1">
-          </ul>
-          <ul class="canvas info-panel-2">
-          </ul>
-        </div>
-      </div>
+  <div id="wrapper">
+    <div id="wrapper-cnt">
+      <!-- <div class="video"></div> -->
       <ul id="message">
         <p class="message-t">
           <a href="https://developer.horizon.ai/" target="__blank">OpenExplorer 首页链接</a>
@@ -42,7 +33,7 @@
         <li id="message-t">智能信息展示</li>
         <li>
           <input class="message-show" type="checkbox" name="item" dataType="boxes" checked="true">
-          <label>检测框（人体框，人头框，人脸框，车、非机动车检测框，其他检测框（宠物、椅子等））</label>
+          <label>检测框（人体框，人头框，人脸框，车、非机动车检测框，停车位，其他检测框（宠物、椅子等））</label>
         </li>
         <li>
           <input class="message-show" type="checkbox" name="item" dataType="handBox" checked="true">
@@ -65,6 +56,10 @@
           <label>分类信息（年龄性别、口罩眼镜等）</label>
         </li>
         <li>
+          <input class="message-show" type="checkbox" name="item" dataType="corner" checked="true">
+          <label>角点</label>
+        </li>
+        <li>
           <input class="message-show" type="checkbox" name="item" dataType="floatMatrixs" checked="true">
           <label>分割</label>
         </li>
@@ -80,20 +75,24 @@
           <input class="message-show" type="checkbox" name="item" dataType="depth" disabled='true'>
           <label>深度</label>
         </li>
-      </ul>
-    </div>
-    <div class="performance">
-      <ul id="performance-message">
+        <li>
+          <input class="message-show" type="checkbox" name="item" dataType="performance">
+          <label>性能数据</label>
+        </li>
       </ul>
       <div class="message-change message-h">
-        <img src="../assets/images/arrow-right.png" alt="">
+        <img src="../assets/images/menu.png" alt="">
       </div>
       <div class="message-change message-v">
-        <img src="../assets/images/arrow-left.png" alt="">
+        <img src="../assets/images/close.png" alt="">
       </div>
     </div>
+    <div id="performance">
+      <ul id="performance-message">
+      </ul>
+    </div>
   </div>
-  <script src="./page1/main.js"></script>
+  <script src="./render.js"></script>
   <script src="./main.js"></script>
 </body>
 

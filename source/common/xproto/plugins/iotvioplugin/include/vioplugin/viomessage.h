@@ -28,7 +28,10 @@
 #include "xproto_msgtype/vioplugin_data.h"
 #include "iotviomanager/vio_data_type.h"
 #include "iotviomanager/viopipeline.h"
-
+#ifdef USE_MC
+#include "xproto_msgtype/uvcplugin_data.h"
+using horizon::vision::xproto::basic_msgtype::APImageMessage;
+#endif
 namespace horizon {
 namespace vision {
 namespace xproto {
@@ -50,6 +53,7 @@ struct ImageVioMessage : VioMessage {
 
   void FreeImage();
   void FreeImage(int tmp);  // 用于释放x3临时回灌功能的接口
+  void FreeMultiImage();  // 用于释放x3多路接口
 
  private:
   std::shared_ptr<VioPipeLine> vio_pipeline_;
@@ -78,9 +82,21 @@ struct DropImageVioMessage : VioMessage {
   std::string Serialize() { return "No need serialize"; }
 
   void FreeImage();
+  void FreeMultiImage();  // 用于释放x3多路接口
 
  private:
   std::shared_ptr<VioPipeLine> vio_pipeline_;
+};
+
+struct MultiVioMessage : VioMessage {
+ public:
+  MultiVioMessage() {
+    LOGD << "MultiVioMessage()";
+    type_ = TYPE_MULTI_IMAGE_MESSAGE;}
+  std::vector<std::shared_ptr<ImageVioMessage>> multi_vio_img_;
+  ~MultiVioMessage() {
+    LOGD << "~MultiVioMessage";
+    multi_vio_img_.clear();}
 };
 
 }  // namespace vioplugin

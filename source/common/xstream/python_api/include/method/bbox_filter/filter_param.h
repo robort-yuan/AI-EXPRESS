@@ -7,8 +7,8 @@
  * @date      2020-01-03
  */
 
-#ifndef XSTREAM_TUTORIALS_STAGE1_FILTER_PARAM_H_
-#define XSTREAM_TUTORIALS_STAGE1_FILTER_PARAM_H_
+#ifndef XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_FILTER_PARAM_H_
+#define XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_FILTER_PARAM_H_
 
 #include <string>
 #include "hobotxsdk/xstream_data.h"
@@ -47,4 +47,4 @@ class FilterParam : public InputParam {
 };
 
 }  // namespace xstream
-#endif  // XSTREAM_TUTORIALS_STAGE1_FILTER_PARAM_H_
+#endif  // XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_FILTER_PARAM_H_

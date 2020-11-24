@@ -16,34 +16,158 @@ ul li, ol li {
   list-style: none;
 }
 
-.wrapper {
+#wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-  /* overflow: hidden; */
-  /* min-width: 960px;
-  min-height: 540px; */
+  background: #ccc;
 }
 
-.performance {
-  height: 40px;
-  padding: 10px;
+#performance {
+  position: relative;
+  display: none;
   background: #fff;
+  box-shadow: 0 0 5px 0 rgba(0,0,0,.25);
 }
 
-.performance #performance-message li {
-  display: inline-block;
-  margin-right: 20px;
+#performance #performance-message {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#performance #performance-message li {
+  width: 25%;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+}
+
+#performance #performance-message li:nth-of-type(5),
+#performance #performance-message li:nth-of-type(6),
+#performance #performance-message li:nth-of-type(7),
+#performance #performance-message li:nth-of-type(8) {
+  height: 20px;
+  line-height: 10px;
+}
+
+.message-change {
+  position: absolute;
+  top: 15px;
+  right: 10px;
+  /* transform: translateY(-50%); */
+  cursor: pointer;
+  z-index: 9;
+}
+
+.message-change img {
+  display: block;
+  height: 30px;
+}
+
+.message-h {
+  display: block;
+}
+
+.message-v {
+  display: none;
+  /* right: 360px; */
+}
+
+#message {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  top: 0;
+  display: none;
+  width: 350px;
+  height: 100%;
+  padding: 20px;
+  background: #eee;
+}
+
+#message-t {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+#message li {
+  margin-top: 20px;
+}
+
+#message li label {
+  font-size: 16px;
+}
+
+input[type='checkbox'] {
+  width: 25px;
+  height: 22px;
+  margin-right: 10px;
+  -webkit-appearance: none;
+  background: #fff url('../assets/images/noselect.png');
+  background-size: 25px 22px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+input[disabled='true'] {
+  background: #fff url('../assets/images/disabled.png');
+  background-size: 25px 22px;
+  cursor: no-drop;
+}
+
+input[type='checkbox']:checked {
+  background: #fff url('../assets/images/checked.png');
+  /* */
+  background-size: 25px 22px;
+}
+
+#wrapper-cnt {
+  position: relative;
+  flex: 1;
+  background: #3d3950;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 .video {
   position: relative;
-  flex: 1;
-  background: rgb(61, 57, 80);
-  /* border-bottom: 10px solid #f00; */
+  box-sizing: border-box;
 }
+
+.two {
+  border-right: 3px solid #8e8ba3;
+}
+
+.four, .six, .eight {
+  border-right: 3px solid #8e8ba3;
+  border-bottom: 3px solid #8e8ba3;
+}
+
+.two#video-wrap-8082,
+.four#video-wrap-8082,
+.four#video-wrap-8086,
+.six#video-wrap-8084,
+.six#video-wrap-8090,
+.eight#video-wrap-8084,
+.eight#video-wrap-8090,
+.eight#video-wrap-8096 {
+  border-right: none;
+}
+
+.four#video-wrap-8084,
+.four#video-wrap-8086,
+.six#video-wrap-8086,
+.six#video-wrap-8088,
+.six#video-wrap-8090,
+.eight#video-wrap-8092,
+.eight#video-wrap-8094,
+.eight#video-wrap-8096 {
+  border-bottom: none;
+} 
 
 .video .cont {
   display: flex;
@@ -56,8 +180,6 @@ ul li, ol li {
 .video .cont .cam {
   position: relative;
   overflow: hidden;
-  /* width: 500px;
-  height: 244px; */
 }
 
 .cam .logo1 {
@@ -94,79 +216,6 @@ ul li, ol li {
 
 .cam .info-panel-2 {
   z-index: 3;
-}
-
-#message {
-  z-index: 5;
-  position: absolute;
-  right: 0;
-  top: 0;
-  display: none;
-  width: 350px;
-  height: 100%;
-  padding: 20px;
-  background: #eee;
-}
-
-#message-t {
-  font-size: 18px;
-  font-weight: 500;
-}
-
-#message li {
-  margin-top: 20px;
-}
-
-#message li label {
-  font-size: 16px;
-}
-
-.subtitle {
-  width: 100%;
-  text-align: center;
-}
-
-input[type='checkbox'] {
-  width: 25px;
-  height: 22px;
-  margin-right: 10px;
-  -webkit-appearance: none;
-  background: #fff url('../assets/images/noselect.png');
-  background-size: 25px 22px;
-  vertical-align: middle;
-  cursor: pointer;
-}
-
-input[disabled='true'] {
-  background: #fff url('../assets/images/disabled.png');
-  background-size: 25px 22px;
-  cursor: no-drop;
-}
-
-input[type='checkbox']:checked {
-  background: #fff url('../assets/images/checked.png');
-  /* */
-  background-size: 25px 22px;
-}
-
-.message-change {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.message-change img {
-  width: 20px;
-}
-
-.message-h {
-  display: block;
-}
-
-.message-v {
-  display: none;
 }
 
 .alert {
@@ -239,3 +288,9 @@ input[type='checkbox']:checked {
 .attribute-panel ol li span.gesture {
   font-size: 40px;
 }
+
+/* h1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+} */

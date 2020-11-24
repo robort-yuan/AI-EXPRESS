@@ -27,7 +27,7 @@ do {									\
 	struct timeval ts;					\
 	gettimeofday(&ts, NULL);			\
 	snprintf(str, sizeof(str), "%ld.%06ld", ts.tv_sec, ts.tv_usec);			\
-	pr_err("[%s]%s[%d] E: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
+	pr_err("[%s]%s[%d]: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
 } while (0)
 
 #define vio_warn(format, ...)			\
@@ -36,7 +36,7 @@ do {									\
 	struct timeval ts;					\
 	gettimeofday(&ts, NULL);			\
 	snprintf(str, sizeof(str), "%ld.%06ld", ts.tv_sec, ts.tv_usec);			\
-	pr_warn("[%s]%s[%d] w: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
+	pr_warn("[%s]%s[%d]: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
 } while (0)
 
 #define vio_log(format, ...)			\
@@ -45,7 +45,7 @@ do {									\
 	struct timeval ts;					\
 	gettimeofday(&ts, NULL);			\
 	snprintf(str, sizeof(str), "%ld.%06ld", ts.tv_sec, ts.tv_usec);			\
-	pr_info("[%s]%s[%d] L: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
+	pr_info("[%s]%s[%d]: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
 } while (0)
 
 #if XJ3_VIO_DEBUG
@@ -55,7 +55,7 @@ do {									\
 	struct timeval ts;					\
 	gettimeofday(&ts, NULL);			\
 	snprintf(str, sizeof(str), "%ld.%06ld", ts.tv_sec, ts.tv_usec);			\
-	pr_debug("[%s]%s[%d] D: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
+	pr_debug("[%s]%s[%d]: "format"\n", str, __func__, __LINE__, ##__VA_ARGS__);\
 } while (0)
 #else
 #define vio_dbg(format, ...)

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -11,14 +11,13 @@
 #include <vector>
 
 #include "mediapipemanager/basicmediamoudle.h"
-
 #include "hb_comm_vdec.h"
 
 namespace horizon {
 namespace vision {
 class VdecModule : public BasicMediaModule {
 public:
-  VdecModule(/* args */);
+  VdecModule();
   ~VdecModule();
   virtual int Init(uint32_t group_id,
                    const PipeModuleInfo *module_info) override;
@@ -29,12 +28,11 @@ public:
   virtual int Stop() override;
   virtual int DeInit() override;
 
-protected:
 private:
   static std::once_flag flag_;
   uint32_t group_id_;
   uint32_t timeout_;
-  // VIDEO_FRAME_S video_frame_;
+
   uint32_t frameDepth_;
   uint32_t buffer_index_;
   std::vector<VIDEO_FRAME_S> buffers_;

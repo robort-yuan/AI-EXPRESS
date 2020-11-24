@@ -21,35 +21,36 @@ namespace xstream {
 class CppContext;
 class CContext;
 
-/// 数据状态
+/// Data State
 enum class DataState {
-  /// 有效
+  /// valid
   VALID = 0,
-  /// 被过滤掉
+  /// filtered
   FILTERED = 1,
-  /// 不可见
+  /// invisible
   INVISIBLE = 2,
-  /// 消失
+  /// disappeared
   DISAPPEARED = 3,
-  /// 无效
+  /// invalid
   INVALID = 4,
 };
 
-/// 数据结构基类，框，lmk等等的基类
+/// base class of data structure.
+/// The customer's data structure needs to inherit it.
 struct BaseData {
   BaseData();
   virtual ~BaseData();
-  /// 类型
+  /// type
   std::string type_ = "";
-  /// 名称
+  /// name
   std::string name_ = "";
-  /// 错误码
+  /// error code
   int error_code_ = 0;
-  /// 错误信息
+  /// error detail info
   std::string error_detail_ = "";
-  /// C数据结构上下文
+  /// context of C structure
   std::shared_ptr<CContext> c_data_;
-  /// 状态
+  /// data status
   DataState state_ = DataState::VALID;
 };
 
@@ -61,7 +62,7 @@ struct BaseDataVector : public BaseData {
   std::vector<BaseDataPtr> datas_;
 };
 
-/// 类模板，value可以为任意类型的数据，比如vision_type里定义的各种基础数据
+/// Wrap other data structures into derived classes of BaseData
 template <typename Dtype>
 struct XStreamData : public BaseData {
   Dtype value;
@@ -69,7 +70,7 @@ struct XStreamData : public BaseData {
   explicit XStreamData(const Dtype &val) { value = val; }
 };
 
-/// 输入数据的自定义参数
+/// param of inputdata
 class InputParam {
  public:
   explicit InputParam(const std::string &unique_name) {
@@ -89,20 +90,25 @@ class InputParam {
 typedef std::shared_ptr<InputParam> InputParamPtr;
 
 /**
- * \brief 用于关闭Method实例的自定义参数
+ * \brief pre-difined param for method
  */
 class DisableParam : public InputParam {
  public:
   enum class Mode {
-    /// 透传输入数据到输出，要求输入数据大小与输出一致
+    /// passthrough mode: use inputdata as outputdata;
+    /// slot size of outputdata and inputdata must be equal;
     PassThrough,
-    /// 拷贝先验数据到输出，要求先验数据大小与输出大小一致
+    /// use pre-difined data as outputdata;
+    /// slot size of predifine data and outputdata must be equal;
     UsePreDefine,
-    /// 令每个输出都是INVALID的BaseData
+    /// set outputdata status as DataState::INVALID
     Invalid,
-    /// 按顺序逐个透传输入数据到输出
-    /// 如果输入数据大小多于输出，则只透传前面的slot。
-    /// 如果输入数据大小少于输出，则多余的输出slot为Invalid的BaseData。
+    /// flexibly passthrough mode
+    /// 1. passthrough inputdata to outputdata in order
+    /// 2. if slot size of inputdata greater than outputdata,
+    ///    only use the first few slots.
+    /// 3. if slot size of inputdata less than outputdata,
+    ///    set status of last few slots invalid.
     BestEffortPassThrough
   };
   explicit DisableParam(const std::string &unique_name,
@@ -113,13 +119,13 @@ class DisableParam : public InputParam {
   virtual ~DisableParam() = default;
   virtual std::string Format() { return unique_name_ + " : disabled"; }
   Mode mode_;
-  /// 先验数据，用于填充Method输出
+  /// pre-difined data, used in Mode::UsePreDefine
   std::vector<BaseDataPtr> pre_datas_;
 };
 
 typedef std::shared_ptr<DisableParam> DisableParamPtr;
 
-/// json格式的SDK输入参数
+/// json format parameter
 class SdkCommParam : public InputParam {
  public:
   SdkCommParam(const std::string &unique_name, const std::string &param)
@@ -131,46 +137,46 @@ class SdkCommParam : public InputParam {
   virtual ~SdkCommParam() = default;
 
  public:
-  std::string param_;  // json格式
+  std::string param_;  // json format
 };
 typedef std::shared_ptr<SdkCommParam> CommParamPtr;
 
-/// 输入数据类型
+/// InputData for XStreamSDK
 struct InputData {
-  /// 用户输入的数据，比如图片channel、时间戳、框等等
+  /// input data, such as image, timestamp, box..
   std::vector<BaseDataPtr> datas_;
-  /// 当前请求自定义的参数
+  /// InputParam
   std::vector<InputParamPtr> params_;
-  /// 数据源 id 用于多路输入时区分输入源,单一源情况赋值为 0
+  /// input_data source id, used in multi-input; default value 0(single-input)
   uint32_t source_id_ = 0;
-  /// 透传的数据，该数据会透传到OutputData::context_ 字段
+  /// context_ pasthroughed to OutputData::context_
   const void *context_ = nullptr;
 };
 typedef std::shared_ptr<InputData> InputDataPtr;
 
-/// 输出数据类型
+/// OutputData for XStreamSDK
 struct OutputData {
-  /// 错误码
+  /// error code
   int error_code_ = 0;
-  /// 错误信息
+  /// error info
   std::string error_detail_ = "";
-  /// 当该OutputData为给某个Method的定向回调结果时，该字段用于指示Method名称
+  /// used in Node's outputdata, represents node's name
   std::string unique_name_ = "";
-  /// 多路输出结果名称
+  /// outputdata name
   std::string output_type_ = "";
-  /// 输出结果
+  /// output data, such as detection_box, landmarks..
   std::vector<BaseDataPtr> datas_;
-  /// 从InputData透传过来的数据
+  /// passthroughed from inputdata
   const void *context_ = nullptr;
-  /// 该结果的序列号
+  /// sequence_id in single-input
   int64_t sequence_id_ = 0;
-  /// 该结果是属于那个输入源产生的结果
+  /// input_data source id, used in multi-input; default value 0(single-input)
   uint32_t source_id_ = 0;
   uint64_t global_sequence_id_ = 0;
 };
 typedef std::shared_ptr<OutputData> OutputDataPtr;
 
-/// 回调函数类型
+/// callback func
 typedef std::function<void(OutputDataPtr)> XStreamCallback;
 
 }  // namespace xstream

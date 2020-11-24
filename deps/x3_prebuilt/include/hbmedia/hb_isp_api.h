@@ -442,9 +442,23 @@ extern int HB_ISP_GetCSCAttr(uint8_t pipeId, ISP_CSC_ATTR_S *pstCSCAttr);
 extern int HB_ISP_SetSceneModesAttr(uint8_t pipeId, const ISP_SCENE_MODES_ATTR_S *pstSceneModesAttr);
 extern int HB_ISP_GetSceneModesAttr(uint8_t pipeId, ISP_SCENE_MODES_ATTR_S *pstSceneModesAttr);
 
+/* af/ae_5bin/awb zone info */
+typedef struct HB_ISP_ZONE_ATTR_S {
+	uint8_t u8Horiz;
+	uint8_t u8Vert;
+} ISP_ZONE_ATTR_S;
+
+extern int HB_ISP_GetAwbZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S *awbZoneInfo);
+extern int HB_ISP_GetAfZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S *afZoneInfo);
+extern int HB_ISP_GetAe5binZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S *ae5binZoneInfo);
+extern int HB_ISP_SetAwbZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S awbZoneInfo);
+extern int HB_ISP_SetAfZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S afZoneInfo);
+extern int HB_ISP_SetAe5binZoneInfo(uint8_t pipeId, ISP_ZONE_ATTR_S ae5binZoneInfo);
+
 /* Statistics */
 #define HB_ISP_MAX_AWB_ZONES (33 * 33)
 #define HB_ISP_AF_ZONES_COUNT_MAX (33 * 33)
+#define HB_ISP_MAX_AE_5BIN_ZONES (33 * 33)
 #define HB_ISP_FULL_HISTOGRAM_SIZE 1024
 
 typedef struct HB_ISP_STATISTICS_AWB_ZONE_ATTR_S {
@@ -453,9 +467,22 @@ typedef struct HB_ISP_STATISTICS_AWB_ZONE_ATTR_S {
 	uint32_t u32Sum;
 } ISP_STATISTICS_AWB_ZONE_ATTR_S;
 
+typedef struct HB_ISP_STATISTICS_AE_5BIN_ZONE_ATTR_S {
+	uint16_t u16Hist0;
+	uint16_t u16Hist1;
+	uint16_t u16Hist3;
+	uint16_t u16Hist4;
+} ISP_STATISTICS_AE_5BIN_ZONE_ATTR_S;
+
 extern int HB_ISP_GetAeFullHist(uint8_t pipeId, uint32_t *pu32AeFullHist);
-extern int HB_ISP_GetAwbZone(uint8_t pipeId, ISP_STATISTICS_AWB_ZONE_ATTR_S *pstAwbZonesAttr);
+extern int HB_ISP_GetAwbZoneHist(uint8_t pipeId, ISP_STATISTICS_AWB_ZONE_ATTR_S *pstAwbZonesAttr);
+extern int HB_ISP_GetAe5binZoneHist(uint8_t pipeId, ISP_STATISTICS_AE_5BIN_ZONE_ATTR_S *pst32Ae5bin);
+extern int HB_ISP_GetAfZoneHist(uint8_t pipeId, af_stats_data_t *pstAfZonesAttr);
 
 extern int HB_ISP_ApiCtrl(uint8_t pipeId, uint8_t direction, int type, int cmd, uint32_t *val);
+
+extern int HB_ISP_GetVDTTimeOut(uint8_t pipeId, uint8_t vdt_type, uint64_t timeout);
+extern int HB_ISP_GetAfKernelInfo(uint8_t pipeId, uint32_t *af_kernel);
+extern int HB_ISP_SetAfKernelInfo(uint8_t pipeId, uint32_t af_kernel);
 
 #endif

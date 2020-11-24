@@ -39,7 +39,7 @@ target_link_libraries(method_factory PRIVATE
 
 target_link_libraries(xstream_internal PRIVATE
     method_factory
-    xstream-framework
+    xstream
     bpu_predict
     ipc_tracking
     hobotlog
@@ -54,5 +54,5 @@ pybind11_add_module(vision_type
     #src/vision_type/image_frame.cpp
 )
 target_link_libraries(vision_type PRIVATE
-    xstream-framework
+    xstream
 )

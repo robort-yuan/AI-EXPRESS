@@ -125,6 +125,20 @@ void ImageVioMessage::FreeImage() {
   }
 }
 
+void ImageVioMessage::FreeMultiImage() {
+#ifdef X3_IOT_VIO
+  if (image_.size() > 0) {
+    // free multi pym image
+    LOGI << "begin remove multi vio slot";
+    auto res = vio_pipeline_->FreeMultiPymInfo(image_);
+    if (res) {
+      LOGE << "vio pipeline free multi vio pym info failed";
+    }
+    image_.clear();
+  }
+#endif
+}
+
 DropVioMessage::DropVioMessage(uint64_t timestamp, uint64_t seq_id) {
   type_ = TYPE_DROP_MESSAGE;
   time_stamp_ = timestamp;
@@ -190,6 +204,20 @@ void DropImageVioMessage::FreeImage() {
     }
     image_.clear();
   }
+}
+
+void DropImageVioMessage::FreeMultiImage() {
+#ifdef X3_IOT_VIO
+  if (image_.size() > 0) {
+    // free multi pym image
+    LOGI << "begin remove multi vio slot";
+    auto res = vio_pipeline_->FreeMultiPymInfo(image_);
+    if (res) {
+      LOGE << "vio pipeline free multi vio pym info failed";
+    }
+    image_.clear();
+  }
+#endif
 }
 
 }  // namespace vioplugin

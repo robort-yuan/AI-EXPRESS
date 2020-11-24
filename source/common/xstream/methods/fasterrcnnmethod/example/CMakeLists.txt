@@ -10,7 +10,7 @@ set(OpenCVLib opencv_world)
 set(VioWrapperLib viowrapper)
 set(BASE_LIBRARIES hobotlog ${BASE_LIBRARIES} ${OpenCVLib})
 
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream -Wl,--no-whole-archive)
 
 add_executable(FasterRCNNMethod_example
         main.cpp

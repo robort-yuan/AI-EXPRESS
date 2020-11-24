@@ -39,6 +39,9 @@ class XPlugin : public std::enable_shared_from_this<XPlugin> {
   virtual int GetPluginMsgCount() = 0;
   virtual int GetPluginMsgLimit() = 0;
   virtual void SetPluginMsgLimit(int msg_limit_count) = 0;
+  // plugin处理msg时间监控
+  virtual int GetMsgMonitorTime() = 0;
+  virtual void SetMsgMonitorTime(int msg_monitor_time) = 0;
 
   virtual std::string desc() const {
     return "XPlugin";
@@ -51,6 +54,8 @@ class XPlugin : public std::enable_shared_from_this<XPlugin> {
   void UnRegisterMsg(const std::string& type);
   // 向总线推送消息
   void PushMsg(XProtoMessagePtr msg);
+  // 向总线推送消息
+  int TryPushMsg(XProtoMessagePtr msg);
 };
 using XPluginPtr = std::shared_ptr<XPlugin>;
 

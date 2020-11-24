@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <tuple>
 
 #include "BasicUsageEnvironment.hh"
 #include "liveMedia.hh"
@@ -36,7 +37,7 @@ class AudioG711Sink : public MediaSink {
       int buffer_count = 2);  // identifies the stream itself (optional)
 
   virtual ~AudioG711Sink();
-  void SetFileName(const std::string &file_name);
+  void SetFileName(std::tuple<bool, std::string> file);
   int SaveToFile(void *data, const int data_siz);
   void SetChannel(int channel);
   int GetChannel(void) const;
@@ -68,6 +69,8 @@ class AudioG711Sink : public MediaSink {
 
   char *stream_id_;
   std::string file_name_;
+  bool save_file_;
+  std::ofstream outfile_;
   int channel_;
   bool first_frame_;
   bool waiting_;

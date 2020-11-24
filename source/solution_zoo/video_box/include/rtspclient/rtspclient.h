@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <tuple>
 
 #include "BasicUsageEnvironment.hh"
 #include "H264VideoRTPSource.hh"
@@ -43,21 +44,25 @@ public:
 // "StreamClientState" structure for each "RTSPClient".  To do this, we subclass
 // "RTSPClient", and add a "StreamClientState" field to the subclass:
 
-class ourRTSPClient : public RTSPClient
-{
+class ourRTSPClient : public RTSPClient {
  public:
   static ourRTSPClient *createNew(UsageEnvironment &env, char const *rtspURL,
                                   int verbosityLevel = 0,
                                   char const *applicationName = NULL,
                                   portNumBits tunnelOverHTTPPortNum = 0);
-  void SetOutputFileName(const std::string &file_name);
-  const std::string &GetOutputFileName(void);
+  void SetOutputFileName(const bool save_stream, const std::string &file_name);
+  std::tuple<bool, std::string> GetOutputFileName(void);
   void SetChannel(int channel);
   int GetChannel(void) const;
   // virtual ~ourRTSPClient();
 
   void SetTCPFlag(const bool flag) { tcp_flag_ = flag; }
   bool GetTCPFlag() { return tcp_flag_; }
+
+  void SetFrameMaxSize(const int frame_max_size) {
+    frame_max_size_ = frame_max_size;
+  }
+  int GetFrameMaxSize() { return frame_max_size_; }
 
   void Stop();
 
@@ -74,13 +79,16 @@ class ourRTSPClient : public RTSPClient
   std::string file_name_;
   int channel_;
   bool tcp_flag_;
+  int frame_max_size_;
   bool has_shut_down;
+  bool save_stream_;
 };
 
 // The main streaming routine (for each "rtsp://" URL):
 ourRTSPClient *openURL(UsageEnvironment &env, char const *progName,
-              char const *rtspURL, const bool tcp_flag,
-              const std::string &file_name);
+                       char const *rtspURL, const bool tcp_flag,
+                       const int frame_max_size,
+                       const std::string &file_name, const bool save_stream);
 void shutdownStream(RTSPClient *rtspClient, int exitCode = 1);
 
 #endif  // INCLUDE_RTSPCLIENT_SMARTPLUGIN_H_

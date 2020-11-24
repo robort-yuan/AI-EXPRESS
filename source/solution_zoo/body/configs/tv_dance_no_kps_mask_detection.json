@@ -11,7 +11,9 @@
     "hand_lmk",
     "gesture_vote",
     "hand_disappeared_track_id_list",
-    "bound_rect_filter"
+    "bound_rect_filter",
+    "age",
+    "gender"
   ],
   "workflow": [
     {
@@ -148,6 +150,45 @@
         "gesture_vote"
       ],
       "method_config_file": "gesture_voting.json"
+    },
+    {
+      "method_type": "CNNMethod",
+      "unique_name": "age_gender",
+      "inputs": [
+        "face_final_box",
+        "image"
+      ],
+      "outputs": [
+        "age_list",
+        "gender_list"
+      ],
+      "method_config_file": "age_gender.json"
+    },
+    {
+      "method_type": "VoteMethod",
+      "unique_name": "age_voting",
+      "inputs": [
+        "face_final_box",
+        "disappeared_track_id",
+        "age_list"
+      ],
+      "outputs": [
+        "age"
+      ],
+      "method_config_file": "age_voting.json"
+    },
+    {
+      "method_type": "VoteMethod",
+      "unique_name": "gender_voting",
+      "inputs": [
+        "face_final_box",
+        "disappeared_track_id",
+        "gender_list"
+      ],
+      "outputs": [
+        "gender"
+      ],
+      "method_config_file": "gender_voting.json"
     }
   ]
 }

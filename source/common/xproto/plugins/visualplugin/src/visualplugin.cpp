@@ -72,13 +72,18 @@ int VisualPlugin::Init() {
   }
   server_param_.data_buf_size = config_->data_buf_size_;
   server_param_.packet_size = config_->packet_size_;
+  snprintf(server_param_.input_filename, sizeof(server_param_.input_filename),
+  "%s", config_->input_h264_filename_.c_str());
 
-  RegisterMsg(TYPE_IMAGE_MESSAGE,
-    std::bind(&VisualPlugin::FeedVideo, this, std::placeholders::_1));
-  if (!config_->vlc_support_) {
-    RegisterMsg(TYPE_SMART_MESSAGE,
-      std::bind(&VisualPlugin::FeedSmart, this, std::placeholders::_1));
+  if (!config_->local_forward_) {
+    RegisterMsg(TYPE_IMAGE_MESSAGE,
+      std::bind(&VisualPlugin::FeedVideo, this, std::placeholders::_1));
+    if (!config_->vlc_support_) {
+      RegisterMsg(TYPE_SMART_MESSAGE,
+        std::bind(&VisualPlugin::FeedSmart, this, std::placeholders::_1));
+    }
   }
+
   // 调用父类初始化成员函数注册信息
   XPluginAsync::Init();
 
@@ -105,7 +110,7 @@ int VisualPlugin::Start() {
 
   server_run(&server_param_);
   usleep(500);
-  if(nullptr == worker_) {
+  if (nullptr == worker_ && !config_->local_forward_) {
     stop_flag_ = false;
     fifo_open_flag_ = false;
     worker_ = std::make_shared<std::thread>(&VisualPlugin::EncodeThread, this);

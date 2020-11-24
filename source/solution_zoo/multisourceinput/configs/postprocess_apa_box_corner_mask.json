@@ -1,0 +1,39 @@
+{
+    "post_type": "detect",
+    "net_info": {
+      "model_out_sequence": [
+        {
+          "name": "parking_box",
+          "type": "orient_bbox"
+        },
+		{
+          "name": "parking_box_reg",
+          "type": "invalid"
+        },
+		{
+          "name": "parking_box_ctr",
+          "type": "invalid"
+        },
+		{
+          "name": "parking_box_ori",
+          "type": "invalid"
+        },
+		{
+          "name": "mask",
+          "type": "mask"
+        },
+		{
+          "name": "corner",
+          "type": "corner"
+        }
+      ]
+    },
+    "method_outs": ["parking_box", "mask", "corner"],
+	"iou_threshold": 0.5,
+	"pre_nms_top_n": 4095,
+	"post_nms_top_n": 100,
+	"box_score_thresh": 0.55,
+	"corner_score_threshold": 0.3,
+    "mask_confidence": 0,
+    "model_file_path": "../../models/apa_box_corner_mask.hbm"
+}

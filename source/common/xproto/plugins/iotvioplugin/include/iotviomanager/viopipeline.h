@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include "horizon/vision_type/vision_type.hpp"
 #include "iotviomanager/vio_data_type.h"
 #include "iotviomanager/vinmodule.h"
 #include "iotviomanager/vpsmodule.h"
@@ -21,6 +22,8 @@ namespace horizon {
 namespace vision {
 namespace xproto {
 namespace vioplugin {
+
+using hobot::vision::PymImageFrame;
 
 class VioPipeLine {
  public:
@@ -53,23 +56,12 @@ class VioPipeLine {
   int FreePymInfo(pym_buffer_t *pym_info);
   int FreeFeedbackSrcInfo(hb_vio_buffer_t *feed_info);
 #endif
-  /**
-   * multi pipeline sync info, general two camera source
-   * 1.GetMultInfo: GetMultPymInfo, GetMultIpuInfo
-   * 2.SetMultInfo: SetMultFbPymProcess
-   * 3.FreeMultInfo: FreeMultIpuInfo, FreeMultPymInfo
-   *
-   *  info_type is defined in vio_data_type.h
-   */
-  int GetMultInfo(uint32_t info_type, void *data);
-  int SetMultInfo(uint32_t info_type, void *data);
-  int FreeMultInfo(uint32_t info_type, void *data);
-#if 0
-  int GetMultIpuInfo(IotMultSrcBuffer *mult_ipu_info);
-  int GetMultPymInfo(IotMultPymBuffer *mult_pym_info);
-  int FreeMultIpuInfo(IotMultSrcBuffer *mult_ipu_info);
-  int FreeMultPymInfo(IotMultPymBuffer *mult_pym_info);
-#endif
+  int GetMultiPymInfo(std::vector<std::shared_ptr<PymImageFrame>> &pym_images);
+  int FreeMultiPymInfo(std::vector<std::shared_ptr<PymImageFrame>> &pym_images);
+  int GetMultiFbSrcInfo(
+      std::vector<std::shared_ptr<SrcImageFrame>> &src_images);
+  int SetMultiFbPymInfo(
+      std::vector<std::shared_ptr<SrcImageFrame>> &src_images);
 
  private:
   int HbPipeConfig();
@@ -84,8 +76,6 @@ class VioPipeLine {
   IotVinParams vin_params_[MAX_PIPE_NUM] = { 0 };
   std::vector<std::pair<int, std::shared_ptr<VinModule>>> vin_module_list_;
   std::vector<std::pair<int, std::shared_ptr<VpsModule>>> vps_module_list_;
-  /* std::vector<std::shared_ptr<VinModule>> vin_module_list_; */
-  /* std::vector<std::shared_ptr<VpsModule>> vin_module_list_; */
 };
 
 }  // namespace vioplugin

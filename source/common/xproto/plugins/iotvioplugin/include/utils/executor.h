@@ -24,8 +24,8 @@ class Executor {
  public:
   /// such as InputProducer::Run
   using exe_func = std::function<int()>;
-  static std::shared_ptr<Executor> GetInstance();
-  Executor();
+  static std::shared_ptr<Executor> GetInstance(const int exe_cnt);
+  explicit Executor(const int exe_cnt);
   ~Executor();
   void Run();
   std::future<bool> AddTask(exe_func);
@@ -48,7 +48,7 @@ class Executor {
   mutable std::mutex task_queue_mutex_;
   static std::once_flag flag_;
   static std::shared_ptr<Executor> worker_;
-  int thread_count_ = 2;
+  int thread_count_ = 4;
 };
 
 }  // namespace vioplugin

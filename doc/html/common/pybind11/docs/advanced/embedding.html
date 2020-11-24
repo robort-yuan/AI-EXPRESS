@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="zh-CN" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="zh-CN" > <!--<![endif]-->
+<html class="writer-html5" lang="zh-CN" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Embedding the interpreter &mdash; AI Express用户手册 2.6.0 文档</title>
+  <title>Embedding the interpreter &mdash; AI Express用户手册 2.7.0 文档</title>
   
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
 
   
   
@@ -17,7 +20,9 @@
   
 
   
-  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="索引" href="../../../../genindex.html" />
     <link rel="search" title="搜索" href="../../../../search.html" /> 
 </head>
@@ -49,7 +50,7 @@
           
 
           
-            <a href="../../../../index.html" class="icon icon-home"> AI Express用户手册
+            <a href="../../../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
           
 
           
@@ -63,7 +64,7 @@
           
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="在文档中搜索" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,6 +73,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -94,6 +96,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -132,7 +135,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Embedding the interpreter</li>
     
@@ -140,7 +143,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../../../_sources/common/pybind11/docs/advanced/embedding.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../../../_sources/common/pybind11/docs/advanced/embedding.rst.txt" rel="nofollow"> 查看页面源码</a>
           
         
       </li>
@@ -175,7 +178,7 @@ information, see <span class="xref std std-doc">/compiling</span>.</p>
 </pre></div>
 </div>
 <p>The essential structure of the <code class="docutils literal notranslate"><span class="pre">main.cpp</span></code> file looks like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;pybind11/embed.h&gt; // everything needed for embedding</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;pybind11/embed.h&gt;</span><span class="c1"> // everything needed for embedding</span><span class="cp"></span>
 <span class="k">namespace</span> <span class="n">py</span> <span class="o">=</span> <span class="n">pybind11</span><span class="p">;</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
@@ -248,7 +251,7 @@ the context of an executable with an embedded interpreter:</p>
 <div class="section" id="importing-modules">
 <h2>Importing modules<a class="headerlink" href="#importing-modules" title="永久链接至标题">¶</a></h2>
 <p>Python modules can be imported using <cite>module::import()</cite>:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">::</span><span class="n">module</span> <span class="n">sys</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="n">module</span><span class="o">::</span><span class="n">import</span><span class="p">(</span><span class="s">&quot;sys&quot;</span><span class="p">);</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">::</span><span class="k">module</span> <span class="n">sys</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="k">module</span><span class="o">::</span><span class="k">import</span><span class="p">(</span><span class="s">&quot;sys&quot;</span><span class="p">);</span>
 <span class="n">py</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">sys</span><span class="p">.</span><span class="n">attr</span><span class="p">(</span><span class="s">&quot;path&quot;</span><span class="p">));</span>
 </pre></div>
 </div>
@@ -260,7 +263,7 @@ embedding the interpreter. This makes it easy to import local Python files:</p>
     <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span>
 </pre></div>
 </div>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">::</span><span class="n">module</span> <span class="n">calc</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="n">module</span><span class="o">::</span><span class="n">import</span><span class="p">(</span><span class="s">&quot;calc&quot;</span><span class="p">);</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">::</span><span class="k">module</span> <span class="n">calc</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="k">module</span><span class="o">::</span><span class="k">import</span><span class="p">(</span><span class="s">&quot;calc&quot;</span><span class="p">);</span>
 <span class="n">py</span><span class="o">::</span><span class="n">object</span> <span class="n">result</span> <span class="o">=</span> <span class="n">calc</span><span class="p">.</span><span class="n">attr</span><span class="p">(</span><span class="s">&quot;add&quot;</span><span class="p">)(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
 <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">();</span>
 <span class="n">assert</span><span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">3</span><span class="p">);</span>
@@ -289,7 +292,7 @@ like any other module.</p>
 <span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">py</span><span class="o">::</span><span class="n">scoped_interpreter</span> <span class="n">guard</span><span class="p">{};</span>
 
-    <span class="k">auto</span> <span class="n">fast_calc</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="n">module</span><span class="o">::</span><span class="n">import</span><span class="p">(</span><span class="s">&quot;fast_calc&quot;</span><span class="p">);</span>
+    <span class="k">auto</span> <span class="n">fast_calc</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="k">module</span><span class="o">::</span><span class="k">import</span><span class="p">(</span><span class="s">&quot;fast_calc&quot;</span><span class="p">);</span>
     <span class="k">auto</span> <span class="n">result</span> <span class="o">=</span> <span class="n">fast_calc</span><span class="p">.</span><span class="n">attr</span><span class="p">(</span><span class="s">&quot;add&quot;</span><span class="p">)(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">();</span>
     <span class="n">assert</span><span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mi">3</span><span class="p">);</span>
 <span class="p">}</span>
@@ -318,7 +321,7 @@ naturally:</p>
 <span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">py</span><span class="o">::</span><span class="n">scoped_interpreter</span> <span class="n">guard</span><span class="p">{};</span>
 
-    <span class="k">auto</span> <span class="n">py_module</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="n">module</span><span class="o">::</span><span class="n">import</span><span class="p">(</span><span class="s">&quot;py_module&quot;</span><span class="p">);</span>
+    <span class="k">auto</span> <span class="n">py_module</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="k">module</span><span class="o">::</span><span class="k">import</span><span class="p">(</span><span class="s">&quot;py_module&quot;</span><span class="p">);</span>
 
     <span class="k">auto</span> <span class="n">locals</span> <span class="o">=</span> <span class="n">py</span><span class="o">::</span><span class="n">dict</span><span class="p">(</span><span class="s">&quot;fmt&quot;</span><span class="n">_a</span><span class="o">=</span><span class="s">&quot;{} + {} = {}&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">py_module</span><span class="p">.</span><span class="n">attr</span><span class="p">(</span><span class="s">&quot;__dict__&quot;</span><span class="p">));</span>
     <span class="n">assert</span><span class="p">(</span><span class="n">locals</span><span class="p">[</span><span class="s">&quot;a&quot;</span><span class="p">].</span><span class="n">cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
@@ -392,11 +395,19 @@ do not take sub-interpreters into account.</p></li>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, Horizon Robotics
+        
+        &copy; 版权所有 2020, Horizon Robotics
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
 
 </footer>
 
@@ -407,7 +418,6 @@ do not take sub-interpreters into account.</p></li>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

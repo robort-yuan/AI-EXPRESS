@@ -6,7 +6,7 @@ set(SOURCE_FILES
   ${CMAKE_CURRENT_LIST_DIR}/method_factory.cpp
 )
 
-set(BASE_LIBRARIES jsoncpp xstream-framework hobotlog rt pthread dl)
+set(BASE_LIBRARIES jsoncpp xstream hobotlog rt pthread dl)
 
 set(MOT_LIBRARIES
         #        multi_obj_tracking_lite
@@ -24,7 +24,7 @@ set(MOT_LIBRARIES
 
 if (${SHARED_LIB})
     add_library(mot_example_shared SHARED ${SOURCE_FILES})
-    target_link_libraries(mot_example_shared ${CMAKE_PROJECT_NAME} -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive
+    target_link_libraries(mot_example_shared ${CMAKE_PROJECT_NAME} -Wl,--whole-archive xstream -Wl,--no-whole-archive
             ${MOT_LIBRARIES}
 #            ${OpenCV_LIBS}
             ${BASE_LIBRARIES})

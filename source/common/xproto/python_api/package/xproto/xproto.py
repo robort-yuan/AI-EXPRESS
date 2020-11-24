@@ -77,54 +77,30 @@ class VioPlugin(object):
         vio_cfg_json = json.load(template_file)
         template_file.close()
 
-        # load panel camera config file
-        panel_camera_cfg_path = \
+        # load panel camera system software vio config file
+        panel_camera_vio_cfg_path = \
             vio_cfg_json["config_data"][0]["vio_cfg_file"]["panel_camera"]
-        panel_camera_cfg_json = json.load(open(panel_camera_cfg_path))
+        panel_camera_vio_cfg_json = json.load(open(panel_camera_vio_cfg_path))
 
         # modify data field in mono vio config file
-        cfg_json = None
         if not global_variable.sensor_ == "hg":
-            cfg_path = global_variable.get_mono_vio_cfg_path()
             if global_variable.platform_ == "x3dev":
-                cfg_json = json.load(open(cfg_path))
-                if global_variable.sensor_ == "os8a10":
-                    cfg_json["i2c_bus"] = 5   # set i2c5 bus
-            elif global_variable.platform_ == "x3svb":
-                cfg_json = json.load(open(cfg_path))
-                if global_variable.sensor_ == "os8a10":
-                    cfg_json["i2c_bus"] = 2   # set i2c2 bus
-                    # enable mclk output to os8a10 sensor in x3svb
-                    os.system(
-                        "echo 1 > /sys/class/vps/mipi_host1/param/snrclk_en")
-                    # reset os8a10 mipi cam
-                    os.system("echo 111 > /sys/class/gpio/export")
-                    os.system("echo out > /sys/class/gpio/gpio111/direction")
-                    os.system("echo 0 > /sys/class/gpio/gpio111/value")
-                    time.sleep(0.2)
-                    os.system("echo 1 > /sys/class/gpio/gpio111/value")
+                # TODO: config other sensors besides imx327
+                if global_variable.sensor_ == "imx327":
+                    panel_camera_vio_cfg_json["vio_vps_mode"] = 0
+                    panel_camera_vio_cfg_json["sensor_port"] = 0
+                    panel_camera_vio_cfg_json["i2c_bus"] = 5
+                    panel_camera_vio_cfg_json["host_index"] = 1
             else:
                 pass
 
-        # save modified mono vio config file
-        if cfg_json is not None:
-            # out_file = open(global_variable.get_mono_vio_cfg_path(), "w")
+        if panel_camera_vio_cfg_json is not None:
             cfg_path = "configs/py_vio_mono_cfg.json"
             out_file = open(cfg_path, "w")
-            json.dump(cfg_json, out_file, indent=4)
+            json.dump(panel_camera_vio_cfg_json, out_file, indent=4)
             out_file.close()
-            # set mono vio config file in panel config file
-            panel_camera_cfg_json["mono_vio_cfg_file"] = cfg_path
-        else:
-            print("mono vio config file which is None")
-
-        # save modified panel camera config file
-        py_panel_cfg_path = "configs/py_panel_cfg.json"
-        py_panel_cfg_mod = open(py_panel_cfg_path, "w")
-        json.dump(panel_camera_cfg_json, py_panel_cfg_mod, indent=4)
-        py_panel_cfg_mod.close()
-        vio_cfg_json["config_data"][0]["vio_cfg_file"]["panel_camera"] = \
-            py_panel_cfg_path
+            vio_cfg_json["config_data"][0]["vio_cfg_file"]["panel_camera"] = \
+                cfg_path
 
         # modify data field in vio config file
         if global_variable.sensor_ == "hg":

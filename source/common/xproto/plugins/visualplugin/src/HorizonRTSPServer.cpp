@@ -165,7 +165,6 @@ void HorizonH264FramedSource::onH264Frame(unsigned char *buff, int len) {
   }
 }
 
-
 unsigned int HorizonH264FramedSource::referenceCount = 0;
 
 HorizonH264FramedSource::HorizonH264FramedSource(UsageEnvironment &env)
@@ -932,6 +931,7 @@ void *RtspServerRun(void *pVoid) {
        << " password" << param_s->password << "\n";
 
   g_data_buf_size_ = param_s->data_buf_size;
+  char* input_filename = param_s->input_filename;
   // OutPacketBuffer::maxSize = 2000000; // bytes
   // OutPacketBuffer::maxSize = 1920 * 1080 * 1.5; // 分包应该大于1帧
 //  OutPacketBuffer::maxSize = param_s->packet_size;
@@ -946,15 +946,30 @@ void *RtspServerRun(void *pVoid) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);
   }
-
   ServerMediaSession *sms = ServerMediaSession::createNew(*env,
                                                           "horizonStream",
                                                           "h264_fifo",
                                                           "session by x3H264");
   // sms->addSubsession(OnDemandServerMediaSubsession::createNew(*env, False));
-    sms->addSubsession(H264VideoFileServerMediaSubsession
+  sms->addSubsession(H264VideoFileServerMediaSubsession
            ::createNew(*env, "/tmp/h264_fifo", True));
   rtspServer->addServerMediaSession(sms);
+
+  ServerMediaSession *sms1 = ServerMediaSession::createNew(*env,
+                                                          "horizonStream1",
+                                                          "h264_fifo",
+                                                          "session by x3H264");
+  sms1->addSubsession(H264VideoFileServerMediaSubsession
+           ::createNew(*env, "/tmp/h264_fifo1", True));
+  rtspServer->addServerMediaSession(sms1);
+
+  ServerMediaSession *local_sms = ServerMediaSession::createNew(*env,
+                                                          input_filename,
+                                                          "virtual_ipc",
+                                                          "session by x3H264");
+  local_sms->addSubsession(H264VideoFileServerMediaSubsession
+           ::createNew(*env, input_filename, True));
+  rtspServer->addServerMediaSession(local_sms);
 
   ServerMediaSession *metaSession = ServerMediaSession::createNew(*env,
                                                                   "horizonMeta",
@@ -963,6 +978,8 @@ void *RtspServerRun(void *pVoid) {
                                                                   False);
   metaSession->addSubsession(MetadataServerMediaSubsession::createNew(*env, False, NULL, NULL));
   rtspServer->addServerMediaSession(metaSession);
+
+
 
   *env << "Horizon Media Server\n";
   *env << "\tversion " << HORIZON_SERVER_VERSION_STRING
@@ -975,9 +992,12 @@ void *RtspServerRun(void *pVoid) {
 #endif
   char *url = rtspServer->rtspURL(sms);
   char *metaUrl = rtspServer->rtspURL(metaSession);
-  *env << "Play this stream using the URL \n\t" << url << "\n\t" << metaUrl << " \n";
+  char *localUrl = rtspServer->rtspURL(local_sms);
+  *env << "Play this stream using the URL \n\t" << url << "\n\t"
+  << metaUrl << " \n\t" << localUrl << "\n";
   delete[] url;
-  delete[]metaUrl;
+  delete[] metaUrl;
+  delete[] localUrl;
 
   env->taskScheduler().doEventLoop(); // does not return
   return nullptr;
@@ -999,7 +1019,6 @@ int server_send(unsigned char *buffer, int len, int msgType) {
 
 int server_send_h264(unsigned char *buffer, int len) {
   HorizonH264FramedSource::onH264Frame(buffer, len);
-
   return 0;
 }
 

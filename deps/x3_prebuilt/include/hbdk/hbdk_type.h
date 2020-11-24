@@ -115,9 +115,9 @@ typedef struct {
   hbrt_dimension_t size;
 } hbrt_roi_t;
 
-#define HBRT_ROI_INITIALIZER \
-  {                          \
-    { 0 }                    \
+#define HBRT_ROI_INITIALIZER     \
+  {                              \
+    {0, 0, 0, 0}, { 0, 0, 0, 0 } \
   }
 
 typedef enum {
