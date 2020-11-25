@@ -1,0 +1,27 @@
+{
+	"hbdk_info": {
+		"cmake_build_type": " relo3withdebinfowithassert",
+		"git_branch": " develop",
+		"git_version": " 6337dc8",
+		"release_type": " public",
+		"runtime version": " 3.9.1",
+		"supported_march": " bernoulli, bernoulli2, ",
+		"version": " 3.12.1"
+	},
+	"pub_model_info": {
+		"pub_model_name": "faceQuality_X3",
+		"pub_version": "v2.0.5",
+		"models_list": [
+			{
+				"model_name": "face_quality_x2.0.5",
+				"version": "v0.0.1",
+				"output_model_name": "faceQuality.hbm",
+				"hbm_md5": "be207a5af1da0ff747c0111db88c5b3f",
+				"model_json_file": "/gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.json",
+				"json_file_md5": "b673fc8a6006f35cdc1063a8d1e6868f",
+				"model_param_file": "/gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.params",
+				"param_file_md5": "9408bcc0f5e3b683203e64447b09351c"
+			}
+		]
+	}
+}

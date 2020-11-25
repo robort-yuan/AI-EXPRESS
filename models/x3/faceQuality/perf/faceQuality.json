@@ -1,0 +1,82 @@
+{
+    "summary": {
+        "BPU OPs per frame (effective)": 33687680,
+        "BPU OPs per frame (working)": 39604224,
+        "BPU OPs per run (effective)": 33687680,
+        "BPU OPs per run (working)": 39604224,
+        "BPU PE number": 1,
+        "BPU core number": 1,
+        "BPU march": "BERNOULLI2",
+        "BPU utilization (effective)": 0.607,
+        "BPU utilization (working)": 0.699,
+        "DDR bytes per frame": 302944,
+        "DDR bytes per run": 302944,
+        "DDR bytes per second": 2737437537,
+        "DDR megabytes per frame": 0.289,
+        "DDR megabytes per run": 0.289,
+        "DDR megabytes per second": 2610.6,
+        "FPS": 9036.12,
+        "HBDK version": "3.12.1",
+        "compiling options": "--march bernoulli2 -m /gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.json -p /gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.params -s 1x128x128x3 -i pyramid --O2 --pyramid-stride 128 -o faceQuality.hbm",
+        "frame per run": 1,
+        "frame per second": 9036.12,
+        "input features": [
+            [
+                "input name",
+                "input size"
+            ],
+            [
+                "quanti_input_output",
+                "1x128x128x3"
+            ]
+        ],
+        "interval computing units utilization": [
+            0.1,
+            0.995,
+            0.958,
+            0.916,
+            0.778,
+            0.139
+        ],
+        "interval convolution unit utilization": [
+            0.1,
+            0.995,
+            0.958,
+            0.916,
+            0.769,
+            0.13
+        ],
+        "interval loading bandwidth (megabytes/s)": [
+            1405,
+            300,
+            1959,
+            3066,
+            4135,
+            2890
+        ],
+        "interval number": 6,
+        "interval storing bandwidth (megabytes/s)": [
+            0,
+            0,
+            390,
+            0,
+            167,
+            129
+        ],
+        "interval time (ms)": 0.02,
+        "latency (ms)": 0.11,
+        "latency (us)": 110.7,
+        "loaded bytes per frame": 288512,
+        "loaded bytes per run": 288512,
+        "model json CRC": "ed06b24a",
+        "model json file": "/gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.json",
+        "model name": "faceQuality",
+        "model param CRC": "b7dcddc1",
+        "model param file": "/gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.params",
+        "multicore sync time (ms)": 0.0,
+        "run per second": 9036.12,
+        "runtime version": "3.9.1",
+        "stored bytes per frame": 14432,
+        "stored bytes per run": 14432
+    }
+}
