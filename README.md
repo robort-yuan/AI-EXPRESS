@@ -81,7 +81,7 @@ docker run -i -t hub.hobot.cc/aitools/tf-toolkit:v3.10.5
 
 #### 升级开发板系统镜像版本
 
-* 开发板系统镜像烧录教程: [X3开发板板镜像烧录体验](https://developer.horizon.ai/forum/id=5f1aa3ee86cc4d95e81a73e6)
+* 开发板系统镜像烧录教程: [X3开发板板镜像烧录教程](https://developer.horizon.ai/forum/id=5f890b0ccc8b1e59c8584bfc)
 
 * 开发板使用注意事项：https://developer.horizon.ai/forum/id=5efac2d32ab6590143c16024
 
@@ -105,14 +105,16 @@ git clone git@github.com:HorizonRobotics-Platform/AI-EXPRESS.git
 
 * 本地环境
 
-本地环境可以直接编译
+本地环境可以直接编译:
+
 ```bash
 cd AI-EXPRESS
 bash build.sh x3
 ```
 
 * Docker环境
-登录docker环境，执行如下命令进行编译
+
+登录docker环境，执行如下命令进行编译:
 
 ```bash
 ln -s /root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/ /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu
@@ -138,12 +140,13 @@ bash deploy.sh
 | face_solution    |     人脸解决方案 |
 | body_solution    |     人体解决方案 |
 | face_body_multisource    |     多路输入多workflow解决方案 |
+| video_box        |     视频盒子解决方案 |
 | configs          |     vio 配置文件 |
 | run.sh           |         运行脚本 |
 
-### 运行人体结构化参考方案
+### 运行参考方案
 
-直接在开发板的deploy目录下，运行run.sh脚本即可运行指定的测试程序。具体运行命令：
+直接在开发板的deploy目录下，运行run.sh脚本即可运行指定的测试程序。以人体结构化参考方案为例，具体运行命令：
 
 **注意：具体示例的选择，参考可执行程序的实际打印，该文档更新可能滞后**
 ```
@@ -160,7 +163,7 @@ sh run.sh w  # w表示日志为warning等级，也可以输入d(debug)或者i(in
 
 各个测试程序的介绍及运行方法请参考**场景参考解决方案**或者**常见问题**章节。
 
-除了上述人体结构化解决方案外，AIExpress会陆续开源**人脸结构化参考方案**,**人体结构化参考方案**,**人体行为分析参考方案**,**视频盒子参考方案**,**体感游戏参考方案**,**apa自动泊车参考方案**，，有任何建议或问题，欢迎在github上提Issue。
+除了上述人体结构化解决方案外，人脸结构化参考方案和视频盒子参考方案也已开源。AIExpress会陆续开源**人体行为分析参考方案**,**体感游戏参考方案**,**apa自动泊车参考方案**，有任何建议或问题，欢迎在github上提Issue。
 
 
 ## 3.运行测试用例
@@ -180,7 +183,7 @@ ssh登录到开发板，通过scp命令，将deploy目录拷贝到x3sdb开发板
 cd deploy/unit_test
 sh run_ut.sh
 ```
-单元测试脚本包含人脸、人体结构化等参考方案，以及aiexpress每个模块的单元测试程序。
+单元测试脚本暂时只支持face(人脸结构化参考方案)、body(人体结构化参考方案)、video_box(视频盒子参考方案)，以及aiexpress每个模块的单元测试程序。
 
 ## 4.生成xstream和xproto库
 
