@@ -112,20 +112,10 @@ bash build.sh x3
 ```
 
 * Docker环境
+登录docker环境，执行如下命令进行编译
 
-1).下载代码后修改ai_express_release/CMakeLists.txt，注释掉文件开头的工具链设置项。
 ```bash
-#set(CMAKE_C_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc)
-#set(CMAKE_CXX_COMPILER /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++)
-```
-
-2).设置交叉编译工具链环境变量：
-```bash
-echo "export CC=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc" >> ~/.bashrc
-echo "export CXX=/root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-g++"  >> ~/.bashrc
-```
-3).编译
-```bash
+ln -s /root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/ /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu
 cd AI-EXPRESS
 bash build.sh x3
 ```
