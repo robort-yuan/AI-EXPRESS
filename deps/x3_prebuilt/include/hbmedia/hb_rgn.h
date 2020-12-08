@@ -91,6 +91,7 @@ typedef enum HB_RGN_CHN_ID_ATTR_E      /*ipu channel region attached to*/
     CHN_DS2,
     CHN_DS3,
     CHN_DS4,
+    CHN_GRP,
     CHANNEL_MAX_NUM
 }RGN_CHN_ID_E;
 
@@ -320,6 +321,9 @@ int32_t HB_RGN_GetPymSta(const RGN_CHN_S *pstChn, uint16_t astStaValue[8][4]);
 
 int32_t HB_RGN_AddToYUV(RGN_HANDLE Handle, hb_vio_buffer_t *vio_buffer,
                             const RGN_CHN_ATTR_S *pstChnAttr);
+
+int32_t HB_RGN_SetDisplayLevel(RGN_HANDLE Handle, const RGN_CHN_S *pstChn,
+                            uint32_t osd_level);
 
 #ifdef __cplusplus
 }

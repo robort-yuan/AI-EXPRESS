@@ -31,6 +31,7 @@ class SmartManager {
   SmartManager() = default;
   virtual ~SmartManager() = default;
   virtual int Init() { return 0; }
+  virtual int DeInit() { return 0; }
   virtual int Start() { return 0; }
   virtual int Stop() { return 0; }
 

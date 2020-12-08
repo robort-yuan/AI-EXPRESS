@@ -60,20 +60,41 @@ void RectInputPredictor::Do(CNNMethodRunData *run_data) {
       auto p_roi = std::static_pointer_cast<XStreamData<BBox>>(roi);
       auto p_norm_roi = std::make_shared<XStreamData<BBox>>();
       norm_rois[roi_idx] = std::static_pointer_cast<BaseData>(p_norm_roi);
-      p_norm_roi->value = p_roi->value;
+      if (p_roi->state_ != xstream::DataState::VALID ||
+              NormMethod::BPU_MODEL_NORM_BY_NOTHING == norm_params_.norm_type) {
+        p_norm_roi->value = p_roi->value;
+      } else {
+        // do norm
+        BBox *norm_box = &(p_norm_roi->value);
+        NormalizeRoi(&p_roi->value,
+                     norm_box,
+                     norm_params_,
+                     pyramid->Width(),
+                     pyramid->Height());
+        LOGD << "norm roi norm_type:" <<
+                                      static_cast<int>(norm_params_.norm_type)
+             << " expand_scale:" << norm_params_.expand_scale
+             << " aspect_ratio:" << norm_params_.aspect_ratio
+             << "  from:" << p_roi->value.x1 << ", " << p_roi->value.y1
+             << ", " << p_roi->value.x2 << ", " << p_roi->value.y2
+             << "  to:" << p_norm_roi->value.x1 << ", " << p_norm_roi->value.y1
+             << ", " << p_norm_roi->value.x2 << ", " << p_norm_roi->value.y2;
+      }
+
       if (p_roi->state_ != xstream::DataState::VALID ||
           roi_idx >= handle_num) {
         valid_box[roi_idx] = 0;
       } else {
-        boxes.push_back(BPU_BBOX{p_roi->value.x1,
-                                p_roi->value.y1,
-                                p_roi->value.x2,
-                                p_roi->value.y2,
-                                p_roi->value.score,
+        boxes.push_back(BPU_BBOX{p_norm_roi->value.x1,
+                                 p_norm_roi->value.y1,
+                                 p_norm_roi->value.x2,
+                                 p_norm_roi->value.y2,
+                                 p_norm_roi->value.score,
                                 0,
                                 true});
-        LOGD << "box {" << p_roi->value.x1 << "," << p_roi->value.y1 << ","
-             << p_roi->value.x2 << "," << p_roi->value.y2 << "}";
+        LOGD << "box {" << p_norm_roi->value.x1 << ","
+             << p_norm_roi->value.y1 << ","
+             << p_norm_roi->value.x2 << "," << p_norm_roi->value.y2 << "}";
       }
     }
     {

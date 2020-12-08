@@ -40,6 +40,7 @@ class VioPipeManager {
  private:
   std::mutex mutex_;
   int pipe_id_ = 0;
+  int vb_init_ref_cnt_ = 0;
   bool vb_init_ = false;
 };
 

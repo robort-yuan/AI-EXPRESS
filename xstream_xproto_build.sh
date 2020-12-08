@@ -70,7 +70,7 @@ function copy_xstream_xproto() {
   mkdir -p lib_aiexpress/include/xproto/include/xproto/message
   mkdir -p lib_aiexpress/lib
   
-  cp xstream_xproto_build/xstream/libxstream.so lib_aiexpress/lib
+  cp xstream_xproto_build/xstream/libxstream.a lib_aiexpress/lib
   cp -rf source/common/xstream/framework/include/hobotxsdk lib_aiexpress/include/xstream/include
   cp -rf source/common/xstream/framework/include/hobotxstream lib_aiexpress/include/xstream/include
   cp xstream_xproto_build/xproto/libxproto.so lib_aiexpress/lib
@@ -93,10 +93,10 @@ function copy_third_party() {
 
 function copy_xstream_xproto_example() {
   mkdir -p lib_aiexpress/example/xstream
-  cp -rf source/common/xstream/tutorials/stage1/*_external lib_aiexpress/example/xstream/
-  cp -rf source/common/xstream/tutorials/stage1/filter_param.h lib_aiexpress/example/xstream/
-  cp -rf source/common/xstream/tutorials/stage1/method_factory.h lib_aiexpress/example/xstream/
-  cp -rf source/common/xstream/tutorials/stage1/config lib_aiexpress/example/xstream/
+  cp -rf source/common/xstream/framework/tutorials/stage1/*_external lib_aiexpress/example/xstream/
+  cp -rf source/common/xstream/framework/tutorials/stage1/filter_param.h lib_aiexpress/example/xstream/
+  cp -rf source/common/xstream/framework/tutorials/stage1/method_factory.h lib_aiexpress/example/xstream/
+  cp -rf source/common/xstream/framework/tutorials/stage1/config lib_aiexpress/example/xstream/
   mv lib_aiexpress/example/xstream/CMakeLists.txt_external lib_aiexpress/example/xstream/CMakeLists.txt
   mv lib_aiexpress/example/xstream/build.sh_external lib_aiexpress/example/xstream/build.sh
   mv lib_aiexpress/example/xstream/sync_main.cc_external lib_aiexpress/example/xstream/sync_main.cc

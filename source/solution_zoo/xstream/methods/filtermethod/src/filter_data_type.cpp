@@ -212,7 +212,7 @@ void FilterParam::BuildInputSlotMap() {
     for (uint32_t i = 0; i < input_size; ++i) {
       auto slot_info = jv_data[i];
       if (!slot_info.isNull()) {
-        SlotInfo info;
+        SlotFilterInfo info;
         info.name = slot_info["name"].asString();
         info.type = slot_info["type"].asString();
         info.group = slot_info["group"].asString();
@@ -220,23 +220,24 @@ void FilterParam::BuildInputSlotMap() {
       }
     }
   } else {
-    slot_info_ = {{0, SlotInfo{"face_box", "bbox", "face"}},
-                  {1, SlotInfo{"pose3D", "Pose3D", "face"}},
-                  {2, SlotInfo{"landmark", "landmark", "face"}},
-                  {3, SlotInfo{"blur", "upper_limit", "face"}},
-                  {4, SlotInfo{"brightness", "range", "face"}},
-                  {5, SlotInfo{"eye_abnormalities", "upper_limit", "face"}},
-                  {6, SlotInfo{"mouth_abnormal", "upper_limit", "face"}},
-                  {7, SlotInfo{"left_eye", "upper_limit", "face"}},
-                  {8, SlotInfo{"right_eye", "upper_limit", "face"}},
-                  {9, SlotInfo{"left_brow", "upper_limit", "face"}},
-                  {10, SlotInfo{"right_brow", "upper_limit", "face"}},
-                  {11, SlotInfo{"forehead", "upper_limit", "face"}},
-                  {12, SlotInfo{"left_cheek", "upper_limit", "face"}},
-                  {13, SlotInfo{"right_cheek", "upper_limit", "face"}},
-                  {14, SlotInfo{"nose", "upper_limit", "face"}},
-                  {15, SlotInfo{"mouse", "upper_limit", "face"}},
-                  {16, SlotInfo{"jaw", "upper_limit", "face"}}};
+    slot_info_ = {
+        {0, SlotFilterInfo{"face_box", "bbox", "face"}},
+        {1, SlotFilterInfo{"pose3D", "Pose3D", "face"}},
+        {2, SlotFilterInfo{"landmark", "landmark", "face"}},
+        {3, SlotFilterInfo{"blur", "upper_limit", "face"}},
+        {4, SlotFilterInfo{"brightness", "range", "face"}},
+        {5, SlotFilterInfo{"eye_abnormalities", "upper_limit", "face"}},
+        {6, SlotFilterInfo{"mouth_abnormal", "upper_limit", "face"}},
+        {7, SlotFilterInfo{"left_eye", "upper_limit", "face"}},
+        {8, SlotFilterInfo{"right_eye", "upper_limit", "face"}},
+        {9, SlotFilterInfo{"left_brow", "upper_limit", "face"}},
+        {10, SlotFilterInfo{"right_brow", "upper_limit", "face"}},
+        {11, SlotFilterInfo{"forehead", "upper_limit", "face"}},
+        {12, SlotFilterInfo{"left_cheek", "upper_limit", "face"}},
+        {13, SlotFilterInfo{"right_cheek", "upper_limit", "face"}},
+        {14, SlotFilterInfo{"nose", "upper_limit", "face"}},
+        {15, SlotFilterInfo{"mouse", "upper_limit", "face"}},
+        {16, SlotFilterInfo{"jaw", "upper_limit", "face"}}};
     LOGW << "Do not have input slot order params, use default order";
   }
 }

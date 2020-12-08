@@ -11,12 +11,16 @@
 #include <queue>
 #include <mutex>
 #include <thread>
+#include "horizon/vision_type/vision_type.hpp"
 #include "iotviomanager/vio_data_type.h"
 #include "iotviomanager/ring_queue.h"
 namespace horizon {
 namespace vision {
 namespace xproto {
 namespace vioplugin {
+
+using hobot::vision::PymImageFrame;
+using hobot::vision::SrcImageFrame;
 
 class VpsModule {
  public:
@@ -42,6 +46,12 @@ class VpsModule {
   int GetGdcInfo(void *buf);
   int VpsCreatePymThread();
   int VpsDestoryPymThread();
+  int VpsCreateFbThread();
+  int VpsDestoryFbThread();
+  void VpsConvertPymInfo(void *pym_buf, PymImageFrame &pym_img);
+  void VpsConvertSrcInfo(void *src_buf, SrcImageFrame &src_img);
+  void *VpsCreatePymAddrInfo();
+  void *VpsCreateSrcAddrInfo();
 
  private:
   int HbGetGdcData(const char *gdc_name, char **gdc_data, int *gdc_len);
@@ -57,6 +67,7 @@ class VpsModule {
   int HbCheckPymData(IotPymInfo &pym_info);
   int HbChnInfoInit();
   void HbGetPymDataThread();
+  void HbGetFbDataThread();
   int HbVpsCreateGrp(int pipe_id, int grp_w, int grp_h, int grp_depth);
   int HbPymTimeoutWait(uint64_t timeout_ms);
   int HbGetVpsFrameDepth();
@@ -72,9 +83,11 @@ class VpsModule {
   IotVioChnInfo vio_chn_info_ = { 0 };
   std::queue<hb_vio_buffer_t*> fb_queue_;
   hb_vio_buffer_t *feedback_buf_;
+  std::shared_ptr<std::thread> fb_thread_ = nullptr;
   std::shared_ptr<std::thread> pym_thread_ = nullptr;
   std::shared_ptr<VioRingQueue<IotPymInfo>> pym_rq_ = nullptr;
-  int start_flag_ = false;
+  int fb_start_flag_ = false;
+  int pym_start_flag_ = false;
   int gdc_pipe_id_[MAX_GDC_NUM] = {-1, -1};
   sem_t pym_sem_;
   int consumed_pym_buffers_ = 0;

@@ -25,7 +25,7 @@
 #include "hobotxstream/method_factory.h"
 
 namespace xstream {
-/// 数据流提供的接口
+/// XStreamFlow API
 class XStreamFlow : public XStreamSDK {
  public:
   XStreamFlow();
@@ -34,22 +34,24 @@ class XStreamFlow : public XStreamSDK {
  public:
   virtual int SetConfig(
       const std::string &key,
-      const std::string &value);  // 设置授权路径、模型路径等等
+      const std::string &value);  // set config file
   int SetCallback(XStreamCallback callback,
-                  const std::string &name) override;  // 设置回调
+                  const std::string &name) override;  // set callback func
   virtual int UpdateConfig(const std::string &unique_name,
                            InputParamPtr param_ptr);
   InputParamPtr GetConfig(const std::string &unique_name) const override;
   std::string GetVersion(const std::string &unique_name) const override;
   virtual int Init();
   int Init(MethodFactoryPtr method_factory);
-  // 同步接口，单路输出
+  // SyncPredict Func for SingleOutput mode
   OutputDataPtr SyncPredict(InputDataPtr input) override;
-  // 同步接口，多路输出
+  // SyncPredict Func for MultiOutput mode
   std::vector<OutputDataPtr> SyncPredict2(InputDataPtr input) override;
-  // 异步接口
+  // AsyncPredict Func
   int64_t AsyncPredict(InputDataPtr input) override;
 
+  // Get current task_num
+  int64_t GetTaskNum();
  private:
   OutputDataPtr OnError(int64_t error_code, const std::string &error_detail);
 

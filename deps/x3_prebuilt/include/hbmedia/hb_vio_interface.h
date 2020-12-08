@@ -165,12 +165,12 @@ typedef struct osd_sta_box_s {
 	uint16_t height;
 } osd_sta_box_t;
 
-typedef struct ipu_img_info_s {
+typedef struct chn_img_info_s {
 	uint16_t width;
 	uint16_t height;
 	uint16_t format;
 	uint16_t buf_count;
-} ipu_img_info_t;
+} chn_img_info_t;
 
 enum Format {
 	HB_RGB,
@@ -407,32 +407,9 @@ int hb_vio_run_gdc_opt(uint32_t pipeline_id,
 					   hb_vio_buffer_t * dst_img_info,
 					   int rotate);
 
-
-/*ipu channel    osd
- *   us 0      ==> osd 0
- *   ds 0      ==> osd 1
- *   ds 1      ==> osd 2
- *   ds 2      ==> osd 3
- *   ds 3      ==> osd 4
- *   ds 4      ==> osd 5
- */
-int hb_vio_init_osd_layer(uint32_t pipeline_id, uint32_t osd_layer,
-		osd_box_t osd_data[3]);
-int hb_vio_deinit_osd_layer(uint32_t pipeline_id, uint32_t osd_layer);
-int hb_vio_get_osd_addr(uint32_t pipeline_id, uint32_t osd_layer,
-			address_info_t(*osd_map_buf)[3]);
-int hb_vio_update_osd(uint32_t pipeline_id, uint32_t osd_layer, uint32_t enable,
-		      uint32_t colour_invert_enable);
-int hb_vio_set_osd_sta(uint32_t pipeline_id, uint32_t osd_layer,
-		       uint8_t osd_sta_level[3], osd_sta_box_t osd_sta[8]);
-int hb_vio_get_osd_sta(uint32_t pipeline_id, uint32_t osd_layer,
-		       uint16_t osd_sta_bin_value[8][4]);
-int hb_vio_osd_draw_word(osd_draw_word_t *osd_draw_word_data);
-
 int hb_vio_free_ipubuf(uint32_t pipeline_id, hb_vio_buffer_t * dst_img_info);
 int hb_vio_free_gdcbuf(uint32_t pipeline_id, hb_vio_buffer_t * dst_img_info);
-int hb_vio_free_gdcbuf_opt(uint32_t pipeline_id, uint32_t gdc_id,
-									hb_vio_buffer_t * dst_img_info);
+
 int hb_vio_free_pymbuf(uint32_t pipeline_id, VIO_DATA_TYPE_E data_type,
 		    void *img_info);
 int hb_vio_run_pym(uint32_t pipeline_id, hb_vio_buffer_t * src_img_info);
@@ -441,7 +418,6 @@ int hb_vio_run_gdc(uint32_t pipeline_id, hb_vio_buffer_t * src_img_info,
 
 void vio_dis_crop_set(uint32_t pipe_id, uint32_t info, void *data,
 							 void *userdata);
-
 
 // for debug
 int hb_vio_raw_dump(uint32_t pipeline_id, hb_vio_buffer_t * raw_img,

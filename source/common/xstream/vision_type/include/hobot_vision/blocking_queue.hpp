@@ -23,23 +23,26 @@ class BlockingQueue {
   BlockingQueue() {}
 
   void push_front(const T &t) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    queue_.push_front(t);
-    lock.unlock();
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push_front(t);
+    }
     condition_.notify_one();
   }
 
   void push_back(const T &t) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    queue_.push_back(t);
-    lock.unlock();
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push_back(t);
+    }
     condition_.notify_one();
   }
 
   void push(const T &t) {
-    std::unique_lock<std::mutex> lock(mutex_);
-    queue_.push_back(t);
-    lock.unlock();
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push_back(t);
+    }
     condition_.notify_one();
   }
 
@@ -49,13 +52,11 @@ class BlockingQueue {
 
     if (!condition_.wait_for(lock, timeout,
                              [this] { return !queue_.empty(); })) {
-      lock.unlock();
       return false;
     }
 
     *t = queue_.front();
     queue_.pop_front();
-    lock.unlock();
     return true;
   }
 
@@ -68,7 +69,6 @@ class BlockingQueue {
 
     T t = queue_.front();
     queue_.pop_front();
-    lock.unlock();
     return t;
   }
 
@@ -79,20 +79,17 @@ class BlockingQueue {
 
     T t = queue_.back();
     queue_.clear();
-    lock.unlock();
     return t;
   }
 
   bool try_peek(T *t) {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
     if (queue_.empty()) {
-      lock.unlock();
       return false;
     }
 
     *t = queue_.front();
-    lock.unlock();
     return true;
   }
 
@@ -101,14 +98,12 @@ class BlockingQueue {
     std::unique_lock<std::mutex> lock(mutex_);
     condition_.wait(lock, [this] { return !queue_.empty(); });
 
-    lock.unlock();
     return queue_.front();
   }
 
   size_t size() {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     const size_t ret = queue_.size();
-    lock.unlock();
     return ret;
   }
 

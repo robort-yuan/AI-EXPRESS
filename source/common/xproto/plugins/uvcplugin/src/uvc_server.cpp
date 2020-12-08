@@ -12,7 +12,6 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <stdio.h>
-
 #include <fstream>
 #include <string>
 
@@ -33,6 +32,8 @@ std::mutex UvcServer::mutex_;
 bool UvcServer::encoder_running_ = false;
 std::shared_ptr<UvcConfig> UvcServer::config_ = nullptr;
 bool UvcServer::nv12_is_on_ = false;
+
+//#define GUVC_RESTART "/tmp/guvc_restart"
 
 using horizon::vision::xproto::websocketplugin::AttributeConvert;
 using std::chrono::milliseconds;
@@ -55,7 +56,8 @@ UvcServer::UvcServer() {
 UvcServer::~UvcServer() { DeInit(); }
 
 int UvcServer::Init(std::string config_file) {
-  LOGI<<"config_file = "<<config_file;
+  LOGI << "config_file = " << config_file;
+  config_path_ = config_file;
   config_ = std::make_shared<UvcConfig>(config_file);
   if (!config_ || !config_->LoadConfig()) {
     LOGE << "failed to load config file";
@@ -82,18 +84,19 @@ int UvcServer::Init(std::string config_file) {
 int UvcServer::DeInit() {
   // TODO
   if (uvc_ctx) {
-    Stop();
+  //  Stop();
+    uvc_gadget_stop(uvc_ctx);
+    uvc_gadget_deinit(uvc_ctx);
     uvc_ctx = nullptr;
   }
   return 0;
 }
 
-int UvcServer::Start() { return 0; }
+int UvcServer::Start() {
+  return 0;
+}
 
 int UvcServer::Stop() {
-  uvc_gadget_stop(uvc_ctx);
-  uvc_gadget_deinit(uvc_ctx);
-
   return 0;
 }
 
@@ -343,6 +346,7 @@ int UvcServer::uvc_init_with_params(venc_type type, int vechn, int width,
 
   return ret;
 }
+
 }  // namespace Uvcplugin
 }  // namespace xproto
 }  // namespace vision

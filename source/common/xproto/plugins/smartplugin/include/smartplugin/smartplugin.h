@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "xproto/msgtype/include/xproto_msgtype/protobuf/x3.pb.h"
 
 #include "xproto/message/pluginflow/flowmsg.h"
 #include "xproto/plugin/xpluginasync.h"
@@ -26,6 +27,7 @@
 #include "smartplugin/smart_config.h"
 #include "smartplugin/traffic_info.h"
 #include "xproto_msgtype/smartplugin_data.h"
+
 
 namespace horizon {
 namespace vision {
@@ -47,6 +49,7 @@ struct VehicleSmartMessage : SmartMessage {
   std::string Serialize() override;
   std::string Serialize(int ori_w, int ori_h, int dst_w, int dst_h);
   void Serialize_Print(Json::Value &root);
+  void Serialize_Dump_Result();
  public:
   int camera_type;
   std::vector<VehicleInfo> vehicle_infos;
@@ -60,17 +63,42 @@ struct VehicleSmartMessage : SmartMessage {
   TrafficStatisticsInfo traffic_statistics_info;
 };
 
+struct target_key {
+  std::string category;
+  int id;
+  target_key(std::string category, int id) {
+    this->category = category;
+    this->id = id;
+  }
+};
+
+struct cmp_key {
+  bool operator()(const target_key &a, const target_key &b) {
+    if (a.category == b.category) {
+      return a.id < b.id;
+    }
+    return a.category < b.category;
+  }
+};
+
 struct CustomSmartMessage : SmartMessage {
   explicit CustomSmartMessage(
     xstream::OutputDataPtr out) : smart_result(out) {
     type_ = TYPE_SMART_MESSAGE;
   }
   std::string Serialize() override;
-  std::string Serialize(int ori_w, int ori_h, int dst_w, int dst_h);
+  std::string Serialize(int ori_w, int ori_h, int dst_w, int dst_h) override;
   void Serialize_Print(Json::Value &root);
+  void SetAPMode(bool ap_mode) {
+    ap_mode_ = ap_mode;
+  }
+  void Serialize_Dump_Result();
+
+ protected:
+  xstream::OutputDataPtr smart_result;
+  bool ap_mode_ = false;
 
  private:
-  xstream::OutputDataPtr smart_result;
   static std::map<int, int> fall_state_;
   static std::mutex fall_mutex_;
   static std::map<int, int> gesture_state_;
@@ -86,6 +114,7 @@ class SmartPlugin : public XPluginAsync {
 
   ~SmartPlugin() = default;
   int Init() override;
+  int DeInit() override;
   int Start() override;
   int Stop() override;
   std::string desc() const { return "SmartPlugin"; }
@@ -103,8 +132,10 @@ class SmartPlugin : public XPluginAsync {
   std::string xstream_workflow_cfg_file_;
   bool enable_profile_{false};
   std::string profile_log_file_;
-  bool result_to_json{false};
-  Json::Value root;
+  bool result_to_json_{false};
+  bool dump_result_{false};
+  Json::Value root_;
+  bool run_flag_ = false;
 };
 
 }  // namespace smartplugin

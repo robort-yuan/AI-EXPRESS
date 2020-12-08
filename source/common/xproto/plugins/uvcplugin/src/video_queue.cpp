@@ -7,9 +7,6 @@
 
 #include "hobotlog/hobotlog.hpp"
 
-#define DEBUG
-#undef DEBUG /* comment to show debug info */
-
 #ifdef DEBUG
 #define print printf
 #else

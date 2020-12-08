@@ -49,6 +49,15 @@ int32_t Predictor::Init(std::shared_ptr<CNNMethodConfig> config) {
        << "parent path" << parent_path;
   core_id_ = config->GetIntValue("core_id", 2);
 
+  std::string s_norm_method = config->GetSTDStringValue("norm_method",
+                                                        "norm_by_nothing");
+  norm_params_.expand_scale = config->GetFloatValue("expand_scale", 1.0f);
+  auto iter = g_norm_method_map.find(s_norm_method);
+  HOBOT_CHECK(iter != g_norm_method_map.end())
+  << "norm_method is unknown:" << s_norm_method;
+  norm_params_.norm_type = iter->second;
+  norm_params_.aspect_ratio = config->GetFloatValue("aspect_ratio", 1.0f);
+
   int ret = 0;
   // new bpu
   // load model

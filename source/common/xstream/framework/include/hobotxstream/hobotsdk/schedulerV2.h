@@ -52,6 +52,8 @@ class SchedulerV2 {  // 调度模块
   int64_t Input(InputDataPtr data, void *sync_context);
 
   std::string GetVersion(const std::string &unique_name) const;
+  // Get current task_num
+  int64_t GetTaskNum() const;
 
  private:
   int CreateNodes();
@@ -92,6 +94,7 @@ class SchedulerV2 {  // 调度模块
   std::set<std::string> GetNotPostedOutput(FrameDataInfoPtr framedata);
   std::atomic_ullong global_sequence_id_{0};
   std::vector<std::shared_ptr<std::atomic_ullong>> sequence_id_list_;
+  std::shared_ptr<std::atomic_ullong> pending_frames_;
 
   // 多路输出时，封装单路输出，用于异步调用
   OutputDataPtr SingleOutput(FrameDataInfoPtr data,

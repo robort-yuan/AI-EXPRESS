@@ -1,4 +1,0 @@
-{
-  "pub_ipc": "/tmp/can_output_extra.ipc",
-  "sub_ipc": "/tmp/can_input_extra.ipc"
-}

@@ -36,9 +36,9 @@ HBRT_PRAGMA_WARN( \
 HBRT_MAGIC_HEADER_SIZE
 
 typedef enum {
-  HBRT_MARCH_UNKNOWN = ('?' << 0) + ('?' << 8) + ('?' << 16),
-  HBRT_MARCH_BERNOULLI = ('X' << 0) + ('2' << 8) + (' ' << 16),
-  HBRT_MARCH_BERNOULLI2 = ('X' << 0) + ('2' << 8) + ('A' << 16),
+  HBRT_MARCH_UNKNOWN = ((unsigned)('?') << 0U) + ((unsigned)('?') << 8U) + ((unsigned)('?') << 16U),
+  HBRT_MARCH_BERNOULLI = ((unsigned)('X') << 0U) + ((unsigned)('2') << 8U) + ((unsigned)(' ') << 16U),
+  HBRT_MARCH_BERNOULLI2 = ((unsigned)('X') << 0U) + ((unsigned)('2') << 8U) + ((unsigned)('A') << 16U),
 } hbrt_march_t;
 
 typedef hbrt_march_t MARCH HBRT_DEPRECATED_NAME(hbrt_march_t, MARCH, 3.7.1);

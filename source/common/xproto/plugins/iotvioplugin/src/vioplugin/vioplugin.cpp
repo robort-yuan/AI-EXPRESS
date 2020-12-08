@@ -95,10 +95,15 @@ VioPlugin::VioPlugin(const std::string &path) {
 
 void VioPlugin::GetSubConfigs() {
   HOBOT_CHECK(config_);
+  if (config_->HasMember("config_number")) {
+    vio_config_num_ = config_->GetIntValue("config_number");
+  }
+  HOBOT_CHECK(vio_config_num_ > 0);
   if (config_->HasMember("config_data")) {
     auto multi_configs = config_->GetSubConfig("config_data");
     int cnt = multi_configs->ItemCount();
-    for (int i = 0; i < cnt; i++) {
+    HOBOT_CHECK(vio_config_num_ <= cnt) << "error vio config number";
+    for (int i = 0; i < vio_config_num_; i++) {
       configs_.push_back(multi_configs->GetSubConfig(i));
     }
   } else {
@@ -107,15 +112,22 @@ void VioPlugin::GetSubConfigs() {
 }
 
 int VioPlugin::Init() {
+  if (is_inited_)
+    return kHorizonVisionSuccess;
   ClearAllQueue();
   for (auto config : configs_) {
     auto data_source_ = config->GetValue("data_source");
     auto vio_handle = VioProduce::CreateVioProduce(config, data_source_);
     HOBOT_CHECK(vio_handle);
     vio_handle->SetConfig(config);
+    vio_handle->SetVioConfigNum(vio_config_num_);
     vio_produce_handles_.push_back(vio_handle);
   }
-
+#ifdef USE_MC
+  RegisterMsg(TYPE_APIMAGE_MESSAGE,
+              std::bind(&VioPlugin::OnGetAPImage, this,
+                        std::placeholders::_1));
+#endif
   if (!is_sync_mode_) {
 #ifndef PYAPI
     // 注册智能帧结果
@@ -137,9 +149,20 @@ int VioPlugin::Init() {
   return 0;
 }
 
+int VioPlugin::DeInit() {
+  VioPipeManager &manager = VioPipeManager::Get();
+  manager.Reset();
+  vio_produce_handles_.clear();
+  is_inited_ = false;
+  XPluginAsync::DeInit();
+  return 0;
+}
+
 VioPlugin::~VioPlugin() {}
 
 int VioPlugin::Start() {
+  if (is_running_) return 0;
+  is_running_ = true;
   int ret;
 
   auto send_frame = [&](const std::shared_ptr<VioMessage> input) {
@@ -175,6 +198,8 @@ int VioPlugin::Start() {
 }
 
 int VioPlugin::Stop() {
+  if (!is_running_) return 0;
+  is_running_ = false;
   ClearAllQueue();
   for (auto vio_handle : vio_produce_handles_) {
     vio_handle->Stop();
@@ -247,7 +272,14 @@ void VioPlugin::ClearAllQueue() {
   img_msg_queue_.clear();
   drop_msg_queue_.clear();
 }
-
+#ifdef USE_MC
+int VioPlugin::OnGetAPImage(XProtoMessagePtr msg) {
+  for (auto &viosp : vio_produce_handles_) {
+    viosp->OnGetAPImage(msg);
+  }
+  return kHorizonVisionSuccess;
+}
+#endif
 #ifdef PYAPI
 int VioPlugin::AddMsgCB(const std::string msg_type, pybind11::function cb) {
   // wrap python callback into XProtoMessageFunc

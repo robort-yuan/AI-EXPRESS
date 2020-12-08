@@ -1,0 +1,129 @@
+# 版本说明  版本 2.5.0
+       
+<h2> 故事
+</h2>
+<ul>
+<li>[<a href='XPPXROC-410https://jira.hobot.cc:8443/browse/XPPXROC-410'>XPPXROC-410</a>] - x3支持bpu-predict新的大华接口
+</li>
+<li>[<a href='XPPXROC-520https://jira.hobot.cc:8443/browse/XPPXROC-520'>XPPXROC-520</a>] - 小米电视跳舞的demo
+</li>
+<li>[<a href='XPPXROC-610https://jira.hobot.cc:8443/browse/XPPXROC-610'>XPPXROC-610</a>] - X3发布会tv_dance示例
+</li>
+</ul>
+
+<h2> 任务
+</h2>
+<ul>
+<li>[<a href='XPPXROC-258https://jira.hobot.cc:8443/browse/XPPXROC-258'>XPPXROC-258</a>] - 搭建在发布包里面跑通所有测试的自动化流程
+</li>
+<li>[<a href='XPPXROC-473https://jira.hobot.cc:8443/browse/XPPXROC-473'>XPPXROC-473</a>] - 大唐车路协同功能支持
+</li>
+<li>[<a href='XPPXROC-517https://jira.hobot.cc:8443/browse/XPPXROC-517'>XPPXROC-517</a>] - ai-express支持xstream与xproto独立发版
+</li>
+<li>[<a href='XPPXROC-547https://jira.hobot.cc:8443/browse/XPPXROC-547'>XPPXROC-547</a>] - web序列化优化：没有mot也需能正常展示
+</li>
+<li>[<a href='XPPXROC-550https://jira.hobot.cc:8443/browse/XPPXROC-550'>XPPXROC-550</a>] - 跳舞demo，比对视频回灌结果
+</li>
+<li>[<a href='XPPXROC-551https://jira.hobot.cc:8443/browse/XPPXROC-551'>XPPXROC-551</a>] - behavior模型，人体框误检测
+</li>
+<li>[<a href='XPPXROC-557https://jira.hobot.cc:8443/browse/XPPXROC-557'>XPPXROC-557</a>] - 支持rtsp推流
+</li>
+<li>[<a href='XPPXROC-558https://jira.hobot.cc:8443/browse/XPPXROC-558'>XPPXROC-558</a>] - uvc切换分辨率和编码方式图像出现马赛克
+</li>
+<li>[<a href='XPPXROC-561https://jira.hobot.cc:8443/browse/XPPXROC-561'>XPPXROC-561</a>] - 手势识别多任务检测模型v0.0.1集成与评测
+</li>
+<li>[<a href='XPPXROC-562https://jira.hobot.cc:8443/browse/XPPXROC-562'>XPPXROC-562</a>] - 生态板子接入usb_camera，usb camera 帧率偏低
+</li>
+<li>[<a href='XPPXROC-565https://jira.hobot.cc:8443/browse/XPPXROC-565'>XPPXROC-565</a>] - 确认uvc图像pts不一致的问题
+</li>
+<li>[<a href='XPPXROC-576https://jira.hobot.cc:8443/browse/XPPXROC-576'>XPPXROC-576</a>] - 开发分支切换至大华接口
+</li>
+<li>[<a href='XPPXROC-577https://jira.hobot.cc:8443/browse/XPPXROC-577'>XPPXROC-577</a>] - 发布包中去掉libgomp
+</li>
+<li>[<a href='XPPXROC-582https://jira.hobot.cc:8443/browse/XPPXROC-582'>XPPXROC-582</a>] - 解决VIO资源未能及时释放问题
+</li>
+<li>[<a href='XPPXROC-583https://jira.hobot.cc:8443/browse/XPPXROC-583'>XPPXROC-583</a>] - 修复 大华分支，x2版本运行有异常
+</li>
+<li>[<a href='XPPXROC-587https://jira.hobot.cc:8443/browse/XPPXROC-587'>XPPXROC-587</a>] - uvc 增加对nv12格式的支持
+</li>
+<li>[<a href='XPPXROC-589https://jira.hobot.cc:8443/browse/XPPXROC-589'>XPPXROC-589</a>] - x2面板机 mipi稳定性调试
+</li>
+<li>[<a href='XPPXROC-603https://jira.hobot.cc:8443/browse/XPPXROC-603'>XPPXROC-603</a>] - 解决aiexpress web模式延迟1~2秒
+</li>
+<li>[<a href='XPPXROC-606https://jira.hobot.cc:8443/browse/XPPXROC-606'>XPPXROC-606</a>] - 手势跟踪采用欧式距离策略
+</li>
+<li>[<a href='XPPXROC-642https://jira.hobot.cc:8443/browse/XPPXROC-642'>XPPXROC-642</a>] - 升级bsp至0827版本
+</li>
+<li>[<a href='XPPXROC-647https://jira.hobot.cc:8443/browse/XPPXROC-647'>XPPXROC-647</a>] - 升级bpu-predict至1.1.16版本
+</li>
+<li>[<a href='XPPXROC-648https://jira.hobot.cc:8443/browse/XPPXROC-648'>XPPXROC-648</a>] - ipu通道设置crop失败
+</li>
+<li>[<a href='XPPXROC-649https://jira.hobot.cc:8443/browse/XPPXROC-649'>XPPXROC-649</a>] - uvc适配0827系统镜像
+</li>
+</ul>
+
+<h2> 子任务
+</h2>
+<ul>
+<li>[<a href='XPPXROC-537https://jira.hobot.cc:8443/browse/XPPXROC-537'>XPPXROC-537</a>] - 【智能数据传输】移除MessagePack，不使用pack.proto
+</li>
+<li>[<a href='XPPXROC-559https://jira.hobot.cc:8443/browse/XPPXROC-559'>XPPXROC-559</a>] - 确保智能结果输出顺序有保证
+</li>
+<li>[<a href='XPPXROC-560https://jira.hobot.cc:8443/browse/XPPXROC-560'>XPPXROC-560</a>] - 所有帧都需要有结果上报
+</li>
+<li>[<a href='XPPXROC-569https://jira.hobot.cc:8443/browse/XPPXROC-569'>XPPXROC-569</a>] - 确定apa vio接口类别
+</li>
+<li>[<a href='XPPXROC-570https://jira.hobot.cc:8443/browse/XPPXROC-570'>XPPXROC-570</a>] - 集成原图检测模型
+</li>
+<li>[<a href='XPPXROC-571https://jira.hobot.cc:8443/browse/XPPXROC-571'>XPPXROC-571</a>] - 集成IPM停车位检测模型
+</li>
+<li>[<a href='XPPXROC-572https://jira.hobot.cc:8443/browse/XPPXROC-572'>XPPXROC-572</a>] - 集成IPM图角点检测与分割模型
+</li>
+<li>[<a href='XPPXROC-573https://jira.hobot.cc:8443/browse/XPPXROC-573'>XPPXROC-573</a>] - apa获取4路原图
+</li>
+<li>[<a href='XPPXROC-574https://jira.hobot.cc:8443/browse/XPPXROC-574'>XPPXROC-574</a>] - apa详细设计文档
+</li>
+<li>[<a href='XPPXROC-575https://jira.hobot.cc:8443/browse/XPPXROC-575'>XPPXROC-575</a>] - apa一期protobuf协议映射
+</li>
+<li>[<a href='XPPXROC-579https://jira.hobot.cc:8443/browse/XPPXROC-579'>XPPXROC-579</a>] - workflow只添加FasterRCNN Method，出现vio错误
+</li>
+<li>[<a href='XPPXROC-580https://jira.hobot.cc:8443/browse/XPPXROC-580'>XPPXROC-580</a>] - 更新手的关键点检测模型
+</li>
+<li>[<a href='XPPXROC-581https://jira.hobot.cc:8443/browse/XPPXROC-581'>XPPXROC-581</a>] - 手势识别结果策略更新
+</li>
+<li>[<a href='XPPXROC-601https://jira.hobot.cc:8443/browse/XPPXROC-601'>XPPXROC-601</a>] - X2-IPC版本AP侧程序退出异常
+</li>
+<li>[<a href='XPPXROC-605https://jira.hobot.cc:8443/browse/XPPXROC-605'>XPPXROC-605</a>] - apa示例，smartplugin的适配
+</li>
+<li>[<a href='XPPXROC-618https://jira.hobot.cc:8443/browse/XPPXROC-618'>XPPXROC-618</a>] - apa示例-websocket适配
+</li>
+<li>[<a href='XPPXROC-620https://jira.hobot.cc:8443/browse/XPPXROC-620'>XPPXROC-620</a>] - multivioplugin支持多路图像通过一个msg输出
+</li>
+<li>[<a href='XPPXROC-621https://jira.hobot.cc:8443/browse/XPPXROC-621'>XPPXROC-621</a>] - multismartplugin支持分析多路的vio message
+</li>
+<li>[<a href='XPPXROC-622https://jira.hobot.cc:8443/browse/XPPXROC-622'>XPPXROC-622</a>] - 集成IPM图
+</li>
+<li>[<a href='XPPXROC-623https://jira.hobot.cc:8443/browse/XPPXROC-623'>XPPXROC-623</a>] - apa智能结果格式转换
+</li>
+<li>[<a href='XPPXROC-624https://jira.hobot.cc:8443/browse/XPPXROC-624'>XPPXROC-624</a>] - 解决web前端长稳有问题
+</li>
+<li>[<a href='XPPXROC-625https://jira.hobot.cc:8443/browse/XPPXROC-625'>XPPXROC-625</a>] - 解决tv_dance 内存泄漏问题
+</li>
+<li>[<a href='XPPXROC-629https://jira.hobot.cc:8443/browse/XPPXROC-629'>XPPXROC-629</a>] - 集成裁剪后的多任务检测模型
+</li>
+<li>[<a href='XPPXROC-631https://jira.hobot.cc:8443/browse/XPPXROC-631'>XPPXROC-631</a>] - 集成 目标检测 + kps的模型
+</li>
+<li>[<a href='XPPXROC-632https://jira.hobot.cc:8443/browse/XPPXROC-632'>XPPXROC-632</a>] - protobuf输出智能分析fps
+</li>
+<li>[<a href='XPPXROC-634https://jira.hobot.cc:8443/browse/XPPXROC-634'>XPPXROC-634</a>] - 解决人体关键点闪烁厉害的问题
+</li>
+<li>[<a href='XPPXROC-635https://jira.hobot.cc:8443/browse/XPPXROC-635'>XPPXROC-635</a>] - 解决websocket方式内存快速下降的问题
+</li>
+<li>[<a href='XPPXROC-639https://jira.hobot.cc:8443/browse/XPPXROC-639'>XPPXROC-639</a>] - 集成can功能
+</li>
+<li>[<a href='XPPXROC-640https://jira.hobot.cc:8443/browse/XPPXROC-640'>XPPXROC-640</a>] - 解决apa内存问题
+</li>
+<li>[<a href='XPPXROC-641https://jira.hobot.cc:8443/browse/XPPXROC-641'>XPPXROC-641</a>] - 提供AnalysisPlugin
+</li>
+</ul> 
+

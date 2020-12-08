@@ -62,57 +62,6 @@ std::string DropVioMessage::Serialize() {
   return smart_str;
 }
 
-void ImageVioMessage::FreeImage(int tmp) {
-  //   if (image_.size() > 0) {
-  //     // free image
-  //     if (num_ == 1) {
-  //       LOGI << "begin remove one vio slot";
-  // #if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
-  //       VioFeedbackContext *feedback_context =
-  //           reinterpret_cast<VioFeedbackContext *>(image_[0]->context);
-  //       if (hb_vio_free_info(HB_VIO_SRC_INFO,
-  //                            &(feedback_context->src_info)) < 0) {
-  //         LOGE << "hb_vio_free_info failed";
-  //       }
-  //       int ret = hb_vio_free(&(feedback_context->pym_img_info));
-  //       if (ret != 0) {
-  //         LOGE << "hb_vio_free failed";
-  //       }
-  //       free(feedback_context);
-  //       LOGD << "free feedback context success";
-  // #endif
-  //       image_[0]->context = nullptr;
-  //       image_[0] = nullptr;
-  //     } else if (num_ == 2) {
-  //       // todo
-  //     }
-  //     image_.clear();
-  //   }
-}
-
-void ImageVioMessage::FreeImage() {
-  //   if (image_.size() > 0) {
-  //     // free image
-  //     if (num_ == 1) {
-  //       LOGI << "begin remove one vio slot";
-  // #ifdef X3_X2_VIO
-  //       img_info_t *img_info = reinterpret_cast<img_info_t
-  //       *>(image_[0]->context); hb_vio_free(img_info); free(img_info);
-  // #elif defined(X3_IOT_VIO)
-  //       pym_buffer_t *img_info =
-  //           reinterpret_cast<pym_buffer_t *>(image_[0]->context);
-  //       iot_vio_free(img_info);
-  //       free(img_info);
-  // #endif
-  //       image_[0]->context = nullptr;
-  //       image_[0] = nullptr;
-  //     } else if (num_ == 2) {
-  //       // todo
-  //     }
-  //     image_.clear();
-  //   }
-}
-
 }  // namespace rtspplugin
 }  // namespace xproto
 }  // namespace vision

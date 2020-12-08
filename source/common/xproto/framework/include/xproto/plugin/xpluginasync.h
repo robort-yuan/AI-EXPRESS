@@ -44,10 +44,14 @@ class XPluginAsync : public XPlugin {
   int Init() override;
   int DeInit() override;
   // 消息处理上半部分，将消息推送该plugin的消息队列 + 流量控制
-  void OnMsg(XProtoMessagePtr msg);
-  int GetPluginMsgCount();
-  int GetPluginMsgLimit();
-  void SetPluginMsgLimit(int msg_limit_count);
+  void OnMsg(XProtoMessagePtr msg) override;
+  int GetPluginMsgCount() override;
+  // plugin处理消息数量限制
+  int GetPluginMsgLimit() override;
+  void SetPluginMsgLimit(int msg_limit_count) override;
+  // plugin处理msg时间预警
+  int GetMsgMonitorTime() override;
+  void SetMsgMonitorTime(int msg_monitor_time) override;
   // 启动Plugin
   virtual int Start() {
     return 0;
@@ -68,6 +72,7 @@ class XPluginAsync : public XPlugin {
   // Note: 自定义的plugin需要在Init函数中，
   //       调用XPluginAsync::Init之前调用该接口完成监听消息注册。
   void RegisterMsg(const std::string& type, XProtoMessageFunc callback);
+  void UnRegisterMsg(const std::string& type);
 
  private:
   // 消息处理下半部分，分发消息并调用对应的callback函数
@@ -77,7 +82,11 @@ class XPluginAsync : public XPlugin {
   std::mutex msg_mutex_;
   int msg_limit_count_ = 0;
   std::mutex msg_limit_mutex_;
+  // 监控消息在plugin中的处理耗时，超时提供告警消息
+  int msg_monitor_time_;
+  std::mutex msg_monitor_mutex_;
   std::map<std::string, XProtoMessageFunc> msg_map_;
+  std::mutex msg_map_mutex_;
 };
 
 }  // namespace xproto

@@ -7,8 +7,8 @@
  * @date      2020-01-03
  */
 
-#ifndef XSTREAM_TUTORIALS_STAGE1_METHOD_B_BOX_H_
-#define XSTREAM_TUTORIALS_STAGE1_METHOD_B_BOX_H_
+#ifndef XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_METHOD_B_BOX_H_
+#define XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_METHOD_B_BOX_H_
 
 #include <string>
 #include "hobotxsdk/xstream_data.h"
@@ -66,4 +66,4 @@ typedef XStreamData<hobot::vision::BBox> BBox;
 
 }  // namespace xstream
 
-#endif  // XSTREAM_TUTORIALS_STAGE1_METHOD_B_BOX_H_
+#endif  // XSTREAM_FRAMEWORK_TUTORIALS_STAGE1_METHOD_B_BOX_H_

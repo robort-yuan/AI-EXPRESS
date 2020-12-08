@@ -18,6 +18,7 @@
 #include "vote_method/vote_method.h"
 #include "BehaviorMethod/BehaviorMethod.h"
 #include "FilterMethod/FilterMethod.h"
+#include "LowPassFilterMethod/LowPassFilterMethod.h"
 
 namespace xstream {
 namespace method_factory {
@@ -36,6 +37,8 @@ MethodPtr CreateMethod(const std::string &method_name) {
     return MethodPtr(new BehaviorMethod());
   } else if ("FilterMethod" == method_name) {
     return MethodPtr(new FilterMethod());
+  } else if ("LowPassFilterMethod" == method_name) {
+    return MethodPtr(new LowPassFilterMethod());
   } else {
     return MethodPtr();
   }

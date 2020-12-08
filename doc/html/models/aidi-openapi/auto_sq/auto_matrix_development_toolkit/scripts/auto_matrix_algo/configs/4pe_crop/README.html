@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>crop多任务 &mdash; AI Express用户手册 2.7.0 文档</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../../../../" src="../../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../../_static/doctools.js"></script>
+        <script src="../../../../../../../../_static/language_data.js"></script>
+        <script src="../../../../../../../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../../../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="索引" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../../../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/overview.html">概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/quick_start.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/xstream.html">XStream算法SDK编程框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/xproto.html">XProto原型应用开发框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/solution.html">场景参考解决方案</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/tools.html">工具集</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/faq.html">常见问题</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/version.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../BuildAll/doc/copyright.html">版权声明</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../../index.html">AI Express用户手册</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>crop多任务</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../../../../_sources/models/aidi-openapi/auto_sq/auto_matrix_development_toolkit/scripts/auto_matrix_algo/configs/4pe_crop/README.md.txt" rel="nofollow"> 查看页面源码</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="crop">
+<h1>crop多任务<a class="headerlink" href="#crop" title="永久链接至标题">¶</a></h1>
+<ul class="simple">
+<li><p>包含4个检测分支</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">det_cyclist_light.py</span></code> 骑车人、红绿灯检测</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">det_person.py</span></code> 行人检测</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">det_rear.py</span></code> 车头车尾分支</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">det_vehicle_sign.py</span></code> 全车、标志牌检测</p></li>
+</ul>
+</li>
+<li><p>包含1个分割分支</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg_lane.py</span></code> 4类车道线分割</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="quantization-training-2-steps-fusion-bn">
+<h1>Quantization Training, 2 steps fusion bn<a class="headerlink" href="#quantization-training-2-steps-fusion-bn" title="永久链接至标题">¶</a></h1>
+<ul class="simple">
+<li><p>pipeline test</p>
+<ul>
+<li><p>用验证集跑通整个pipeline，加快debug速度</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash tools/quanti_training_2step_fusion_bn.sh <span class="se">\</span>
+    --config configs/4pe_crop/multitask.py <span class="se">\</span>
+    --pipeline-test
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>local run</p>
+<ul>
+<li><p>用训练集正式训练</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash tools/quanti_training_2step_fusion_bn.sh <span class="se">\</span>
+  --config configs/4pe_crop/multitask.py <span class="se">\</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h1>训练简介<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
+<ul class="simple">
+<li><p>crop模型输入尺寸</p>
+<ul>
+<li><p>model（训练）的输入尺寸，训练集可包含多种尺寸，如下列出常见尺寸从原图到模型输入所经历的变化，样例训练集仅包含<code class="docutils literal notranslate"><span class="pre">720x1280</span></code>图片</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">720x1280</span></code>  –random/center crop-&gt; <code class="docutils literal notranslate"><span class="pre">448x1216</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">940x1824</span></code>  –random/center crop-&gt; <code class="docutils literal notranslate"><span class="pre">448x1216</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1080x1920</span></code> –random/center crop-&gt; <code class="docutils literal notranslate"><span class="pre">448x1216</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1080x2280</span></code> –random/center crop-&gt; <code class="docutils literal notranslate"><span class="pre">448x1216</span></code></p></li>
+<li><p>如果训练集包含多种尺寸，<code class="docutils literal notranslate"><span class="pre">max_img_hw</span></code>设置为最大尺寸，作用于center crop</p></li>
+</ul>
+</li>
+<li><p>export_mode（预测、部署）的输入尺寸，如下尺寸选一种，例子用的是<code class="docutils literal notranslate"><span class="pre">940x1824</span></code>输入</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">940x1824</span></code>  –根据相机参数算出消失点，给定crop尺寸–&gt; <code class="docutils literal notranslate"><span class="pre">448x1280</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>更多解析见<code class="docutils literal notranslate"><span class="pre">configs/4pe_resize/README.md</span></code></p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; 版权所有 2020, Horizon Robotics
+
+    </p>
+  </div>
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

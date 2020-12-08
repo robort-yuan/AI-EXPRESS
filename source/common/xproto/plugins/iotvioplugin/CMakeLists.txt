@@ -38,7 +38,7 @@ set(BASE_LIBRARIES opencv_world pthread vio cam uvc xproto_msgtype jsoncpp xstre
 set(X3_HAPI_LIB isp iar isp_algo tinyalsa multimedia z avformat hbmedia)
 target_link_libraries(${PROJECT_NAME} ${BASE_LIBRARIES} ${X3_HAPI_LIB})
 
-#add_subdirectory(test)
+add_subdirectory(sample)
 
 set(MY_OUTPUT_ROOT ${OUTPUT_ROOT}/${PROJECT_NAME}/)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/

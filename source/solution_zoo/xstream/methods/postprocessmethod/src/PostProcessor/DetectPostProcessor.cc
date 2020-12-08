@@ -54,7 +54,14 @@ int DetectPostProcessor::Init(const std::string &cfg) {
 
   method_outs_ = config_->GetSTDStringArray("method_outs");
   iou_threshold_ = config_->GetFloatValue("iou_threshold", iou_threshold_);
-
+  pre_nms_top_n_ = config_->GetIntValue("pre_nms_top_n");
+  post_nms_top_n_ = config_->GetIntValue("post_nms_top_n");
+  box_score_thresh_ = config_->GetFloatValue("box_score_thresh",
+                                             box_score_thresh_);
+  corner_score_threshold_ = config_->GetFloatValue("corner_score_threshold",
+                                                   corner_score_threshold_);
+  mask_confidence_ = config_->GetBoolValue("mask_confidence",
+                                           mask_confidence_);
   return 0;
 }
 
@@ -65,7 +72,6 @@ void DetectPostProcessor::GetModelInfo() {
   for (size_t i = 0; i < output_layer_num; ++i) {
     auto &branch_info = out_level2branch_info_[i];
     // get shifts
-    const uint8_t *shift_value = bpu_model_->outputs[i].shifts;
     // dim of per shape = 4
     int shape_dim = bpu_model_->outputs[i].aligned_shape.ndim;
     HOBOT_CHECK(shape_dim == 4)
@@ -76,7 +82,9 @@ void DetectPostProcessor::GetModelInfo() {
       aligned_dim[dim] = bpu_model_->outputs[i].aligned_shape.d[dim];
       real_dim[dim] = bpu_model_->outputs[i].shape.d[dim];
     }
-    branch_info.shift = shift_value[0];
+    branch_info.shifts = bpu_model_->outputs[i].shifts;
+    // TODO(zhe.sun) BPU_LAYOUT_NCHW待处理
+    HOBOT_CHECK(bpu_model_->outputs[i].aligned_shape.layout == BPU_LAYOUT_NHWC);
     branch_info.aligned_nhwc = aligned_dim;
     branch_info.real_nhwc = real_dim;
 
@@ -193,6 +201,12 @@ void DetectPostProcessor::RunSingleFrame(
         LOGD << box;
       }
     }
+    for (auto &orient_boxes : det_result.orient_boxes) {
+      LOGD << orient_boxes.first << ", num: " << orient_boxes.second.size();
+      for (auto &orient_box : orient_boxes.second) {
+        LOGD << orient_box;
+      }
+    }
 
     // convert DetectOutMsg to xstream data structure
     std::map<std::string, std::shared_ptr<BaseDataVector>> xstream_det_result;
@@ -215,20 +229,45 @@ void DetectPostProcessor::PostProcess(DetectOutMsg &det_result) {
     switch (out_type) {
       case DetectBranchOutType::INVALID:
       {
-        #if 0
-        // test dump raw output
-        int8_t* result = reinterpret_cast<int8_t*>
-          ((output_tensors_->at(out_level).data.virAddr);
-        std::fstream outfile;
-        outfile.open("output.txt", std::ios_base::out|std::ios_base::trunc);
-        for (int i = 0; i < 64*32*16; i++) {
-          outfile << +(*(result+i)) << " ";
-          if ((i+1)%16 == 0) {
-            outfile << std::endl;
+        auto dump_bpu_data = getenv("dump_bpu_outdata");
+        if (dump_bpu_data && !strcmp(dump_bpu_data, "ON")) {
+          // test dump raw output
+          if (branch_info.element_type_bytes == 1) {
+            std::fstream outfile;
+            int8_t* result = reinterpret_cast<int8_t*>
+                (output_tensors_->at(out_level).data.virAddr);
+            std::string file_name = "layer.txt" +
+                                    std::to_string(static_cast<int>(out_level));
+            outfile.open(file_name, std::ios_base::out|std::ios_base::trunc);
+            for (int i = 0;
+                 i < branch_info.aligned_nhwc[1] * branch_info.aligned_nhwc[2];
+                 i++) {
+              int index = i * branch_info.aligned_nhwc[3];
+              for (int j = 0; j < branch_info.aligned_nhwc[3]; j++) {
+                outfile << +(*(result+index+j)) << " ";
+              }
+              outfile << std::endl;
+            }
+            outfile.close();
+          } else {
+            std::fstream outfile;
+            int32_t* result = reinterpret_cast<int32_t*>
+                (output_tensors_->at(out_level).data.virAddr);
+            std::string file_name = "layer.txt" +
+                                    std::to_string(static_cast<int>(out_level));
+            outfile.open(file_name, std::ios_base::out|std::ios_base::trunc);
+            for (int i = 0;
+                 i < branch_info.aligned_nhwc[1] * branch_info.aligned_nhwc[2];
+                 i++) {
+              int index = i * branch_info.aligned_nhwc[3];
+              for (int j = 0; j < branch_info.aligned_nhwc[3]; j++) {
+                outfile << +(*(result+index+j)) << " ";
+              }
+              outfile << std::endl;
+            }
+            outfile.close();
           }
         }
-        outfile.close();
-        #endif
         break;
       }
       case DetectBranchOutType::APABBOX:
@@ -245,10 +284,30 @@ void DetectPostProcessor::PostProcess(DetectOutMsg &det_result) {
             output_tensors_->at(out_level+1).data.virAddr,
             det_result.boxes[branch_info.name]);
         break;
+      case DetectBranchOutType::ORIENTBBOX:
+        // need next 4 layer data, need flush
+        for (int i = 1; i <= 3; i++) {
+          HB_SYS_flushMemCache(&(output_tensors_->at(out_level+i).data),
+                               HB_SYS_MEM_CACHE_INVALIDATE);
+        }
+        ParseOrientBox(
+            output_tensors_->at(out_level).data.virAddr,
+            output_tensors_->at(out_level+1).data.virAddr,
+            output_tensors_->at(out_level+2).data.virAddr,
+            output_tensors_->at(out_level+3).data.virAddr,
+            out_level, out_level+1, out_level+2, out_level+3,
+            det_result.orient_boxes[branch_info.name]);
+        break;
+      case DetectBranchOutType::CORNER:
+        ParseCorner(output_tensors_->at(out_level).data.virAddr,
+                    out_level,
+                    det_result.corners[branch_info.name]);
+        break;
       case DetectBranchOutType::MASK:
         ParseDetectionMask(
           output_tensors_->at(out_level).data.virAddr,
-          out_level, det_result.segmentations[branch_info.name]);
+          out_level, det_result.segmentations[branch_info.name],
+          mask_confidence_);
         break;
       default:
         break;
@@ -271,6 +330,33 @@ void DetectPostProcessor::GetResultMsg(
       auto xstream_box = std::make_shared<XStreamData<BBox>>();
       xstream_box->value = std::move(box);
       xstream_det_result[boxes.first]->datas_.push_back(xstream_box);
+    }
+  }
+
+  // orient_box
+  for (const auto &orient_boxes : det_result.orient_boxes) {
+    xstream_det_result[orient_boxes.first] =
+        std::make_shared<xstream::BaseDataVector>();
+    xstream_det_result[orient_boxes.first]->name_ =
+        "rcnn_" + orient_boxes.first;
+    for (uint i = 0; i < orient_boxes.second.size(); ++i) {
+      const auto &orient_box = orient_boxes.second[i];
+      auto xstream_box = std::make_shared<XStreamData<Oriented_BBox>>();
+      xstream_box->value = std::move(orient_box);
+      xstream_det_result[orient_boxes.first]->datas_.push_back(xstream_box);
+    }
+  }
+
+  // corner
+  for (const auto &corners : det_result.corners) {
+    xstream_det_result[corners.first] =
+        std::make_shared<xstream::BaseDataVector>();
+    xstream_det_result[corners.first]->name_ = "rcnn_" + corners.first;
+    for (uint i = 0; i < corners.second.size(); ++i) {
+      const auto &corner = corners.second[i];
+      auto xstream_corner = std::make_shared<XStreamData<Point>>();
+      xstream_corner->value = std::move(corner);
+      xstream_det_result[corners.first]->datas_.push_back(xstream_corner);
     }
   }
 
@@ -313,6 +399,31 @@ void DetectPostProcessor::CoordinateTransOutMsg(
       }
     }
   }
+
+  for (auto &orient_boxes : det_result.orient_boxes) {
+    for (auto &orient_box : orient_boxes.second) {
+      CoordinateTransform(orient_box.x1, orient_box.y1,
+                          src_image_width, src_image_height,
+                          model_input_width, model_input_hight);
+      CoordinateTransform(orient_box.x2, orient_box.y2,
+                          src_image_width, src_image_height,
+                          model_input_width, model_input_hight);
+      CoordinateTransform(orient_box.x3, orient_box.y3,
+                          src_image_width, src_image_height,
+                          model_input_width, model_input_hight);
+      CoordinateTransform(orient_box.x4, orient_box.y4,
+                          src_image_width, src_image_height,
+                          model_input_width, model_input_hight);
+    }
+  }
+
+  for (auto &corners : det_result.corners) {
+    for (auto &corner : corners.second) {
+      CoordinateTransform(corner.x, corner.y,
+                          src_image_width, src_image_height,
+                          model_input_width, model_input_hight);
+    }
+  }
 }
 
 // branch_num: layer
@@ -320,6 +431,8 @@ void DetectPostProcessor::ParseDetectionBox(
     void* result, int branch_num, void* anchor,
     std::vector<BBox> &boxes) {
   LOGD << "Into ParseDetectionBox";
+  RUN_PROCESS_TIME_PROFILER("Parse_DetectionBox");
+  RUN_FPS_PROFILER("Parse_DetectionBox");
   uint8_t *det_result = reinterpret_cast<uint8_t *>(result);
   uint8_t *det_anchor = reinterpret_cast<uint8_t *>(anchor);
 
@@ -444,22 +557,52 @@ void DetectPostProcessor::ParseDetectionBox(
 }
 
 void DetectPostProcessor::ParseDetectionMask(
-    void* result, int branch_num, std::vector<Segmentation> &masks) {
-  uint8_t* mask_feature = reinterpret_cast<uint8_t *>(result);
+    void* result, int branch_num,
+    std::vector<Segmentation> &masks,
+    bool confidence) {
+  RUN_PROCESS_TIME_PROFILER("Parse_Mask");
+  RUN_FPS_PROFILER("Parse_Mask");
+  masks.resize(1);
 
-  Segmentation mask;
+  uint8_t* mask_feature = reinterpret_cast<uint8_t *>(result);
+  Segmentation &mask = masks[0];
   mask.height = out_level2branch_info_[branch_num].aligned_nhwc[1];
   mask.width = out_level2branch_info_[branch_num].aligned_nhwc[2];
   int feature_size = mask.height * mask.width;
+  {
+    std::unique_lock<std::mutex> lck(mem_mtx_);
+    size_t size = feature_size*sizeof(float);
+    if (confidence) {
+      size *= 2;
+    }
+    if (mem_seg_.first == nullptr) {
+      mem_seg_.first = new char[size];
+      mem_seg_.second = size;
+    } else if (mem_seg_.second < size) {
+      delete[] mem_seg_.first;
+      mem_seg_.first = new char[size];
+      mem_seg_.second = size;
+    }
+  }
+  float *mask_values = reinterpret_cast<float *>(mem_seg_.first);
+  mask.values = std::vector<float>(mask_values, mask_values+feature_size);
+
   float score = 0;
   for (int i = 0; i < feature_size; ++i) {
     uint8_t fp_mask = *(mask_feature + 2*i);
-    mask.values.push_back(fp_mask);
-    uint8_t fp_score = *(mask_feature + 2*i + 1);
-    mask.pixel_score.push_back(fp_score);
-    score += fp_score;
+    mask.values[i] = fp_mask;
   }
-
+  if (confidence) {
+    mask.pixel_score = std::vector<float>(
+        mask_values+feature_size, mask_values+feature_size*2);
+    for (int i = 0; i < feature_size; ++i) {
+      uint8_t fp_score = *(mask_feature + 2*i + 1);
+      mask.pixel_score[i] = fp_score;
+      score += fp_score;
+    }
+    score = score / feature_size;
+    mask.score = score;
+  }
   #if 0
   // test mask
   cv::Mat mask_cv(mask.height, mask.width, CV_8UC1);
@@ -471,16 +614,14 @@ void DetectPostProcessor::ParseDetectionMask(
   }
   cv::imwrite("mask.jpg", mask_cv);
   #endif
-
-  score = score / feature_size;
-  mask.score = score;
-  masks.push_back(mask);
 }
 
 void DetectPostProcessor::ParseAPADetectionBox(
     void* result, int branch_num,
     std::vector<BBox> &boxes) {
   LOGD << "Into ParseAPADetectionBox";
+  RUN_PROCESS_TIME_PROFILER("Parse_APADetectionBox");
+  RUN_FPS_PROFILER("Parse_APADetectionBox");
   int8_t *anchor_result = reinterpret_cast<int8_t *>(result);
   std::vector<BPUParkingAnchorResult> cached_result;
 
@@ -668,6 +809,362 @@ void DetectPostProcessor::LocalIOU(
     result.push_back(candidates[i]);
   }
   return;
+}
+
+// branch 所在层
+void DetectPostProcessor::ParseOrientBox(
+    void* box_score, void* box_reg, void* box_ctr, void* box_orient,
+    int branch_score, int branch_reg, int branch_ctr, int branch_orient,
+    std::vector<Oriented_BBox> &oriented_boxes) {
+  RUN_PROCESS_TIME_PROFILER("Parse_Orient_Box");
+  RUN_FPS_PROFILER("Parse_Orient_Box");
+  int height = out_level2branch_info_[branch_score].real_nhwc[1];
+  int width = out_level2branch_info_[branch_score].real_nhwc[2];
+  int stride = out_level2branch_info_[branch_score].aligned_nhwc[3];
+
+  // 1. 计算fmap上每个点对应其在原图中的坐标locations : (h*w, 2)
+  static cv::Mat locations;
+  static std::once_flag flag;
+  std::call_once(flag, [&width, &height, &stride]() {
+    std::vector<int32_t> shift_x = Arange(0, width);
+    std::vector<int32_t> shift_y = Arange(0, height);
+    cv::Mat shift_x_mat = cv::Mat(shift_x) * stride;
+    cv::Mat shift_y_mat = cv::Mat(shift_y) * stride;
+    // meshgrid
+    cv::Mat shift_x_mesh, shift_y_mesh;
+    MeshGrid(shift_x_mat, shift_y_mat, shift_x_mesh, shift_y_mesh);
+    cv::Mat concat_xy;
+    cv::vconcat(shift_x_mesh.reshape(1, 1),
+                shift_y_mesh.reshape(1, 1),
+                concat_xy);    // 纵向拼接两个行向量
+    cv::transpose(concat_xy, locations);
+    locations = locations + stride / 2;  // 向下取整
+  });
+
+  // 2. 准备数据 维度[n, h*w, c] n=1
+  struct BPU_Data {
+    void* data;
+    int branch;
+  };
+  std::vector<BPU_Data> bpu_datas =
+    {{box_score, branch_score},
+     {box_reg, branch_reg},
+     {box_ctr, branch_ctr},
+     {box_orient, branch_orient}};
+
+  // 解析bpu数据
+  std::vector<std::vector<float>> mat_datas(bpu_datas.size());
+
+  for (size_t i = 0; i < bpu_datas.size(); i++) {
+    int height = out_level2branch_info_[bpu_datas[i].branch].real_nhwc[1];
+    int width = out_level2branch_info_[bpu_datas[i].branch].real_nhwc[2];
+    int channel = out_level2branch_info_[bpu_datas[i].branch].real_nhwc[3];
+    int model_out_size = height * width * channel;
+    std::vector<float> vec_data(model_out_size);
+    ConvertOutput(bpu_datas[i].data, vec_data.data(), bpu_datas[i].branch);
+    mat_datas[i] = vec_data;
+  }
+  cv::Mat box_score_data_raw(64 * 32, 1, CV_32FC1, mat_datas[0].data());
+  cv::Mat box_ctr_data_raw(64 * 32, 1, CV_32FC1, mat_datas[2].data());
+  cv::Mat box_reg_data_raw(64 * 32, 4, CV_32FC1, mat_datas[1].data());
+  cv::Mat box_orient_data(64 * 32, 2, CV_32FC1, mat_datas[3].data());
+
+  cv::Mat box_score_data, box_ctr_data;
+  cv::exp(box_score_data_raw * (-1), box_score_data);
+  box_score_data = 1 / (1 + box_score_data);
+  cv::exp(box_ctr_data_raw * (-1), box_ctr_data);
+  box_ctr_data = 1 / (1 + box_ctr_data);
+  cv::multiply(box_score_data, box_ctr_data, box_score_data);
+
+  cv::Mat box_reg_data;
+  cv::exp(box_reg_data_raw, box_reg_data);
+  box_reg_data = box_reg_data * 8;
+
+  // box_score_thresh_过滤
+  cv::Mat candidate_inds;
+  // 元素值大于thresh 得到255，否则0
+  cv::compare(box_score_data, box_score_thresh_, candidate_inds, cv::CMP_GT);
+
+  candidate_inds = candidate_inds / 255;  // 0 or 1
+  int pre_nms_top_n = cv::sum(candidate_inds)[0];  // box_num
+  LOGD << "pre_nms_top_n: " << pre_nms_top_n
+       << " , pre_nms_top_n_: " << pre_nms_top_n_;
+  struct BoxData {
+    float score;
+    int class_id;
+    std::vector<int> location;  // size: 2
+    std::vector<float> reg;       // size: 4
+    std::vector<float> orient;    // size: 2
+  };
+  std::vector<BoxData> box_data(pre_nms_top_n);
+  int box_data_index = 0;
+  // [hw, c]
+  for (int row = 0; row < box_score_data.rows; row++) {
+    float* ptr = box_score_data.ptr<float>(row);
+    for (int col = 0; col < box_score_data.cols; col++) {
+      if (ptr[col] > box_score_thresh_) {
+        BoxData one_box_data;
+        one_box_data.score = ptr[col];
+        one_box_data.class_id = col + 1;
+        std::vector<int> location(2);
+        std::vector<float> reg(4), orient(2);
+        location[0] = locations.ptr<int32_t>(row)[0];
+        location[1] = locations.ptr<int32_t>(row)[1];
+        reg[0] = box_reg_data.ptr<float>(row)[0];
+        reg[1] = box_reg_data.ptr<float>(row)[1];
+        reg[2] = box_reg_data.ptr<float>(row)[2];
+        reg[3] = box_reg_data.ptr<float>(row)[3];
+        orient[0] = box_orient_data.ptr<float>(row)[0];
+        orient[1] = box_orient_data.ptr<float>(row)[1];
+        one_box_data.location = location;
+        one_box_data.reg = reg;
+        one_box_data.orient = orient;
+
+        box_data[box_data_index++] = one_box_data;
+      }
+    }
+  }
+  if (pre_nms_top_n > pre_nms_top_n_) {  // 需要取前top_n_个
+    pre_nms_top_n = pre_nms_top_n_;
+    auto greater = [](const BoxData &a, const BoxData &b) {
+      return a.score > b.score;
+    };
+    std::sort(box_data.begin(), box_data.end(), greater);  // 降序排序
+  }
+
+  // 3. 根据HBB获取obb
+  std::vector<std::vector<float>> horizontal_boxes(pre_nms_top_n);
+  std::vector<float> per_box_w_rot(pre_nms_top_n), per_box_h_rot(pre_nms_top_n);
+  // obb: non-nms
+  std::vector<Oriented_BBox> obb(pre_nms_top_n);
+  for (int i = 0; i < pre_nms_top_n; i++) {
+    horizontal_boxes[i].push_back(box_data[i].location[0] - box_data[i].reg[0]);
+    horizontal_boxes[i].push_back(box_data[i].location[1] - box_data[i].reg[1]);
+    horizontal_boxes[i].push_back(box_data[i].location[0] + box_data[i].reg[2]);
+    horizontal_boxes[i].push_back(box_data[i].location[1] + box_data[i].reg[3]);
+    per_box_w_rot[i] =
+      (box_data[i].reg[2] + box_data[i].reg[0]) / 2 * box_data[i].orient[0] - 1;
+    per_box_h_rot[i] =
+      (box_data[i].reg[3] + box_data[i].reg[1]) / 2 * box_data[i].orient[1] - 1;
+
+    obb[i].x1 = horizontal_boxes[i][0];
+    obb[i].y1 = horizontal_boxes[i][3] - per_box_h_rot[i];
+    obb[i].x2 = horizontal_boxes[i][2] - per_box_w_rot[i];
+    obb[i].y2 = horizontal_boxes[i][1];
+    obb[i].x3 = horizontal_boxes[i][2];
+    obb[i].y3 = horizontal_boxes[i][1] + per_box_h_rot[i];
+    obb[i].x4 = horizontal_boxes[i][0] + per_box_w_rot[i];
+    obb[i].y4 = horizontal_boxes[i][3];
+
+    obb[i].score = box_data[i].score;
+    obb[i].id = box_data[i].class_id;
+  }
+
+  // 4. 对obb进行NMS
+  LocalIOU(obb, oriented_boxes, iou_threshold_, post_nms_top_n_, false);
+  return;
+}
+
+void DetectPostProcessor::LocalIOU(
+    std::vector<Oriented_BBox> &candidates,
+    std::vector<Oriented_BBox> &result,
+    const float overlap_ratio, const int top_N,
+    const bool addScore) {
+  if (candidates.size() == 0) {
+    return;
+  }
+  std::vector<bool> skip(candidates.size(), false);
+
+  auto greater = [](const Oriented_BBox &a, const Oriented_BBox &b) {
+    return a.score > b.score;
+  };
+  std::stable_sort(candidates.begin(), candidates.end(),
+                   greater);
+
+  int count = 0;
+  for (size_t i = 0; count < top_N && i < skip.size(); ++i) {
+    if (skip[i]) {
+      continue;
+    }
+    skip[i] = true;
+    ++count;
+
+    float length_i_1 = candidates[i].Length1();
+    float length_i_2 = candidates[i].Length2();
+    int width_i = std::min(length_i_1, length_i_2);
+    int height_i = std::max(length_i_1, length_i_2);
+    float area_i = width_i * height_i;
+    cv::RotatedRect rect_i = cv::RotatedRect(
+        cv::Point2f(candidates[i].CenterX(), candidates[i].CenterY()),
+        cv::Size2f(height_i, width_i),
+        candidates[i].Theta());
+
+    // suppress the significantly covered bbox
+    for (size_t j = i + 1; j < skip.size(); ++j) {
+      if (skip[j]) {
+        continue;
+      }
+      // get intersections
+      float length_j_1 = candidates[j].Length1();
+      float length_j_2 = candidates[j].Length2();
+      float width_j = std::min(length_j_1, length_j_2);
+      float height_j = std::max(length_j_1, length_j_2);
+      cv::RotatedRect rect_j = cv::RotatedRect(
+          cv::Point2f(candidates[j].CenterX(), candidates[j].CenterY()),
+          cv::Size2f(height_j, width_j),
+          candidates[j].Theta());
+      std::vector<cv::Point2f> vertices;
+      cv::rotatedRectangleIntersection(rect_i, rect_j, vertices);
+      if (vertices.size() > 0) {
+        // compute overlap
+        float area_intersection = cv::contourArea(vertices);
+        float area_j = width_j * height_j;
+        float o = area_intersection / (area_i + area_j - area_intersection);
+
+        if (o > overlap_ratio) {
+          skip[j] = true;
+          if (addScore) {
+            candidates[i].score += candidates[j].score;
+          }
+        }
+      }
+    }
+    result.push_back(candidates[i]);
+  }
+  return;
+}
+
+void DetectPostProcessor::ParseCorner(
+    void* result, int branch,
+    std::vector<Point> &corners) {
+  RUN_PROCESS_TIME_PROFILER("Parse_Corner");
+  RUN_FPS_PROFILER("Parse_Corner");
+  int height = out_level2branch_info_[branch].real_nhwc[1];
+  int width = out_level2branch_info_[branch].real_nhwc[2];
+  int channel = out_level2branch_info_[branch].real_nhwc[3];
+  int model_out_size = height * width * channel;
+
+  std::vector<float> vec_data(model_out_size);
+  ConvertOutput(result, vec_data.data(), branch);
+
+  // get first channel: heatmap
+  cv::Mat bpu_result(height, width, CV_32FC(channel), vec_data.data());
+  std::vector<cv::Mat> bpu_results;
+  cv::split(bpu_result, bpu_results);
+  cv::Mat heatmap = bpu_results[0];
+
+  // 1. find local_max
+  std::vector<float> scores;
+  std::vector<std::pair<int, int>> points;
+  for (int row = 0; row < heatmap.rows; row++) {
+    for (int col = 0; col < heatmap.cols; col++) {
+      float* ptr = heatmap.ptr<float>(row);
+      if (ptr[col] < corner_score_threshold_) {
+        continue;
+      }
+      if (row > 0 && ptr[col] < heatmap.ptr<float>(row-1)[col]) {
+        continue;
+      }
+      if (row < heatmap.rows-1 && ptr[col] <= heatmap.ptr<float>(row+1)[col]) {
+        continue;
+      }
+      if (col > 0 && ptr[col] < ptr[col-1]) {
+        continue;
+      }
+      if (col < heatmap.cols-1 && ptr[col] <= ptr[col+1]) {
+        continue;
+      }
+      scores.push_back(ptr[col]);
+      points.push_back(std::make_pair(col, row));
+    }
+  }
+
+  // 2. find bias
+  int nums = points.size();
+  std::vector<std::pair<float, float>> bias(nums);
+  for (int i = 0; i < nums; i++) {
+    int x = points[i].first;
+    int y = points[i].second;
+    int diff_x = 0, diff_y = 0;
+    if (x > 0 && x < heatmap.cols-1) {
+      diff_x = heatmap.ptr<float>(y)[x+1] >
+          heatmap.ptr<float>(y)[x-1] ? 1 : -1;
+    }
+    if (y > 0 && y < heatmap.rows-1) {
+      diff_y = heatmap.ptr<float>(y+1)[x] >
+          heatmap.ptr<float>(y-1)[x] ? 1 : -1;
+    }
+    float bias_x = diff_x * 0.25;
+    float bias_y = diff_y * 0.25;
+    bias[i] = std::make_pair(bias_x, bias_y);
+  }
+
+  // 3. (max + bias) * stride = location
+  corners.resize(nums);
+  for (int i = 0; i < nums; i++) {
+    corners[i].x = (points[i].first + bias[i].first) * 4;
+    corners[i].y = (points[i].second + bias[i].second) * 4;
+    corners[i].score = scores[i];
+    LOGD << "x: " << corners[i].x
+         << ", y: " << corners[i].y
+         << ", score: " << corners[i].score;
+  }
+}
+
+void DetectPostProcessor::ConvertOutput(
+    void *src_ptr,
+    void *dest_ptr,
+    int out_index) {
+  auto &aligned_shape = bpu_model_->outputs[out_index].aligned_shape;
+  auto &real_shape = bpu_model_->outputs[out_index].shape;
+  auto elem_size = 1;  // TODO(zhe.sun) 是否可判断float
+  if (bpu_model_->outputs[out_index].data_type == BPU_TYPE_TENSOR_S32) {
+    elem_size = 4;
+  }
+  auto shift = bpu_model_->outputs[out_index].shifts;
+
+  uint32_t dst_n_stride =
+      real_shape.d[1] * real_shape.d[2] * real_shape.d[3] * elem_size;
+  uint32_t dst_h_stride = real_shape.d[2] * real_shape.d[3] * elem_size;
+  uint32_t dst_w_stride = real_shape.d[3] * elem_size;
+  uint32_t src_n_stride =
+      aligned_shape.d[1] * aligned_shape.d[2] * aligned_shape.d[3] * elem_size;
+  uint32_t src_h_stride = aligned_shape.d[2] * aligned_shape.d[3] * elem_size;
+  uint32_t src_w_stride = aligned_shape.d[3] * elem_size;
+
+  float tmp_float_value;
+  int32_t tmp_int32_value;
+
+  for (int nn = 0; nn < real_shape.d[0]; nn++) {
+    void *cur_n_dst = reinterpret_cast<int8_t *>(dest_ptr) + nn * dst_n_stride;
+    void *cur_n_src = reinterpret_cast<int8_t *>(src_ptr) + nn * src_n_stride;
+    for (int hh = 0; hh < real_shape.d[1]; hh++) {
+      void *cur_h_dst =
+          reinterpret_cast<int8_t *>(cur_n_dst) + hh * dst_h_stride;
+      void *cur_h_src =
+          reinterpret_cast<int8_t *>(cur_n_src) + hh * src_h_stride;
+      for (int ww = 0; ww < real_shape.d[2]; ww++) {
+        void *cur_w_dst =
+            reinterpret_cast<int8_t *>(cur_h_dst) + ww * dst_w_stride;
+        void *cur_w_src =
+            reinterpret_cast<int8_t *>(cur_h_src) + ww * src_w_stride;
+        for (int cc = 0; cc < real_shape.d[3]; cc++) {
+          void *cur_c_dst =
+              reinterpret_cast<int8_t *>(cur_w_dst) + cc * elem_size;
+          void *cur_c_src =
+              reinterpret_cast<int8_t *>(cur_w_src) + cc * elem_size;
+          if (elem_size == 4) {
+            tmp_int32_value = *(reinterpret_cast<int32_t *>(cur_c_src));
+            tmp_float_value = GetFloatByInt(tmp_int32_value, shift[cc]);
+            *(reinterpret_cast<float *>(cur_c_dst)) = tmp_float_value;
+          } else {
+            *(reinterpret_cast<int8_t *>(cur_c_dst)) =
+                *(reinterpret_cast<int8_t *>(cur_c_src));
+          }
+        }
+      }
+    }
+  }
 }
 
 }  // namespace xstream

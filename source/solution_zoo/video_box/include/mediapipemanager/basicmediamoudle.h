@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -45,9 +45,6 @@ class BasicMediaModule {
   virtual int DeInit() = 0;
   BasicMediaModule(){};
   ~BasicMediaModule(){};
-
- protected:
- private:
 };
 
 }  // namespace vision

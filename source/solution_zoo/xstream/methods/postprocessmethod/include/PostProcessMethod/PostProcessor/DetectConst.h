@@ -23,6 +23,8 @@
 namespace xstream {
 
 using hobot::vision::BBox;
+using hobot::vision::Oriented_BBox;
+using hobot::vision::Point;
 using hobot::vision::Landmarks;
 using hobot::vision::Feature;
 using hobot::vision::Segmentation;
@@ -32,7 +34,9 @@ using hobot::vision::Attribute;
 enum class DetectBranchOutType {
   BBOX,
   APABBOX,
+  ORIENTBBOX,
   MASK,
+  CORNER,
   INVALID
 };
 
@@ -49,11 +53,13 @@ struct DetectBranchInfo {
 
   std::vector<int> real_nhwc;
   std::vector<int> aligned_nhwc;
-  uint32_t shift;
+  uint8_t *shifts;
 };
 
 struct DetectOutMsg {
   std::map<std::string, std::vector<BBox>> boxes;
+  std::map<std::string, std::vector<Oriented_BBox>> orient_boxes;
+  std::map<std::string, std::vector<Point>> corners;
   std::map<std::string, std::vector<Landmarks>> landmarks;
   std::map<std::string, std::vector<Feature>> features;
   std::map<std::string, std::vector<Segmentation>> segmentations;

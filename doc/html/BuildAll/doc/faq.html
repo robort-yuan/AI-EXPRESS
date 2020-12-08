@@ -1,0 +1,582 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>常见问题 &mdash; AI Express用户手册 2.7.0 文档</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="next" title="Release Notes" href="version.html" />
+    <link rel="prev" title="工具集" href="tools.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xstream.html">XStream算法SDK编程框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xproto.html">XProto原型应用开发框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solution.html">场景参考解决方案</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools.html">工具集</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">常见问题</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">开发板外设连接说明</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">摄像头连接</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#os8a10">os8a10</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usb">usb摄像头</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ip">IP设置</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">编译、部署及示例运行</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">编译</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">部署</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">示例运行</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">回灌模式</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">回灌方式说明</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">回灌示例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#usb-uvcweb">usb智慧电视场景，切换uvc与web模式</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hdmi">视频盒子使用HDMI显示</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">视频盒子本地转发</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="version.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">版权声明</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">AI Express用户手册</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>常见问题</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/BuildAll/doc/faq.md.txt" rel="nofollow"> 查看页面源码</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="id1">
+<h1>常见问题<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
+<div class="section" id="id2">
+<h2>开发板外设连接说明<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>x3开发板外设接口说明，如下图：
+<img alt="开发板" src="../../_images/X3Board-overview.png" /></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>序号</th>
+<th>接口说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>12V电源接口</td>
+</tr>
+<tr>
+<td>2</td>
+<td>debug串口(默认921600)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Camera接口</td>
+</tr>
+<tr>
+<td>4</td>
+<td>micro usb接口</td>
+</tr>
+<tr>
+<td>5</td>
+<td>千兆网口(默认IP：192.168.1.10)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>usb 2.0 x4接口</td>
+</tr>
+<tr>
+<td>7</td>
+<td>HDMI输出接口</td>
+</tr>
+<tr>
+<td>8</td>
+<td>LCD/TP接口</td>
+</tr>
+<tr>
+<td>9</td>
+<td>电源指示灯</td>
+</tr>
+</tbody>
+</table><p>更多硬件详情，请参照《X3SDB硬件用户手册》。</p>
+<div class="section" id="id3">
+<h3>摄像头连接<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h3>
+<div class="section" id="os8a10">
+<h4>os8a10<a class="headerlink" href="#os8a10" title="永久链接至标题">¶</a></h4>
+<p>使用软排线，连接摄像头到图中Camera接口。
+如果使用时获取不到图像，请重新插拔，保证软排线接入正常。</p>
+</div>
+<div class="section" id="usb">
+<h4>usb摄像头<a class="headerlink" href="#usb" title="永久链接至标题">¶</a></h4>
+<p>直接把摄像头连接接入到图中6所示的usb接口。
+输入命令：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="k">class</span><span class="o">/</span><span class="n">video4linux</span><span class="o">/</span> <span class="o">-</span><span class="n">all</span>
+</pre></div>
+</div>
+<p>此目录下如果新增了video*设备，表示usb摄像头连接正常。</p>
+</div>
+</div>
+</div>
+<div class="section" id="ip">
+<h2>IP设置<a class="headerlink" href="#ip" title="永久链接至标题">¶</a></h2>
+<p>使用系统自带的工具设置IP地址</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="n">hrut_ipfull</span> <span class="n">s</span> <span class="n">IP</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="n">MASK</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="n">y</span><span class="p">.</span><span class="n">y</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="n">GATEWAY</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>比如</p>
+<div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="n">hrut_ipfull</span> <span class="n">s</span> <span class="mf">192.168.1.100</span> <span class="mf">255.255.255.0</span> <span class="mf">192.168.1.1</span>
+</pre></div>
+</div>
+<p>命令设置完后，重启系统即可生效</p>
+</div>
+<div class="section" id="id4">
+<h2>编译、部署及示例运行<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<div class="section" id="id5">
+<h3>编译<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<p>这里以编译X3的版本为例，其他平台类似。
+获取aiexpress开发包后解压，执行命令：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">ai_express_release</span> <span class="o">&amp;&amp;</span> <span class="n">bash</span> <span class="n">build</span><span class="p">.</span><span class="n">sh</span> <span class="n">x3</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>部署<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p>编译完成后，执行如下命令：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">deploy</span><span class="p">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>脚本执行完毕后，在当前目录下生产deploy部署文件夹，把deploy文件夹拷贝到目标设备上。</p>
+</div>
+<div class="section" id="id7">
+<h3>示例运行<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h3>
+<p>aiexpress开发包提供了多个solution示例和交互式运行脚本，这里以body solution为例，说明如何运行示例。</p>
+<p>提前拷贝部署包到设备上，然后进入deploy目录，执行命令：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sh</span> <span class="n">run</span><span class="p">.</span><span class="n">sh</span> <span class="n">w</span>
+</pre></div>
+</div>
+<p>命令中w表示log级别，支持i/d/w/e/f等级别日志，根据需要自行设置。</p>
+<p>执行命令后，提示选择solution：</p>
+<p><img alt="菜单" src="../../_images/menu_solution.png" /></p>
+<p>选择3（body solution）后回车，提示选择设备平台：</p>
+<p><img alt="菜单" src="../../_images/menu_platform.png" /></p>
+<p>选择3（x3_sdb表示x3生态开发板）后回车，提示选择vio类型：</p>
+<p><img alt="菜单" src="../../_images/menu_viotype.png" /></p>
+<p>选择1（表示单路vio输入）后回车，提示选择sensor类型：</p>
+<p><img alt="菜单" src="../../_images/menu_sensor.png" /></p>
+<p>选择2（os8a10摄像头）后回车，示例程序开始启动运行。</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h2>回灌模式<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h2>
+<div class="section" id="id9">
+<h3>回灌方式说明<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h3>
+<p>X3版本回灌支持3种模式，分别为cache， jpg与nv12这3个模式，区别如下：</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>回灌方式</th>
+<th>功能说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cache</td>
+<td>预先将所有的jpg图像解码到内存中，回灌的时候不需要再进行图像解码操</td>
+</tr>
+<tr>
+<td>jpg</td>
+<td>依次读取图像，解码，回灌。若使用循环回灌方式，则每次回灌会单独读取图像解码一次</td>
+</tr>
+<tr>
+<td>nv12</td>
+<td>和jpg的区别是回灌的图片是nv12的，只需要读取图像数据，不需要解码</td>
+</tr>
+</tbody>
+</table><table border="1" class="docutils">
+<thead>
+<tr>
+<th>回灌方式</th>
+<th>回灌图像配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cache</td>
+<td><strong>configs/vio_config.json.x3dev.fb</strong>中image_list字段</td>
+</tr>
+<tr>
+<td>jpg</td>
+<td><strong>configs/vio_config.json.x3dev.fb</strong>中配置的file_path，默认为<strong>configs/vio_hg/name.list</strong></td>
+</tr>
+<tr>
+<td>nv12</td>
+<td><strong>configs/vio_config.json.x3dev.fb</strong>中配置的file_path，默认为<strong>configs/vio_hg/name_nv12.list</strong></td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="id10">
+<h3>回灌示例<a class="headerlink" href="#id10" title="永久链接至标题">¶</a></h3>
+<p>这里以body solution为例，说明如何运行回灌模式。</p>
+<p>提前拷贝部署包到设备上，然后进入deploy目录，执行命令：</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">sh</span> <span class="n">run</span><span class="p">.</span><span class="n">sh</span> <span class="n">w</span>
+</pre></div>
+</div>
+<p>命令最后的w表示log级别，支持i/d/w/e/f等级别日志，根据需要自行设置。</p>
+<p>执行命令后，提示选择solution：</p>
+<p><img alt="菜单" src="../../_images/menu_solution.png" /></p>
+<p>选择3（body solution）后回车，提示选择设备平台：</p>
+<p><img alt="菜单" src="../../_images/menu_platform.png" /></p>
+<p>选择3（x3_sdb表示x3生态开发板）后回车，提示选择vio类型：</p>
+<p><img alt="菜单" src="../../_images/menu_feedback.png" /></p>
+<p>选择2（单路回灌模式）后回车，提示选择回灌输入类型：</p>
+<p><img alt="菜单" src="../../_images/menu_fb_type.png" /></p>
+<p>选择1（选择cache模式）后回车，回灌模式示例程序开始启动运行。</p>
+</div>
+</div>
+<div class="section" id="usb-uvcweb">
+<h2>usb智慧电视场景，切换uvc与web模式<a class="headerlink" href="#usb-uvcweb" title="永久链接至标题">¶</a></h2>
+<p>支持usb智慧电视场景的solution有：face、face_recog、body、behavior、gesture、tv_dance、tv_dance_960x544、tv_dance_no_kps_mask、tv_dance_with_kps_no_mask等。</p>
+<p>不同solution对应不同的显示配置文件:</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>solution示例</th>
+<th>显示配置文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>face</td>
+<td>configs/visualplugin_face.json</td>
+</tr>
+<tr>
+<td>face_recog</td>
+<td>configs/visualplugin_face.json</td>
+</tr>
+<tr>
+<td>body</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+<tr>
+<td>behavior</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+<tr>
+<td>tv_dance</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+<tr>
+<td>tv_dance_960x544</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+<tr>
+<td>tv_dance_no_kps_mask</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+<tr>
+<td>tv_dance_with_kps_no_mask</td>
+<td>configs/visualplugin_body.json</td>
+</tr>
+</tbody>
+</table><p>aiexpress的部署包默认是web模式，运行solution后，使用Chrome浏览器观看叠加算法效果后的实时视频流。</p>
+<p>如果需要切换到uvc模式，启动前修改对应显示配置文件中的display_mode字段，对应关系如下：</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>display_mode字段</th>
+<th>模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>web模式</td>
+</tr>
+<tr>
+<td>2</td>
+<td>uvc模式</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="hdmi">
+<h2>视频盒子使用HDMI显示<a class="headerlink" href="#hdmi" title="永久链接至标题">¶</a></h2>
+<p>运行视频盒子示例，需要使用HDMI显示。系统默认未开启HDMI显示功能，系统烧录成功后，可以参考如下方法，开启HDMI显示。</p>
+<p>使用串口连接开发板，然后重启X3设备，重启后根据提示随意按任意键进入uboot模式。在uboot模式中敲入如下两个命令：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setenv</span> <span class="n">bootargs</span> <span class="n">earlycon</span> <span class="n">console</span><span class="o">=</span><span class="n">ttyS0</span><span class="p">,</span><span class="mi">921600</span> <span class="n">clk_ignore_unused</span> <span class="n">video</span><span class="o">=</span><span class="n">hobot</span><span class="p">:</span><span class="n">x3sdb</span><span class="o">-</span><span class="n">hdmi</span> <span class="n">kgdboc</span><span class="o">=</span><span class="n">ttyS0</span>
+
+<span class="n">saveenv</span>
+</pre></div>
+</div>
+<p>系统重启后，HDMI显示器上显示地平线LOGO，则说明HDMI显示设置成功。</p>
+</div>
+<div class="section" id="id11">
+<h2>视频盒子本地转发<a class="headerlink" href="#id11" title="永久链接至标题">¶</a></h2>
+<p>视频盒子可使用本地264文件，实现文件转发功能。使用本地转发h264文件前，修改display_mode和local_forward配置。</p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>display_mode字段</th>
+<th>模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>rtsp模式</td>
+</tr>
+</tbody>
+</table><table border="1" class="docutils">
+<thead>
+<tr>
+<th>local_forward字段</th>
+<th>模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>本地转发</td>
+</tr>
+<tr>
+<td>0</td>
+<td>远程IPC</td>
+</tr>
+</tbody>
+</table><p>目前支持一路和多路的本地转发功能，使用本地转发功能时，需要先修改<code class="docutils literal notranslate"><span class="pre">deploy/video_box/config/rtsp.json</span></code>中的url为：rtsp://ip:555/inputfilename。</p>
+<p><code class="docutils literal notranslate"><span class="pre">inputfilename</span></code>为deploy下的h264文件，例如x3 ip地址为10.64.35.193，默认h264文件为test.264,则url为 rtsp://10.64.35.193:555/test.264。</p>
+<p><code class="docutils literal notranslate"><span class="pre">channel_num</span></code>字段表示几路本地转发，如果只想使用1路本地转发，置1即可，目前最多支持4路。</p>
+<p><code class="docutils literal notranslate"><span class="pre">tcp</span></code>字段表示传输协议，置1。</p>
+<p>完整deploy/video_box/configs/rtsp.json本地转发rtsp配置示例如下：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+  <span class="s2">&quot;channel_num&quot;</span>: <span class="m">1</span>,
+  <span class="s2">&quot;channel0&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;rtsp_link&quot;</span>: <span class="s2">&quot;rtsp://10.64.35.193:555/test.264&quot;</span>,
+    <span class="s2">&quot;tcp&quot;</span>: <span class="m">1</span>,
+    <span class="s2">&quot;frame_max_size&quot;</span>: <span class="m">1024</span>, // 200K
+    <span class="s2">&quot;save_stream&quot;</span>: <span class="m">0</span>
+  <span class="o">}</span>,
+  <span class="s2">&quot;channel1&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;rtsp_link&quot;</span>: <span class="s2">&quot;rtsp://10.64.35.194:555/test.264&quot;</span>,
+    <span class="s2">&quot;tcp&quot;</span>: <span class="m">1</span>,
+    <span class="s2">&quot;frame_max_size&quot;</span>: <span class="m">1024</span>, // 200K
+    <span class="s2">&quot;save_stream&quot;</span>: <span class="m">0</span>
+  <span class="o">}</span>,
+  <span class="s2">&quot;channel2&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;rtsp_link&quot;</span>: <span class="s2">&quot;rtsp://10.64.35.195:555/test.264&quot;</span>,
+    <span class="s2">&quot;tcp&quot;</span>: <span class="m">1</span>,
+    <span class="s2">&quot;frame_max_size&quot;</span>: <span class="m">1024</span>, // 200K
+    <span class="s2">&quot;save_stream&quot;</span>: <span class="m">0</span>
+  <span class="o">}</span>,
+  <span class="s2">&quot;channel3&quot;</span>: <span class="o">{</span>
+    <span class="s2">&quot;rtsp_link&quot;</span>: <span class="s2">&quot;rtsp://10.64.35.196:555/test.264&quot;</span>,
+    <span class="s2">&quot;tcp&quot;</span>: <span class="m">1</span>,
+    <span class="s2">&quot;frame_max_size&quot;</span>: <span class="m">1024</span>, // 200K
+    <span class="s2">&quot;save_stream&quot;</span>: <span class="m">0</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>然后修改<code class="docutils literal notranslate"><span class="pre">deploy/video_box/configs/visualplugin_video_box.json</span></code>配置中的display_mode，input_h264_filename和local_forward字段。</p>
+<p><code class="docutils literal notranslate"><span class="pre">display_mode</span></code>:0, 表示使用rtsp模式。
+<code class="docutils literal notranslate"><span class="pre">input_h264_filename</span></code>:”test.264”,表示本地264文件名为test.264。
+<code class="docutils literal notranslate"><span class="pre">local_forward</span></code>:1,表示开启视频盒子本地转发功能。</p>
+<p>完整deploy/video_box/configs/visualplugin_video_box.json配置示例如下：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+  <span class="s2">&quot;auth_mode&quot;</span>: <span class="m">0</span>,
+  <span class="s2">&quot;display_mode&quot;</span>: <span class="m">0</span>,
+  <span class="s2">&quot;user&quot;</span>: <span class="s2">&quot;admin&quot;</span>,
+  <span class="s2">&quot;password&quot;</span>: <span class="s2">&quot;123456&quot;</span>,
+  <span class="s2">&quot;data_buf_size&quot;</span>: <span class="m">3110400</span>,
+  <span class="s2">&quot;packet_size&quot;</span>: <span class="m">102400</span>,
+  <span class="s2">&quot;input_h264_filename&quot;</span>: <span class="s2">&quot;test.264&quot;</span>,
+  <span class="s2">&quot;local_forward&quot;</span>: <span class="m">1</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; 版权所有 2020, Horizon Robotics
+
+    </p>
+  </div>
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

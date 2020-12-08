@@ -14,6 +14,7 @@ const char* const kMethodCfgPath = "method_config_file";
 const char* const kMethodCfgString = "method_config";
 const char* const kMethodType = "method_type";
 const char* const kUniqueName = "unique_name";
+const char* const kTimeOutDuration = "timeout_duration";
 const char* const kThreadNum = "thread_count";
 const char* const kTheadList = "thread_list";
 const char* const kInputs = "inputs";

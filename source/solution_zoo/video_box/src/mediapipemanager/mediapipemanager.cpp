@@ -4,6 +4,7 @@
  * @Author:
  * @Mail: @horizon.ai
  */
+
 #include "mediapipemanager/mediapipemanager.h"
 
 #include <memory>
@@ -15,7 +16,7 @@
 
 namespace horizon {
 namespace vision {
-MediaPipeManager *MediaPipeManager::instance_ = NULL;
+MediaPipeManager *MediaPipeManager::instance_ = nullptr;
 
 MediaPipeManager::MediaPipeManager()
     : initialized_(false), vp_max_pool_count_(32) {
@@ -59,7 +60,7 @@ int MediaPipeManager::Init(int max_pool_count) {
 }
 
 int MediaPipeManager::AddPipeLine(std::shared_ptr<MediaPipeLine> pipeline) {
-  LOGE << "MediaPipeManager. add pipeline ";
+  LOGI << "MediaPipeManager. add pipeline ";
   media_pipelines_.push_back(pipeline);
   return 0;
 }

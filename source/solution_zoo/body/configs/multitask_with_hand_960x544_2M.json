@@ -1,7 +1,7 @@
 {
     "in_msg_type": "pyramid_image",
     "net_info": {
-      "model_name": "in_544x960_out_detection_kps_mask_rpn_rcnn10",
+      "model_name": "in_544x960_out_detection_kps_mask_rpn_rcnn30",
       "model_version": "0.0.4",
       "model_out_sequence": [
         {
@@ -64,6 +64,6 @@
     },
     "method_outs": ["body_box", "head_box", "face_box", "hand_box", "kps", "mask"],
     "bpu_config_path": "../configs/bpu_config.json",
-    "model_file_path": "../../models/in_544x960_out_detection_kps_mask_rpn_rcnn10.hbm",
+    "model_file_path": "../../models/in_544x960_out_detection_kps_mask_rpn_rcnn30.hbm",
     "core_id": 2
 }

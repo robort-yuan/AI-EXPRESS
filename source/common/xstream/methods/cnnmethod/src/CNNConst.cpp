@@ -38,7 +38,8 @@ const std::map<std::string, PostFun> g_post_fun_map = {
     {"act_det", PostFun::ACT_DET},
     {"back_bone", PostFun::BACK_BONE},
     {"vid", PostFun::VID},
-    {"common_lmk", PostFun::COMMON_LMK}};
+    {"common_lmk", PostFun::COMMON_LMK},
+    {"common_lmk_106pts", PostFun::COMMON_LMK}};
 
 const std::map<std::string, NormMethod> g_norm_method_map = {
     {"norm_by_width_length", NormMethod::BPU_MODEL_NORM_BY_WIDTH_LENGTH},

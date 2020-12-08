@@ -1,11 +1,6 @@
-AIExpress
-=======
-
-# 简介
+# 快速上手
 
 AI Express，中文名称AI应用开发中间件，是地平线芯片“天工开物”（Horizon OpenExplorer™️ Platform）AI开发平台的一部分，旨在通过全面降低开发者门槛、提升开发速度、保证开发质量，赋能产业智慧升级。
-
-# 快速上手
 
 ## 概述
 
@@ -25,7 +20,11 @@ AI Express，中文名称AI应用开发中间件，是地平线芯片“天工�
 ### 搭建软件开发环境
 
 **a. Linux开发机环境准备**
-* 安装`cmake 3.15+`以上版本，安装方式如下：
+
+* 本地安装
+
+ 1).安装`CMake 3.15+`以上版本。安装方式如下：
+
 ```bash
 wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz \
     && tar -zxvf cmake-3.17.2.tar.gz \
@@ -36,16 +35,28 @@ wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar
     && cd .. \
     && rm -rf cmake-3.17* 
 ```
-* 下载并安装芯片交叉编译工具[gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu](https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2)，推荐安装路径:`/opt/`，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
+2).安装交叉编译工具链。
+
+下载并安装芯片交叉编译工具[gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu](https://pan.horizon.ai/index.php/s/d3QH3MfzHT5fwd2)，推荐安装路径:`/opt/`，如果交叉编译工具链有更新，需同步修改工具链配置。具体文件：AIEXPRESS代码工程根目录下的CMakeLists.txt, source/common/xstream/framework/CMakeLists.txt和source/common/xproto/framework/CMakeLists.txt。
 具体修改内容：
 
 ```bash
 set(CMAKE_C_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 ```
+
+* 使用Docker环境
+
+获取镜像及启动容器
+
+```bash
+docker pull hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+docker run -i -t hub.hobot.cc/aitools/tf-toolkit:v3.10.5
+```
+
 **b. Windows开发机环境准备**
 
-* 下载开发板系统镜像及烧录工具：[开发板系统镜像及烧录工具下载地址](https://developer.horizon.ai/forum/id=5f8d53b7bec8bc98cb72d963)
+* 下载开发板系统镜像及烧录工具：[开发板系统镜像及烧录工具下载地址](https://developer.horizon.ai/forum/id=5f156192740aaf0beb3119dd)
 
 各文件说明如下：
 
@@ -53,7 +64,7 @@ set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 
   | 名称             |             说明 |
 | ---------------- | ---------------: |
-| disk_X3SDB-Linux-0922wb_2G.img              |       x3sdb开发板系统镜像文件 |
+| disk_X3SDB-Linux-1023wb.img              |       x3sdb开发板系统镜像文件 |
 | hbupdate_win64_0.7.6.zip           |         hbupdate开发板烧录工具(Windows) |
 | win32diskimager-1.0.0-install.zip    |     win32diskimager开发板烧录工具 |
 | CP210x_USB2UART_Driver.zip    |     Windows串口驱动安装包 |
@@ -70,7 +81,7 @@ set(CMAKE_CXX_COMPILER /opt/${工具链目录名}/bin/aarch64-linux-gnu-g++)
 
 #### 升级开发板系统镜像版本
 
-* 开发板系统镜像烧录教程: [X3开发板板镜像烧录体验](https://developer.horizon.ai/forum/id=5f1aa3ee86cc4d95e81a73e6)
+* 开发板系统镜像烧录教程: [X3开发板板镜像烧录教程](https://developer.horizon.ai/forum/id=5f890b0ccc8b1e59c8584bfc)
 
 * 开发板使用注意事项：https://developer.horizon.ai/forum/id=5efac2d32ab6590143c16024
 
@@ -92,7 +103,21 @@ git clone git@github.com:HorizonRobotics-Platform/AI-EXPRESS.git
 
 代码仓库提供了编译一键脚本build.sh，git clone代码后可直接编译。 编译时需要指定平台信息即可，具体编译如下：
 
+* 本地环境
+
+本地环境可以直接编译:
+
 ```bash
+cd AI-EXPRESS
+bash build.sh x3
+```
+
+* Docker环境
+
+登录docker环境，执行如下命令进行编译:
+
+```bash
+ln -s /root/env/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu/ /opt/gcc-linaro-6.5.0-2018.12-x86_64_aarch64-linux-gnu
 cd AI-EXPRESS
 bash build.sh x3
 ```
@@ -115,12 +140,13 @@ bash deploy.sh
 | face_solution    |     人脸解决方案 |
 | body_solution    |     人体解决方案 |
 | face_body_multisource    |     多路输入多workflow解决方案 |
+| video_box        |     视频盒子解决方案 |
 | configs          |     vio 配置文件 |
 | run.sh           |         运行脚本 |
 
-### 运行人体结构化参考方案
+### 运行参考方案
 
-直接在开发板的deploy目录下，运行run.sh脚本即可运行指定的测试程序。具体运行命令：
+直接在开发板的deploy目录下，运行run.sh脚本即可运行指定的测试程序。以人体结构化参考方案为例，具体运行命令：
 
 **注意：具体示例的选择，参考可执行程序的实际打印，该文档更新可能滞后**
 ```
@@ -137,7 +163,7 @@ sh run.sh w  # w表示日志为warning等级，也可以输入d(debug)或者i(in
 
 各个测试程序的介绍及运行方法请参考**场景参考解决方案**或者**常见问题**章节。
 
-除了上述人体结构化解决方案外，AIExpress会陆续开源**人脸结构化参考方案**,**人体结构化参考方案**,**人体行为分析参考方案**,**视频盒子参考方案**,**体感游戏参考方案**,**apa自动泊车参考方案**，，有任何建议或问题，欢迎在github上提Issue。
+除了上述人体结构化解决方案外，人脸结构化参考方案和视频盒子参考方案也已开源。AIExpress会陆续开源**人体行为分析参考方案**,**体感游戏参考方案**,**apa自动泊车参考方案**，有任何建议或问题，欢迎在github上提Issue。
 
 
 ## 3.运行测试用例
@@ -157,29 +183,43 @@ ssh登录到开发板，通过scp命令，将deploy目录拷贝到x3sdb开发板
 cd deploy/unit_test
 sh run_ut.sh
 ```
-单元测试脚本包含人脸、人体结构化等参考方案，以及aiexpress每个模块的单元测试程序。
+单元测试脚本暂时只支持face(人脸结构化参考方案)、body(人体结构化参考方案)、video_box(视频盒子参考方案)，以及aiexpress每个模块的单元测试程序。
 
 ## 4.生成xstream和xproto库
 
-AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64/Ubuntu/CentOS,3种平台。
-以需要生成CentOS平台下的xstream和xproto库为例
+AI-EXPRESS支持独立编译生成xstream和xproto库，目前支持aarch64(默认)/Ubuntu/CentOS，3种平台。
+
+以生成CentOS平台下的xstream库为例:
+
+* 首先 修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关`X86_ARCH`和`X86_CENTOS`为`ON`
+
 ```bash
-cd AI-EXPRESS
-bash xstream_xproto_build.sh centos
+option(X86_ARCH "x86 architecture" ON)
+option(X86_CENTOS "centos release" ON)
 ```
-编译结束后，AI-EXPRESS工程根目录下会生成lib_aiexpress目录，包含xstream库和xproto库及使用框架的样例代码及样例代码编译部署文档。
 
-xstream库头文件目录：lib_aiexpress/include/xstream/include
+(默认编译xstream会生成libxstream.a，如果需要生成libxstream.so，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项`BUILD_SHARED_LIBS`为`true`，即可。)
 
-xstream库文件：lib_aiexpress/liblibxstream.so
+```bash
+set(BUILD_SHARED_LIBS true)
+```
 
-xstream库样例代码：lib_aiexpress/example/xstream
+如果需要生成Ubuntu平台下的xstream库，修改AI-EXPRESS/source/common/xstream/framework/CMakeLists.txt中的编译选项开关`X86_ARCH`为`ON`，然后编译即可。
 
-xproto库头文件目录：lib_aiexpress/include/xproto/include
+如果对CMakeLists.txt不做任何修改，则默认使用linaro-aarch64交叉编译工具链进行编译。
 
-xproto库文件：lib_aiexpress/liblibxproto.so
+* 单独编译xstream:
 
-xproto库样例代码：lib_aiexpress/example/xproto
+```bash
+cd AI-EXPRESS/source/common/xstream/framework
+mkdir build && cd build && cmake .. && make -j
+make install
+```
+编译结束后，AI-EXPRESS/source/common/xstream/framework下会生成output目录，output目录包含libxstream.a及头文件
+
+xstream库的使用教程可参考AI-EXPRESS/source/common/xstream/framework/tutorials.
+
+编译xproto库方法，与xstream相同。
 
 ## 5.AIExpress框架文档
 

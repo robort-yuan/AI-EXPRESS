@@ -11,20 +11,24 @@
 #include "hb_vdec.h"
 #include "hb_vp_api.h"
 #include "hobotlog/hobotlog.hpp"
+#include "rtspclient/SPSInfoMgr.h"
 
 // Implementation of "H265Sink":
 #define DUMMY_SINK_RECEIVE_BUFFER_SIZE 200000
-void H265Sink::SetFileName(const std::string &file_name) {
-  file_name_ = file_name;
+void H265Sink::SetFileName(std::tuple<bool, std::string> file) {
+  save_file_ = std::get<0>(file);
+  file_name_ = std::get<1>(file);
+
+  if (save_file_ && !file_name_.empty()) {
+    outfile_.open(file_name_, std::ios::app | std::ios::out | std::ios::binary);
+  }
 }
 
 int H265Sink::SaveToFile(void *data, const int data_size) {
-  std::ofstream outfile;
-  if (file_name_ == "") {
-    return -1;
+  if (outfile_.is_open()) {
+    outfile_.write(reinterpret_cast<char *>(data), data_size);
   }
-  outfile.open(file_name_, std::ios::app | std::ios::out | std::ios::binary);
-  outfile.write(reinterpret_cast<char *>(data), data_size);
+
   return 0;
 }
 
@@ -44,6 +48,7 @@ H265Sink::H265Sink(UsageEnvironment &env, MediaSubsession &subsession,
       subsession_(subsession),
       buffer_size_(buffer_size),
       buffer_count_(buffer_count),
+      save_file_(false),
       channel_(-1),
       first_frame_(true),
       waiting_(true),
@@ -56,12 +61,12 @@ H265Sink::H265Sink(UsageEnvironment &env, MediaSubsession &subsession,
     LOGE << "H265Sink sys alloc failed";
   }
 
-  video_buffer = new char[200 * 1024];
-  buffer_len = 200 * 1024;
+  video_buffer_ = new char[buffer_size_];
+  buffer_len_ = buffer_size_;
   data_len_ = 0;
-  if (video_buffer == NULL) {
+  if (video_buffer_ == NULL) {
   } else {
-    memset(video_buffer, 0, buffer_len);
+    memset(video_buffer_, 0, buffer_len_);
   }
 }
 
@@ -71,7 +76,11 @@ H265Sink::~H265Sink() {
   LOGI << "~H265Sink(), channel:" << channel_ << " after HB_SYS_Free";
   // delete[] buffers_vir_;
   delete[] stream_id_;
-  delete[] video_buffer;
+  delete[] video_buffer_;
+
+  if (outfile_.is_open()) {
+    outfile_.close();
+  }
   LOGI << "leave ~H265Sink(), channel:" << channel_;
 }
 
@@ -131,7 +140,7 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
         buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
     uint64_t buffer_phy =
         buffers_pyh_ + (frame_count_ % buffer_count_) * buffer_size_;
-    memcpy(buffer, video_buffer, data_len_);
+    memcpy(buffer, video_buffer_, data_len_);
     VIDEO_STREAM_S pstStream;
     memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
     pstStream.pstPack.phy_ptr = buffer_phy;
@@ -145,7 +154,7 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
       LOGE << "HB_VDEC_SendStream failed, ret:" << ret;
     }
 
-    // memset(video_buffer, 0, buffer_len);
+    // memset(video_buffer_, 0, buffer_len_);
     data_len_ = 0;
     frame_count_++;
     first_frame_ = false;
@@ -153,7 +162,6 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
     return;
   }
 
-#if 1
   if (batch_send_) {
     for (auto cache : buffer_stat_cache_) {
       LOGW << "batch_send_";
@@ -174,7 +182,9 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
       pstStream.pstPack.stream_end = HB_FALSE;
       int ret = 0;
       ret = pipe_line_->Input(&pstStream);
-      // SaveToFile(buffer, cache.frame_size + 4);
+      if (save_file_) {
+        SaveToFile(buffer, cache.frame_size + 4);
+      }
       if (ret != 0) {
         LOGE << "pipeline in failed  grp:" << pipe_line_->GetGrpId()
              << "  ret:" << ret;
@@ -188,7 +198,6 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
     continuePlaying();
     return;
   }
-#endif
 
   u_int8_t *buffer =
       buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
@@ -205,7 +214,9 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
   pstStream.pstPack.stream_end = HB_FALSE;
   int ret = 0;
   ret = pipe_line_->Input(&pstStream);
-  // SaveToFile(buffer, frameSize + 4);
+  if (save_file_) {
+    SaveToFile(buffer, frameSize + 4);
+  }
   if (ret != 0) {
     LOGE << "pipeline in failed  grp:" << pipe_line_->GetGrpId()
          << "  ret:" << ret;
@@ -221,57 +232,11 @@ void H265Sink::AddPipeLine(
   pipe_line_ = pipe_line;
 }
 
-#if 0
 Boolean H265Sink::isNeedToWait(unsigned frameSize) {
   if (first_frame_) {
-    char *buffer = video_buffer + data_len_;
-    int nal_type = (buffer[0] & 0x7E) >> 1;
-    LOGW << "channle:" << channel_
-         << ", first frame recv h265 nal type:" << nal_type;
-    data_len_ += frameSize;
-    if (nal_type == 19) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-  int nal_type = (buffer[4] & 0x7E) >> 1;
-  // h265 nale type: VPS=32 SPS=33 PPS=34 SEI=39 IDR=19 P=1 B=0
-  // h265 normal i frame: 32, 33, 34, (39), 19
-  LOGW << "channle:" << channel_ << ", recv h265 nal type:" << nal_type;
-  if (nal_type == 32 || nal_type == 33
-      || nal_type == 34 || nal_type == 39
-      || nal_type == 19) {
-    buffer_stat_t stat;
-    stat.buffer_idx = frame_count_ % buffer_count_;
-    stat.frame_size = frameSize;
-    buffer_stat_cache_.emplace_back(stat);
-    if (nal_type == 19) {
-      if (buffer_stat_cache_.size() == 5 ||
-          buffer_stat_cache_.size() == 4) {  // there is no sei
-        batch_send_ = true;
-        LOGI << "stat done";
-        return false;
-      } else {
-        LOGE << "stat error, cache size:" << buffer_stat_cache_.size();
-        buffer_stat_cache_.clear();
-        batch_send_ = false;
-        return true;
-      }
-    }
-    return true;
-  }
-
-  return false;
-}
-#else
-Boolean H265Sink::isNeedToWait(unsigned frameSize) {
-  if (first_frame_) {
+    LOGW << "channel:" << channel_ << " recv stream";
     int nNal1 = 0;
-    nNal1 = (video_buffer[4] & 0x7E) >> 1;
+    nNal1 = (video_buffer_[4] & 0x7E) >> 1;
     if (nNal1 != 32) {  // not vps
       data_len_ = 0;
       return true;
@@ -287,7 +252,7 @@ Boolean H265Sink::isNeedToWait(unsigned frameSize) {
     }
 
     int nNal2 = 0;
-    char *buffer = video_buffer + vps_len_;
+    char *buffer = video_buffer_ + vps_len_;
     nNal2 = (buffer[4] & 0x7E) >> 1;
     if (nNal2 != 33) {  // sps
       data_len_ = 0;
@@ -300,13 +265,21 @@ Boolean H265Sink::isNeedToWait(unsigned frameSize) {
       LOGW << "channle:" << channel_
            << ", first frame recv h265 nal2 type:" << nNal2
            << " framesize:" << frameSize;
+      int width = 0;
+      int height = 0;
+      horizon::vision::SPSInfoMgr::GetInstance().AnalyticsSps(
+          (unsigned char *)video_buffer_ + data_len_, frameSize, width, height,
+          "H265");
+      pipe_line_->SetDecodeResolution(width, height);
+      pipe_line_->Init();
+      pipe_line_->Start();
       data_len_ += frameSize;
       sps_len_ = data_len_;
       LOGW << "channle:" << channel_ << "sps len:" << sps_len_;
       return true;
     }
 
-    buffer = video_buffer + sps_len_;
+    buffer = video_buffer_ + sps_len_;
     int nal_type = (buffer[4] & 0x7E) >> 1;
     data_len_ += frameSize;
     LOGW << "channle:" << channel_
@@ -348,17 +321,16 @@ Boolean H265Sink::isNeedToWait(unsigned frameSize) {
 
   return false;
 }
-#endif
 
 Boolean H265Sink::continuePlaying() {
   if (fSource == NULL) return False;  // sanity check (should not happen)
   static unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
 
   if (first_frame_) {
-    memcpy(video_buffer + data_len_, start_code, 4);
+    memcpy(video_buffer_ + data_len_, start_code, 4);
     data_len_ += 4;
-    fSource->getNextFrame((unsigned char *)video_buffer + data_len_,
-                          buffer_len - data_len_, afterGettingFrame, this,
+    fSource->getNextFrame((unsigned char *)video_buffer_ + data_len_,
+                          buffer_len_ - data_len_, afterGettingFrame, this,
                           onSourceClosure, this);
     return True;
   }

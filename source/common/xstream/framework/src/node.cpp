@@ -45,6 +45,9 @@ void Node::Init(
   is_need_reorder_ = method_manager_.IsNeedReorder();
   daemon_thread_ = run_context->GetNodeDaemon();
   unique_name_ = config[kUniqueName].asString();
+  // Node time out duration, millisecond
+  setting_timeout_duration_ms_ = config[kTimeOutDuration].asInt();
+
   if (is_need_reorder_) {
     // construct sponge list when node need reorder
     sponge_list_.resize(run_context->GetSharedConfig().source_num_);
@@ -57,7 +60,6 @@ void Node::OnGetResult(FrameworkDataShellPtr result) {
   if (shared_user_data->done_) {
     return;
   }
-  shared_user_data->done_ = true;
   // release timer
   if (shared_user_data->timer_token_) {
     Timer::Instance()->RemoveTimer(shared_user_data->timer_token_);
@@ -65,11 +67,15 @@ void Node::OnGetResult(FrameworkDataShellPtr result) {
   }
 
   if (FrameworkDataShell::ShellType::METHOD == result->type_) {
+    shared_user_data->done_ = true;
     SetOutputData(result->datas_, result->GetResult());
   } else if (FrameworkDataShell::ShellType::TIMER == result->type_) {
-    SetTimeoutFlag(result->datas_);
+    LOGW << unique_name_ << ": Process Time Out!!  Process Time Out!!!";
+    // SetOutputDataTimeout(result->datas_);
+    return;
   } else {
     // TODO(jet) Warning
+    return;
   }
   for (auto data : result->datas_->datas_) {
     on_ready_(data, shared_from_this());
@@ -390,7 +396,8 @@ void Node::SetOutputData(FrameworkDataBatchPtr frame_data,
   }
 }
 
-void Node::SetTimeoutFlag(FrameworkDataBatchPtr frame_data) {
+void Node::SetOutputDataTimeout(FrameworkDataBatchPtr frame_data) {
+  LOGE << unique_name_ << ": Process Time Out!!!";
   auto &frames = frame_data->datas_;
   size_t batch_size = frames.size();
   for (size_t batch_i = 0; batch_i < batch_size; ++batch_i) {

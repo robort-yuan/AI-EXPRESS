@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AdasInference &mdash; AI Express用户手册 2.7.0 文档</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../../" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+        <script src="../../../../../../_static/language_data.js"></script>
+        <script src="../../../../../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="索引" href="../../../../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../../index.html" class="icon icon-home" alt="Documentation Home"> AI Express用户手册
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="在文档中搜索" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/overview.html">概述</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/quick_start.html">快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/xstream.html">XStream算法SDK编程框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/xproto.html">XProto原型应用开发框架开发指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/solution.html">场景参考解决方案</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/tools.html">工具集</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/faq.html">常见问题</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/version.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../BuildAll/doc/copyright.html">版权声明</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">AI Express用户手册</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>AdasInference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../../_sources/models/aidi-openapi/auto_sq/auto_matrix_development_toolkit/scripts/inference/README.md.txt" rel="nofollow"> 查看页面源码</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="adasinference">
+<h1>AdasInference<a class="headerlink" href="#adasinference" title="永久链接至标题">¶</a></h1>
+<p>这是一个基于mxnet gluon接口的Horizon AUTO感知模型预测框架。在<code class="docutils literal notranslate"><span class="pre">python3.6</span></code>及以上测试通过。</p>
+<div class="section" id="pe">
+<h2>4pe预测<a class="headerlink" href="#pe" title="永久链接至标题">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># resize模型, outputs will be ./results/4pe_resize</span>
+<span class="n">python3</span> <span class="n">scripts</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">run_infer_one_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">img</span> <span class="n">scripts</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">demo</span><span class="o">.</span><span class="n">jpg</span>  <span class="o">--</span><span class="n">config</span> <span class="n">scripts</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_resize</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_resize_model</span><span class="o">.</span><span class="n">yaml</span>
+
+<span class="c1"># crop模型, outputs will be ./results/4pe_crop</span>
+<span class="n">python3</span> <span class="n">scripts</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">run_infer_one_image</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">img</span> <span class="n">scripts</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">demo</span><span class="o">.</span><span class="n">jpg</span>  <span class="o">--</span><span class="n">config</span> <span class="n">scripts</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_crop</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_crop_model</span><span class="o">.</span><span class="n">yaml</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="merge">
+<h2>merge结果<a class="headerlink" href="#merge" title="永久链接至标题">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># outputs will be ./merge_results/merge_4pe_resize_4pe_crop</span>
+<span class="n">python3</span> <span class="n">scripts</span><span class="o">/</span><span class="n">tools</span><span class="o">/</span><span class="n">run_merge</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">main</span><span class="o">-</span><span class="nb">dir</span> <span class="n">results</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_resize</span> <span class="o">--</span><span class="n">aux</span><span class="o">-</span><span class="nb">dir</span> <span class="n">results</span><span class="o">/</span><span class="mi">4</span><span class="n">pe_crop</span> <span class="o">--</span><span class="n">img</span> <span class="n">scripts</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">demo</span><span class="o">.</span><span class="n">jpg</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; 版权所有 2020, Horizon Robotics
+
+    </p>
+  </div>
+    
+    
+    
+    利用 <a href="http://sphinx-doc.org/">Sphinx</a> 构建，使用了 
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">主题</a>
+    
+    由 <a href="https://readthedocs.org">Read the Docs</a>开发. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

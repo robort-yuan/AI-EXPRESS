@@ -28,6 +28,7 @@ class UvcConfig {
   enum SmartType { SMART_FACE, SMART_BODY, SMART_VEHICLE };
 
   /* type of video frame */
+
   enum VideoType { VIDEO_YUV, VIDEO_H264, VIDEO_H265, VIDEO_JPG, VIDEO_MJPEG };
 
   /* type of display mode */

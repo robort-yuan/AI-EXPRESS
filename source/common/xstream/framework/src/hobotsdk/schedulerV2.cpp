@@ -55,6 +55,8 @@ int SchedulerV2::Init(XStreamConfigPtr config,
   for (size_t i = 0; i < scheduler_config_->GetSourceNumber(); ++i)
     sequence_id_list_.push_back(std::make_shared<std::atomic_ullong>(0));
 
+  pending_frames_ = std::make_shared<std::atomic_ullong>(0);
+
   is_init_ = true;
   return 0;
 }
@@ -174,6 +176,7 @@ int64_t SchedulerV2::Input(InputDataPtr input, void *sync_context) {
       << "source id " << input->source_id_ << " is out of range (0-"
       << scheduler_config_->GetSourceNumber() - 1;
   framedata->source_id_ = input->source_id_;
+  (*pending_frames_)++;
   std::vector<std::tuple<hobot::Module *, int, int, hobot::spMessage>>
       feed_messages;
   for (const auto &base_data : input->datas_) {
@@ -403,6 +406,7 @@ void SchedulerV2::OnResult(FrameDataInfoPtr framedata,
   }
 
   if (IsFrameDone(framedata)) {
+    (*pending_frames_)--;
     if (framedata->sync_context_ != nullptr) {
       auto promise = static_cast<std::promise<std::vector<OutputDataPtr>> *>(
           framedata->sync_context_);
@@ -654,4 +658,9 @@ void SchedulerV2::StartOnce() {
     }
   }
 }
+
+int64_t SchedulerV2::GetTaskNum() const {
+  return *pending_frames_;
+}
+
 }  // namespace xstream

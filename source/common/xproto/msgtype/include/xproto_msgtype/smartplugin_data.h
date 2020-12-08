@@ -29,6 +29,7 @@ struct SmartMessage : XProtoMessage {
   int frame_fps;  // record fps
   uint64_t time_stamp;
   uint64_t frame_id;
+  std::string image_name;
   SmartMessage() { type_ = TYPE_SMART_MESSAGE; }
   virtual ~SmartMessage() = default;
 

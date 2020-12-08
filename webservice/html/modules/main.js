@@ -1,69 +1,83 @@
 // 'use strict';
-let AwesomeMessage = null;
-let socket;
-let FPS = 13;
-let frames = [];
+let FPS = 30;
 let timeout;
-let ports = [];
-let socketParameter = {};
+let frames = [];
+let videos = [];
+let AwesomeMessage = null;
+let messageShowSelect = {};
 let socketParameters = getURLParameter();
-let messageShowSelect = changeCheckboxSelect();
+let pathNum = getVideoNum();
+let pathNumArr  = [...new Array(pathNum).keys()];
 
-
-protobufInit();
-wsInit();
+createVideo();
 changeCheckboxShow();
+changeCheckboxSelect();
+protobufInit();
+multipathInit();
 
-function changeCheckboxSelect() {
-  let messageShows = Array.from(document.querySelectorAll('.message-show'))
-  let obj = {}
-  messageShows.forEach(item => {
-    obj[item.getAttribute('dataType')] = item.checked
-    item.onclick = function () {
-      obj[item.getAttribute('dataType')] = item.checked
-    }
+function getVideoNum() {
+  let num = 1;
+  let obj = {};
+  const cookies = document.cookie.split('; ');
+  cookies.map(item => {
+    let arr = item.split('=');
+    obj[arr[0]] = arr[1] * 1;
   })
-  return obj
+  if (typeof obj.path_num !== 'undefined') {
+    num = obj.path_num;
+  }
+  return num;
 }
 
-function changeImgShow(width, height) {
-  window.onresize = function () { return; }
-  const video = document.querySelector('.video');
-  const cam = document.querySelector('.cam');
-
-  let videoWidth = video.offsetWidth;
-  let videoHeight = video.offsetHeight;
-
-  const widthRadio = videoWidth / width
-  const heihgtRadio = videoHeight / height
-  const ratio = widthRadio - heihgtRadio
-
-  if (ratio < 0) {
-    widths = '100%';
-    heights = height * widthRadio + 'px';
-  } else {
-    widths = width * heihgtRadio + 'px'
-    heights = '100%'
+function createVideo() {
+  let w = 100;
+  let h = 100;
+  let names = 'video';
+  if (pathNum === 2) {
+    w /= 2;
+    names = 'video two';
   }
-  cam.style.width = widths
-  cam.style.height = heights
-}
-
-function changeCheckboxShow() {
-  let messageChangeV = document.querySelector('.message-v')
-  let messageChangeH = document.querySelector('.message-h')
-  let messageDiv = document.getElementById('message')
-
-  messageChangeH.onclick = function () {
-    messageDiv.style.display = 'block'
-    this.style.display = 'none'
-    messageChangeV.style.display = 'block'
+  if (pathNum === 3 || pathNum === 4) {
+    w /= 2;
+    h /= 2;
+    names = 'video four';
   }
-  messageChangeV.onclick = function () {
-    messageDiv.style.display = 'none'
-    this.style.display = 'none'
-    messageChangeH.style.display = 'block'
+  if (pathNum === 5 || pathNum === 6) {
+    w /= 3;
+    h /= 2;
+    names = 'video six';
   }
+  if (pathNum === 7 || pathNum === 8) {
+    w /= 3;
+    h /= 3;
+    names = 'video eight';
+  }
+  
+  const videocontHtml = document.getElementById('wrapper-cnt');
+  const performanceHtml = document.getElementById('performance-message');
+  pathNumArr.map(i => {
+    const port = 8080 + i * 2;
+    const str = `
+      <div class="${names}" id="video-wrap-${port}" style="width: ${w}%; height: ${h}%;">
+        <div class="cont">
+          <div class="cam" id="cam">
+            <img class="logo1" src="../assets/images/usbcam-top.png" alt="">
+            <img class="logo2" src="../assets/images/aionhorizon.png" alt="">
+            <img src="" class="layer" id="video-${port}" alt="">
+            <canvas class="canvas" id="canvas-${port}-1"></canvas>
+            <canvas class="canvas" id="canvas-${port}-2"></canvas>
+            <ul class="canvas info-panel-1" id="info-panel-${port}-1">
+            </ul>
+            <ul class="canvas info-panel-2" id="info-panel-${port}-2">
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+    const str2 = `<li id="performance-${port}"></li>`
+    videocontHtml.innerHTML += str;
+    performanceHtml.innerHTML += str2;
+  })
 }
 
 function getURLParameter() {
@@ -89,6 +103,35 @@ function getURLParameter() {
   }
 }
 
+function changeCheckboxSelect() {
+  const performanceHtml = document.getElementById('performance');
+  const messageShows = Array.from(document.querySelectorAll('.message-show'));
+  messageShows.forEach(item => {
+    messageShowSelect[item.getAttribute('dataType')] = item.checked;
+    item.onclick = () => {
+      messageShowSelect[item.getAttribute('dataType')] = item.checked;
+      performanceHtml.style.display = messageShowSelect.performance ? 'block' : 'none';
+    }
+  })
+}
+
+function changeCheckboxShow() {
+  let messageChangeV = document.querySelector('.message-v');
+  let messageChangeH = document.querySelector('.message-h');
+  let messageDiv = document.getElementById('message');
+
+  messageChangeH.onclick = function () {
+    messageDiv.style.display = 'block';
+    this.style.display = 'none';
+    messageChangeV.style.display = 'block';
+  }
+  messageChangeV.onclick = function () {
+    messageDiv.style.display = 'none';
+    this.style.display = 'none';
+    messageChangeH.style.display = 'block';
+  }
+}
+
 function protobufInit() {
   protobuf.load('../../protos/x3.proto', function (err, root) {
     if (err) throw err;
@@ -96,283 +139,309 @@ function protobufInit() {
   });
 }
 
-function wsInit() {
-  let { socketIP, port, cameraId, id, netId } = socketParameters;
+function multipathInit() {
+  pathNumArr.map(i => {
+    const port = 8080 + 2 * i;
+    videos[i] = new RenderFrame(
+      { canvasId: `canvas-${port}-1` },
+      { canvasId: `canvas-${port}-2` },
+      `info-panel-${port}-1`,
+      `info-panel-${port}-2`,
+      `video-${port}`,
+      `performance-${port}`
+    );
+    wsInit(i, port);
+  })
+  pathNumArr = null;
+}
 
+function wsInit(i, port) {
+  let { socketIP, cameraId, id, netId } = socketParameters;
   // 部署
   hostport = document.location.host;
   socketIP = hostport.replace(/_/g, '.');
-  socket = new ReconnectingWebSocket('ws://' + socketIP + ':' + '8080', null, { binaryType: 'arraybuffer' });
+  socket = new ReconnectingWebSocket(`ws://${socketIP}:${port}`, null, { binaryType: 'arraybuffer' });
+  // 本地开发用
+  // let ip = 
+  // // '10.64.35.114'
+  // // '10.64.35.121'
+  // '10.103.74.106'
+  // let socket = new ReconnectingWebSocket(`ws://${ip}:${port}`, null, { binaryType: 'arraybuffer' });
 
   socket.onopen = function (e) {
-    let data = {
-      filter_prefix: netId + '/' + cameraId + '/' + id
-    };
-    socket.send(JSON.stringify(data));
-    console.log('opened');
+    if (e.type === 'open') {
+      let data = { filter_prefix: netId + '/' + cameraId + '/' + id };
+      socket.send(JSON.stringify(data));
+      console.log('opened');
+    }
   };
 
   socket.onclose = function (e) {
-    console.log('close:::', e);
+    if (socket) {
+      console.log(`close:${socket.url} `, e);
+      socket.close();
+    }
   };
 
   socket.onerror = function (e) {
-    console.log('error:::', e);
+    if (socket) {
+      console.log(`error:${socket.url} `, e);
+    }
   };
 
   socket.onmessage = function (e) {
-    if (frames.length < 3) {
-      let frame = transformData(e.data);
-      frames.push(frame);
+    // console.log(e)
+    if (e.data) {
+      frames[i] = transformData(e.data);
     }
-    delete e.data;
+    delete e;
   };
   clearTimeout(timeout);
   sendMessage();
 }
 
-function wsClose() {
-  if (socket) {
-    socket.close();
-  }
-}
-
-const renderFrame1 = new RenderFrame1({ canvasId: 'canvas-1' }, { canvasId: 'canvas-2' }, 'video-1');
 function sendMessage() {
-  let frame = frames.shift();
-  if (typeof frame !== 'undefined') {
-    renderFrame1.render(frame);
-  }
-  timeout = setTimeout(function () {
+  videos.map((item, index) => {
+    if (item && frames[index]) {
+      item.render(frames[index]);
+      frames[index] = null;
+    }
+  })
+  timeout = setTimeout(() => {
     sendMessage();
   }, 1000 / FPS);
 }
 
-/**
- * 数据转换
- * @param {*} buffer
- */
 function transformData(buffer) {
-  console.time('渲染计时器')
-  console.time('解析计时器')
+  // console.time('渲染计时器')
+  // console.time('解析计时器')
   let unit8Array = new Uint8Array(buffer);
+  // console.log(222, unit8Array)
   let message = AwesomeMessage.decode(unit8Array);
   let object = AwesomeMessage.toObject(message);
+  // console.log(3333, object);
 
-  let statisticsMsg = object['StatisticsMsg_'];
-  let performance = []
-  if (typeof statisticsMsg !== 'undefined') {
-    if (typeof statisticsMsg['attributes_'] !== 'undefined') {
-      performance = statisticsMsg['attributes_']
-    }
-  }
-  // 图片
-  let image = object['img_'];
-  let imageBlob = undefined;
+  let imageBlob;
   let imageWidth;
   let imageHeight;
-  if (typeof image !== 'undefined') {
-    if (typeof image['buf_'] !== 'undefined') {
-      imageBlob = new Blob([image['buf_']], { type: 'image/jpeg' });
-      imageWidth = image['width_'] || 1920
-      imageHeight = image['height_'] || 1080
-      changeImgShow(imageWidth, imageHeight)
+  let performance = [];
+  let smartMsgData = [];
+  if (object) {
+    // 性能数据
+    if (object['StatisticsMsg_'] &&
+        object['StatisticsMsg_']['attributes_'] &&
+        object['StatisticsMsg_']['attributes_'].length
+    ) {
+      performance = object['StatisticsMsg_']['attributes_']
     }
-  }
-  // 智能数据
-  let smartMsg = object['smartMsg_'];
-  let smartMsgData = []
-  if (typeof smartMsg !== 'undefined') {
-    let targets = smartMsg['targets_'];
-    if (typeof targets !== 'undefined' && targets.length > 0) {
-      smartMsgData = targets.map(function (item) {
-        let id = item['trackId_'];
-        let attributes = { attributes: [], type: item['type_'] }
-        let boxes = []
-        let points = []
-        let subTargets = { boxes: [] }
-        let floatMatrixs;
-        let fall = { fallShow: false };
-        // 轮廓框数据
-        if (typeof item['boxes_'] !== 'undefined' && item['boxes_'].length > 0) {
-          item['boxes_'].map((val, ind) => {
-            let box1 = {
-              x: val['topLeft_']['x_'],
-              y: val['topLeft_']['y_']
-            };
-            let box2 = {
-              x: val['bottomRight_']['x_'],
-              y: val['bottomRight_']['y_']
-            };
-            if (typeof box1.x !== 'undefined'
-              && typeof box1.y !== 'undefined'
-              && typeof box2.x !== 'undefined'
-              && typeof box2.y !== 'undefined'
-            ) {
-              boxes.push({ type: val['type_'] || '', p1: box1, p2: box2 })
-              if (ind === 0) {
-                attributes.box = { p1: box1, p2: box2 }
-                fall.box = { p1: box1, p2: box2 }
+    // 图片
+    if (object['img_'] &&
+        object['img_']['buf_'] &&
+        object['img_']['buf_'].length
+    ) {
+      imageBlob = new Blob([object['img_']['buf_']], { type: 'image/jpeg' });
+      imageWidth = object['img_']['width_'] || 1920
+      imageHeight = object['img_']['height_'] || 1080
+    }
+    // 智能数据
+    if (object['smartMsg_'] &&
+        object['smartMsg_']['targets_'] &&
+        object['smartMsg_']['targets_'].length
+    ) {
+      object['smartMsg_']['targets_'].map(item => {
+        if (item) {
+          let obj = {
+            id: item['trackId_'],
+            boxes: [],
+            attributes: { attributes: [], type: item['type_'] },
+            fall: { fallShow: false },
+            points: [],
+            segmentation: [],
+          }
+          let labelStart = 0;
+          let labelCount = 20;
+          // 检测框
+          if (messageShowSelect.boxes && item['boxes_'] && item['boxes_'].length ) {
+            item['boxes_'].map((val, ind) => {
+              let boxs = transformBoxes(val)
+              if (boxs) {
+                obj.boxes.push({ type: val['type_'] || '', p1: boxs.box1, p2: boxs.box2 });
+                if (ind === 0) {
+                  obj.attributes.box = { p1: boxs.box1, p2: boxs.box2 }
+                  obj.fall.box = { p1: boxs.box1, p2: boxs.box2 }
+                }
+                boxs = null;
               }
-            }
-            if (messageShowSelect.scoreShow && ind === 0) {
-              attributes.score = val.score
-            }
-          })
-        }
-        // 关节点数据
-        if (typeof item['points_'] !== 'undefined' && item['points_'].length > 0) {
-          item['points_'].map(item => {
-            if (typeof item['points_'] !== 'undefined') {
-              let bodyType = messageShowSelect.body ? '' : 'body_landmarks'
-              let faceType = messageShowSelect.face ? '' : 'face_landmarks'
-              if (item['type_'] === 'mask') {
-                floatMatrixs = messageShowSelect.floatMatrixsMask
-                  ? {
-                    type: 'mask',
-                    points: item['points_']
+              
+              if (messageShowSelect.scoreShow && ind === 0) {
+                obj.attributes.score = val.score
+              }
+            })
+            obj.boxes = !messageShowSelect.handBox && obj.boxes.length ? obj.boxes.filter(item => item.type !== 'hand') : obj.boxes
+          }
+          // 关节点
+          if (item['points_'] && item['points_'].length ) {
+            item['points_'].map(val => {
+              if (val['points_'] && val['points_'].length) {
+                let bodyType = messageShowSelect.body ? '' : 'body_landmarks'
+                let faceType = messageShowSelect.face ? '' : 'face_landmarks'
+                if (val['type_'] === 'mask') {
+                  // 目标分割
+                  if (messageShowSelect.floatMatrixsMask) {
+                    obj.segmentation.push({ type: 'target_img', data: val['points_'] })
                   }
-                  : undefined
-              } else if (item['type_'] === 'hand_landmarks') {
-                if (messageShowSelect.handMarks) {
+                } else if (val['type_'] === 'hand_landmarks') {
+                  if (messageShowSelect.handMarks) {
+                    obj.points.push({ type: val['type_'], skeletonPoints: transformPoints(val['points_'])})
+                  }
+                } else if (val['type_'] === 'corner') {
+                  if (messageShowSelect.corner) {
+                    obj.points.push({ type: val['type_'], skeletonPoints: transformPoints(val['points_'])})
+                  }
+                }  else if (val['type_'] === 'lmk_106pts') {
+                  if (messageShowSelect.face) {
+                    obj.points.push({ type: val['type_'], diameterSize: 2, skeletonPoints: transformPoints(val['points_'])})
+                  }
+                } else if (val['type_'] === 'parking') {
+                  if (messageShowSelect.boxes) {
+                    obj.points.push({ type: val['type_'], skeletonPoints: transformPoints(val['points_'])})
+                  }
+                } else if (val['type_'] !== bodyType && val['type_'] !== faceType) {
                   let skeletonPoints = [];
-                  item['points_'].map((val) => {
-                    skeletonPoints.push({
+                  val['points_'].map((val, index) => {
+                    let key = Config.skeletonKey[index];
+                    skeletonPoints[key] = {
                       x: val['x_'],
                       y: val['y_'],
-                      score: val['score_']
-                    });
+                      score: val['score_'] || 0
+                    };
                   });
-                  points.push({ type: 'hand_landmarks', skeletonPoints })
+                  obj.points.push({ type: val['type_'], skeletonPoints })
                 }
-              } else if (item['type_'] !== bodyType && item['type_'] !== faceType) {
-                let skeletonPoints = [];
-                item['points_'].map((val, index) => {
-                  let key = Config.skeletonKey[index];
-                  skeletonPoints[key] = {
-                    x: val['x_'],
-                    y: val['y_'],
-                    score: val['score_']
-                  };
-                });
-                points.push({ type: item['type_'], skeletonPoints })
               }
-            }
-          })
-        }
-        // 车牌
-        if (typeof item['subTargets_'] !== 'undefined' && item['subTargets_'].length > 0) {
-          item['subTargets_'].map(val => {
-            if (typeof val['boxes_'] !== 'undefined' && val['boxes_'].length > 0) {
-              let box1 = {
-                x: val['boxes_'][0]['topLeft_']['x_'],
-                y: val['boxes_'][0]['topLeft_']['y_']
-              };
-              let box2 = {
-                x: val['boxes_'][0]['bottomRight_']['x_'],
-                y: val['boxes_'][0]['bottomRight_']['y_']
-              };
-              if (typeof box1.x !== 'undefined'
-                && typeof box1.y !== 'undefined'
-                && typeof box2.x !== 'undefined'
-                && typeof box2.y !== 'undefined'
-              ) {
-                subTargets.boxes.push({ p1: box1, p2: box2 })
-              }
-            }
-            // 车牌框数据
-            if (typeof val['attributes_'] !== 'undefined' && val['attributes_'].length > 0) {
-              val['attributes_'].map(obj => {
-                if (typeof obj['valueString_'] !== 'undefined') {
-                  attributes.attributes.push({
-                    type: obj['type_'],
-                    value: obj['valueString_'],
-                    score: obj['score_']
-                  })
-                }
-              })
-            }
-          })
-        }
-        // 属性
-        let labelStart = 0
-        let labelCount = 20
-        if (typeof item['attributes_'] !== 'undefined') {
-          item['attributes_'].map(function (val) {
-            // 分割的颜色参数
-            labelStart = val['type_'] === "segmentation_label_start" ? val['value_'] : 0
-            labelCount = val['type_'] === "segmentation_label_count" ? val['value_'] : 20
-            // 摔倒
-            if (val['type_'] === 'fall' && val['value_'] === 1) {
-              fall.fallShow = true;
-              fall.attributes = {
-                type: val['type_'],
-                value: val['value_'],
-                score: messageShowSelect.scoreShow ? val['score_'] : undefined
-              }
-            } else if (typeof val['valueString_'] !== 'undefined') {
-              attributes.attributes.push({
-                type: val['type_'],
-                value: val['valueString_'],
-                score: messageShowSelect.scoreShow ? val['score_'] : undefined
-              })
-            }
-          })
-        }
-        // 全图分割 mask 目标分割 segmentation 全图分割
-        if (typeof item['floatMatrixs_'] !== 'undefined' && item['floatMatrixs_'].length > 0) {
-
-          let w = item['floatMatrixs_'][0]['arrays_'][0]['value_'].length;
-          let h = item['floatMatrixs_'][0]['arrays_'].length;
-
-          let step = 255 * 3 / labelCount;
-          let color = [];
-          for (let i = 0; i < labelCount; ++i) {
-            let R = (labelStart / 3 * 3) % 256;
-            let G = (labelStart / 3 * 2) % 256;
-            let B = (labelStart / 3) % 256;
-            color.push([R, G, B]);
-            labelStart += step;
-          }
-          if (item['floatMatrixs_'][0]['type_'] === 'segmentation') {
-            floatMatrixs = { type: item['floatMatrixs_'][0]['type_'], data: [], w, h }
-            item['floatMatrixs_'][0]['arrays_'].map(values => {
-              values['value_'].map(index => {
-                let colors = color[index]
-                floatMatrixs.data.push(colors[0], colors[1], colors[2], 155)
-              })
             })
-            floatMatrixs = messageShowSelect.floatMatrixs ? floatMatrixs : undefined
           }
+          // 属性
+          if (item['attributes_'] && item['attributes_'].length) {
+            item['attributes_'].map(val => {
+              // 分割的颜色参数
+              labelStart = val['type_'] === "segmentation_label_start" ? val['value_'] : 0
+              labelCount = val['type_'] === "segmentation_label_count" ? val['value_'] : 20
+              // 摔倒
+              if (val['type_'] === 'fall' && val['value_'] === 1) {
+                obj.fall.fallShow = true;
+                obj.fall.attributes = {
+                  type: val['type_'],
+                  value: val['value_'],
+                  score: messageShowSelect.scoreShow ? val['score_'] : undefined
+                };
+              } else if (messageShowSelect.attributes && val['valueString_']) {
+                obj.attributes.attributes.push({
+                  type: val['type_'],
+                  value: val['valueString_'],
+                  score: messageShowSelect.scoreShow ? val['score_'] : undefined
+                })
+              }
+            })
+          }
+          // 车
+          if (item['subTargets_'] && item['subTargets_'].length) {
+            item['subTargets_'].map(val => {
+              if (messageShowSelect.boxes && val['boxes_'] && val['boxes_'].length) {
+                let boxs = transformBoxes(val['boxes_'][0])
+                if (boxs) {
+                  obj.boxes.push({ p1: boxs.box1, p2: boxs.box2 })
+                  boxs = null;
+                }
+              }
+              // 车牌框数据
+              if (messageShowSelect.attributes && val['attributes_'] && val['attributes_'].length) {
+                val['attributes_'].map(obj => {
+                  if (obj['valueString_']) {
+                    obj.attributes.attributes.push({
+                      type: obj['type_'],
+                      value: obj['valueString_'],
+                      score: messageShowSelect.scoreShow ? obj['score_'] : undefined
+                    })
+                  }
+                })
+              }
+            })
+          }
+          // 全图分割 segmentation parking_mask
+          if (messageShowSelect.floatMatrixs &&
+              item['floatMatrixs_'] &&
+              item['floatMatrixs_'].length
+          ) {
+            let color = [];
+            let step = 255 * 3 / labelCount;
+            for (let i = 0; i < labelCount; ++i) {
+              let R = (labelStart / 3 * 3) % 256;
+              let G = (labelStart / 3 * 2) % 256;
+              let B = (labelStart / 3) % 256;
+              color.push([R, G, B]);
+              labelStart += step;
+            }
+            if (color.length) {
+              let floatdata = []
+              item['floatMatrixs_'][0]['arrays_'].map(values => {
+                values['value_'].map(index => {
+                  let colors = color[Math.trunc(index)]
+                  floatdata.push(colors[0], colors[1], colors[2], 155)
+                })
+              })
+              obj.segmentation.push({
+                type: 'full_img',
+                w: item['floatMatrixs_'][0]['arrays_'][0]['value_'].length,
+                h: item['floatMatrixs_'][0]['arrays_'].length,
+                data: floatdata
+              })
+            }
+          }
+          smartMsgData.push(obj);
+          obj = null;
         }
-        boxes = messageShowSelect.boxes
-          ? !messageShowSelect.handBox && boxes.length > 0
-            ? boxes.filter(item => item.type !== 'hand')
-            : boxes
-          : []
-
-        attributes.attributes = messageShowSelect.attributes ? attributes.attributes : []
-        subTargets.boxes = messageShowSelect.boxes ? subTargets.boxes : []
-        return {
-          id,
-          attributes,
-          boxes,
-          points,
-          subTargets,
-          floatMatrixs,
-          fall
-        }
+        return null;
       })
     }
   }
-  
-  console.timeEnd('解析计时器')
+  // console.timeEnd('解析计时器')
   return {
     imageBlob,
     imageWidth,
     imageHeight,
     performance,
-    smartMsgData,
-    messageShowSelect
+    smartMsgData
   };
-}
+};
+
+function transformBoxes(box) {
+  if (box &&
+      box['topLeft_']['x_'] &&
+      box['topLeft_']['y_'] &&
+      box['bottomRight_']['x_'] &&
+      box['bottomRight_']['y_']
+  ) {
+    let box1 = {
+      x: box['topLeft_']['x_'],
+      y: box['topLeft_']['y_']
+    };
+    let box2 = {
+      x: box['bottomRight_']['x_'],
+      y: box['bottomRight_']['y_']
+    };
+    return { box1, box2 };
+  }
+};
+
+function transformPoints(points) {
+  let skeletonPoints = [];
+  points.map((val) => {
+    skeletonPoints.push({
+      x: val['x_'],
+      y: val['y_'],
+      score: val['score_'] || 0
+    });
+  });
+  return skeletonPoints;
+};

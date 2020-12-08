@@ -54,8 +54,6 @@ CachedImageList::CachedImageList(const char *vio_cfg_file) : VioProduce() {
       << "CachedImageList: Create VioPipeLine failed";
   auto ret = vio_pipeline_->Init();
   HOBOT_CHECK(ret == 0) << "vio pipeline init failed!";
-  ret = vio_pipeline_->Start();
-  HOBOT_CHECK(ret == 0) << "vio pipeline start failed!";
 #endif
 }
 
@@ -65,7 +63,6 @@ CachedImageList::~CachedImageList() {
   hb_vio_deinit();
 #elif defined(X3_IOT_VIO)
   if (vio_pipeline_) {
-    vio_pipeline_->Stop();
     vio_pipeline_->DeInit();
   }
 #endif
@@ -75,6 +72,13 @@ int CachedImageList::Run() {
   static uint64_t frame_id = 0;
   // 每帧的时间间隔 ms
   int interval_ms = 500;
+
+  bool enable_pyramid_profile = false;
+  auto enable_pyramid_profile_str = getenv("enable_pyramid_profile");
+  if (enable_pyramid_profile_str
+      && !strcmp(enable_pyramid_profile_str, "ON")) {
+    enable_pyramid_profile = true;
+  }
 
   if (is_running_)
     return kHorizonVioErrorAlreadyStart;
@@ -137,6 +141,7 @@ int CachedImageList::Run() {
       }
       if (cam_type_ == "mono") {
         if (AllocBuffer()) {
+          auto pym_start_time = std::chrono::system_clock::now();
 #if defined(X3_X2_VIO) || defined(X3_IOT_VIO)
           VioFeedbackContext *feedback_context =
               reinterpret_cast<VioFeedbackContext *>(
@@ -163,7 +168,8 @@ int CachedImageList::Run() {
             } else {
               std::free(feedback_context);
               LOGF << "GetPyramidInfo failed, ret: " << ret;
-              HOBOT_CHECK(ret == true);
+              continue;
+              // HOBOT_CHECK(ret == true);
             }
             std::shared_ptr<VioMessage> input(
                 new ImageVioMessage(vio_pipeline_, pym_images, 1),
@@ -177,6 +183,13 @@ int CachedImageList::Run() {
                   }
                   p = nullptr;
                 });
+            auto pym_end_time = std::chrono::system_clock::now();
+            if (enable_pyramid_profile) {
+              auto duration_time =
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                  pym_end_time - pym_start_time);
+              LOGW << "pym time: " << duration_time.count() << " ms";
+            }
             if (push_data_cb_)
               push_data_cb_(input);
             LOGD << "Push Image message!!!";

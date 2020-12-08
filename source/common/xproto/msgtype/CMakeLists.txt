@@ -34,11 +34,7 @@ set(OpenCVLib opencv_world)
 set(BASE_LIBRARIES ${BASE_LIBRARIES} ${OpenCVLib})
 add_library(xproto_msgtype STATIC ${SOURCE_FILES})
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    target_link_libraries(${PROJECT_NAME} xproto ${BASE_LIBRARIES})
-else ()
-    target_link_libraries(${PROJECT_NAME} xprotod ${BASE_LIBRARIES})
-endif ()
+target_link_libraries(${PROJECT_NAME} xproto ${BASE_LIBRARIES})
 # add_subdirectory(test)
 
 # make install才会安装

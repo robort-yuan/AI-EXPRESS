@@ -1,0 +1,19 @@
+Initialize HBCC Env
+PATH=/gpfs/plat_aidi/build/hbcc/v3.12.1/bin/:/usr/local/jdk/jdk1.8.0_241/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+LD_LIBRARY_PATH=:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/lib/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/lib64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/darwin/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/darwin/lib64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/m2/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/m2/lib64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/matrix/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/matrix/libarm32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2/lib64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2/libarch64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2a/lib32/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2a/lib64/:/gpfs/plat_aidi/build/hbcc/v3.12.1/hbcc/targets/x2a/libarch64/
+PYTHONPATH=/gpfs/plat_aidi/build/hbcc/v3.12.1/lib/python3.6/site-packages/:
+HBDK Info
+version: 3.12.1
+runtime version: 3.9.1
+cmake_build_type: relo3withdebinfowithassert
+supported_march: bernoulli, bernoulli2, 
+git_version: 6337dc8
+git_branch: develop
+release_type: public
+
+hbdk-cc --march bernoulli2 -m /gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.json -p /gpfs/plat_aidi/model/3538/IntInference/quality_x2.0.5.params -s 1x128x128x3 -i pyramid --O2 --pyramid-stride 128 -o faceQuality.hbm
+info: "-j" or "--jobs" is not specified, launch 8 threads for optimization
+hbdk-pack /gpfs/plat_aidi/build/2004/so/faceQuality.hbm -o /gpfs/plat_aidi/build/2004/so/faceQuality.hbm --tag faceQuality_X3_v2.0.5
+hbdk-disas /gpfs/plat_aidi/build/2004/so/faceQuality.hbm -o /gpfs/plat_aidi/build/2004/so/model_info.json --json
+hbdk-perf /gpfs/plat_aidi/build/2004/so/faceQuality.hbm
+  FPS=9036.12   (see faceQuality.html)

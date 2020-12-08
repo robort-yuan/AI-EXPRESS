@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019, Horizon Robotics, Inc.
+ * Copyright (c) 2020, Horizon Robotics, Inc.
  * All rights reserved.
  * @Author:
  * @Mail: @horizon.ai
@@ -16,7 +16,7 @@ namespace horizon {
 namespace vision {
 class VpsModule : public BasicMediaModule {
 public:
-  VpsModule(/* args */);
+  VpsModule();
   ~VpsModule();
   virtual int Init(uint32_t group_id,
                    const PipeModuleInfo *module_info) override;
@@ -27,7 +27,6 @@ public:
   virtual int Stop() override;
   virtual int DeInit() override;
 
-protected:
 private:
   uint32_t group_id_;
   uint32_t timeout_;

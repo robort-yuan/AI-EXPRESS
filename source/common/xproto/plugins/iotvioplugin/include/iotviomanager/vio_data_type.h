@@ -65,6 +65,7 @@ typedef enum MipiSensorType {
   kSIF_TEST_PATTERN_12M_RAW12,        // 12
   kSIF_TEST_PATTERN_4K,               // 13
   kS5KGM1SP_30FPS_4000x3000_RAW10,    // 14
+  kOV10635_30FPS_720p_960_YUV_LINE_CONCATENATED,  // 15
   kSAMPLE_SENOSR_ID_MAX
 } MipiSensorTypeE;
 
@@ -82,6 +83,13 @@ typedef enum VioSourceType {
   kFB_VIO_SOURCE,
   kVIO_SOURCE_MAX
 } IotVioSrcType_E;
+
+typedef enum FbSourceType {
+  kFB_SOURCE_INVALID = 0,
+  kSIF_BUF_SOURCE,
+  kISP_BUF_SOURCE,
+  kFB_SOURCE_MAX
+} IotFbSrcType_E;
 
 typedef struct VioChnCfg {
   int ipu_chn_num;
@@ -128,6 +136,7 @@ typedef struct VioSensorInfo {
   int need_clk;
   int serdes_index;
   int serdes_port;
+  int extra_mode;
 } IotVioSensorInfo;
 
 typedef struct VioMipiInfo {
@@ -138,6 +147,7 @@ typedef struct VioMipiInfo {
 
 typedef struct VioSifInfo {
   int need_md;
+  int sif_out_buf_num;
 } IotVioSifInfo;
 
 typedef struct VioIspInfo {
@@ -178,6 +188,9 @@ typedef struct FeedbackInfo {
   int width;
   int height;
   int buf_num;
+  int inner_buf_en;
+  int inner_buf_type;
+  int bind_pipe_id;
 } IotVioFbInfo;
 
 typedef struct VpsInfo {
@@ -190,9 +203,12 @@ typedef struct VpsInfo {
   IotVioGdcInfo gdc_info[MAX_GDC_NUM];
 } IotVpsInfo;
 
-/* typedef struct VioBuffer { */
-/*   hb_vio_buffer_t vinfo; */
-/* } IotVioBuffer; */
+typedef struct VioInfo {
+  int pipe_id;
+  int chn;
+  int buf_index;
+  hb_vio_buffer_t vio_buf;
+} IotVioInfo;
 
 typedef struct PymInfo {
   int grp_id;
@@ -253,4 +269,4 @@ typedef struct VinParams {
   VIN_LDC_ATTR_S ldc_info;
 } IotVinParams;
 
-#endif  // INCLUDE_IOT_CFG_TYPE_H_
+#endif  // INCLUDE_VIO_DATA_TYPE_H

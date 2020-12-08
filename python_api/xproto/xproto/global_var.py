@@ -44,10 +44,10 @@ class GlobalVar:
                    "os8a10": 5, "os8a10_1080p": 1, "s5kgm_2160p": 5,
                    "hg": 1}
 
-    def __replace_method_cfg_file(self):
+    def __replace_method_cfg_file(self, common_cmd):
         cmd = ""
         if self.sensor_ == "imx327":
-            cmd = command_imx327
+            cmd = common_cmd + command_imx327   # TODO: currently for x3 only
         elif self.sensor_ == "os8a10":
             cmd = command_os8a10
         elif self.sensor_ == "os8a10_1080p":
@@ -71,7 +71,7 @@ class GlobalVar:
     def set_sensor(self, sensor):
         self.sensor_ = sensor
         if self.platform_ == "x3dev" or self.platform_ == "x3svb":
-            self.__replace_method_cfg_file()
+            self.__replace_method_cfg_file(command_x3)
 
     def set_vio_type(self, vio_type):
         self.vio_type_ = vio_type

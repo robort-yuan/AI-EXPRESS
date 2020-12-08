@@ -190,7 +190,7 @@ MIPI_SENSOR_INFO_S SENSOR_2LANE_OV10635_30FPS_YUV_720P_960_INFO = {
   .inputMode = INPUT_MODE_MIPI,
   .deserialInfo = {
     .bus_type = 0,
-    .bus_num = 4,
+    .bus_num = 1,
     .deserial_addr = 0x30,
     .deserial_name = const_cast<char*>("s960")
   },
@@ -203,7 +203,7 @@ MIPI_SENSOR_INFO_S SENSOR_2LANE_OV10635_30FPS_YUV_720P_960_INFO = {
     .resolution = 720,
     .sensor_addr = 0x40,
     .serial_addr = 0x1c,
-    .entry_index = 1,
+    .entry_index = 0,
     .sensor_mode = {},
     .reg_width = 16,
     .sensor_name = const_cast<char*>("ov10635"),
@@ -289,6 +289,24 @@ MIPI_ATTR_S MIPI_2LANE_OV10635_30FPS_YUV_720P_960_ATTR = {
     {0, 1, 2, 3}
   },
   .dev_enable = 0 /*  mipi dev enable */
+};
+
+MIPI_ATTR_S MIPI_2LANE_OV10635_30FPS_YUV_LINE_CONCATE_720P_960_ATTR = {
+  .mipi_host_cfg = {
+    2,    /* lane */
+    0x1e, /* datatype */
+    24,   /* mclk */
+    3200, /* mipiclk */
+    30,   /* fps */
+    1280, /* width  */
+    720,  /* height */
+    3207, /* linlength */
+    748,  /* framelength */
+    30,   /* settle */
+    2,
+    {0, 1}
+  },
+  .dev_enable = 0  /*  mipi dev enable */
 };
 
 MIPI_ATTR_S MIPI_4LANE_SENSOR_AR0233_30FPS_12BIT_1080P_954_ATTR = {
@@ -738,6 +756,52 @@ VIN_DEV_ATTR_S DEV_ATTR_OV10635_YUV_BASE = {
   }
 };
 
+VIN_DEV_ATTR_S DEV_ATTR_OV10635_YUV_LINE_CONCATE_BASE = {
+  .stSize = {
+    8,    /* format */
+    2560, /* width */
+    720,  /* height */
+    0     /* pix_length */
+  },
+  {
+    .mipiAttr = {
+      .enable = 1,
+      .ipi_channels = 1,
+      .ipi_mode = 0,
+      .enable_mux_out = 1,
+      .enable_frame_id = 1,
+      .enable_bypass = 0,
+      .enable_line_shift = 0,
+      .enable_id_decoder = 0,
+      .set_init_frame_id = 1,
+      .set_line_shift_count = 0,
+      .set_bypass_channels = 1,
+    },
+  },
+  .DdrIspAttr = {
+    .stride = 0,
+    .buf_num = 4,
+    .raw_feedback_en = 0,
+    .data = {
+      .format = 8,
+      .width = 2560,
+      .height = 720,
+      .pix_length = 0,
+    }
+  },
+  .outDdrAttr = {
+    .stride = 2560,
+    .buffer_num = 8,
+  },
+  .outIspAttr = {
+    .dol_exp_num = 1,
+    .enable_dgain = 0,
+    .set_dgain_short = 0,
+    .set_dgain_medium = 0,
+    .set_dgain_long = 0,
+  }
+};
+
 VIN_DEV_ATTR_S DEV_ATTR_FEED_BACK_1097P_BASE = {
   .stSize = {
     0,    /*format*/
@@ -1051,6 +1115,28 @@ VIN_PIPE_ATTR_S PIPE_ATTR_OV10635_YUV_BASE = {
   .stSize = {
     .format = 0,
     .width = 1280,
+    .height = 720,
+  },
+  .cfaPattern = PIPE_BAYER_RGGB,
+  .temperMode = 0,
+  .ispBypassEn = 1,
+  .ispAlgoState = 0,
+  .bitwidth = 12,
+  .startX = 0,
+  .startY = 0,
+  .calib = {
+    .mode = 0,
+    .lname = NULL,
+  }
+};
+
+VIN_PIPE_ATTR_S VIN_ATTR_OV10635_YUV_LINE_CONCATE_BASE = {
+  .ddrOutBufNum = 8,
+  .frameDepth = 0,
+  .snsMode = SENSOR_NORMAL_MODE,
+  .stSize = {
+    .format = 0,
+    .width = 2560,
     .height = 720,
   },
   .cfaPattern = PIPE_BAYER_RGGB,

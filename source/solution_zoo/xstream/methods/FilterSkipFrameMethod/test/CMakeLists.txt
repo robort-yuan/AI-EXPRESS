@@ -11,7 +11,7 @@ set(OpenCVLib opencv_world)
 
 set(BASE_LIBRARIES hobotlog ${BASE_LIBRARIES} ${OpenCVLib} ${OpenCVDeps})
 
-set(XSTREAM_LB -Wl,--whole-archive xstream-framework -Wl,--no-whole-archive)
+set(XSTREAM_LB -Wl,--whole-archive xstream -Wl,--no-whole-archive)
 
 add_executable(gtest_filterskip ${TEST_SOURCE_SRC})
 

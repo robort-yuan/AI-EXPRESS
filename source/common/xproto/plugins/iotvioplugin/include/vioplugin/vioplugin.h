@@ -41,6 +41,7 @@ class VioPlugin : public xproto::XPluginAsync {
   explicit VioPlugin(const std::string &path);
   ~VioPlugin() override;
   int Init() override;
+  int DeInit() override;
   int Start() override;
   int Stop() override;
   std::string desc() const { return "VioPlugin"; }
@@ -67,9 +68,14 @@ class VioPlugin : public xproto::XPluginAsync {
   std::vector<box_t> Shields_;
   bool is_inited_ = false;
   bool is_sync_mode_ = false;
+  bool is_running_ = false;
   hobot::vision::BlockingQueue<XProtoMessagePtr> img_msg_queue_;
   hobot::vision::BlockingQueue<XProtoMessagePtr> drop_msg_queue_;
   std::unordered_map<std::string, XProtoMessageFunc> message_cb_;
+  int vio_config_num_ = 0;
+#ifdef USE_MC
+  int OnGetAPImage(XProtoMessagePtr msg);
+#endif
 };
 
 }  // namespace vioplugin

@@ -13,7 +13,7 @@ set(SOURCE_FILES
 )
 
 add_library(${target_name} STATIC ${SOURCE_FILES})
-set(BASE_LIBRARIES xstream-framework jsoncpp hobotlog pthread)
+set(BASE_LIBRARIES xstream jsoncpp hobotlog pthread)
 target_link_libraries(${target_name} ${BASE_LIBRARIES})
 
 add_subdirectory(test)

@@ -16,6 +16,9 @@ extern "C" {
 
 HBDK_PUBLIC hbrt_error_t hbrtSimBpu(uint32_t* ret_interrupt_num, const void* funccall, hbrt_march_t march);
 
+HBDK_PUBLIC hbrt_error_t hbrtSimBpuExt(uint32_t* ret_interrupt_num, const void* funccall, uint32_t core_id,
+                                       hbrt_march_t march);
+
 #ifdef __cplusplus
 }
 #endif

@@ -239,7 +239,7 @@ static inline void hbdk_int_print_to_stderr(int num) {
 #ifndef SWIG
 inline static void hbrtBreakInClion()
     HBRT_DEPRECATED("hbrtBreakInClion has been deprecated since 3.8.1, and will be removed in a future release");
-inline static void hbrtBreakInClion() {};
+inline static void hbrtBreakInClion() {}
 #endif
 
 

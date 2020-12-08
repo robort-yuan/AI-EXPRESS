@@ -1,0 +1,10 @@
+{
+  "vo": {
+    "enable": true,
+    "display_mode": 0 // 0: auto, 1: 9 pictures
+  },
+  "rtsp": {
+    "stream_1080p": false,
+    "stream_720p": false
+  }
+}
