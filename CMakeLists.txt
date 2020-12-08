@@ -207,3 +207,6 @@ add_subdirectory(source/solution_zoo/xstream/methods/lowpassfiltermethod)
 add_subdirectory(source/solution_zoo/face/)
 add_subdirectory(source/solution_zoo/body/)
 add_subdirectory(source/solution_zoo/face_body_multisource/)
+
+add_subdirectory(source/solution_zoo/edu_body/)
+

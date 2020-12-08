@@ -80,6 +80,9 @@ cp ${ALL_PROJECT_DIR}/output/body_solution ${RELEASE_DIR}/ -rf
 #cp ${ALL_PROJECT_DIR}/output/vehicle_solution ${RELEASE_DIR}/ -rf
 cp ${ALL_PROJECT_DIR}/output/face_body_multisource ${RELEASE_DIR}/ -rf
 cp ${ALL_PROJECT_DIR}/output/xwarehouse_sample ${RELEASE_DIR}/ -rf
+
+cp ${ALL_PROJECT_DIR}/output/edu_body_solution ${RELEASE_DIR}/ -rf
+
 ## ssd_test
 mkdir -p ${RELEASE_DIR}/ssd_test/config/vio_config
 mkdir -p ${RELEASE_DIR}/ssd_test/config/bpu_config
@@ -87,6 +90,7 @@ cp ${ALL_PROJECT_DIR}/output/face_solution/configs/bpu_config.json ${RELEASE_DIR
 mkdir -p ${RELEASE_DIR}/ssd_test/config/models
 cp -r ${ALL_PROJECT_DIR}/models/${ARCHITECTURE}/ssd/so/*  ${RELEASE_DIR}/ssd_test/config/models
 cp -r ${ALL_PROJECT_DIR}/source/solution_zoo/xstream/methods/ssd_method/config/* ${RELEASE_DIR}/ssd_test/config
+
 if [ ${ARCHITECTURE} == "x3" ]
 then
 cp -r ${RELEASE_DIR}/configs/hb* ${RELEASE_DIR}/ssd_test/config/vio_config
@@ -94,6 +98,7 @@ cp -r ${RELEASE_DIR}/configs/vio ${RELEASE_DIR}/ssd_test/config/vio_config
 cp ${ALL_PROJECT_DIR}/output/video_box ${RELEASE_DIR}/ -rf
 cp ${ALL_PROJECT_DIR}/output/video_box/data/test.264 ${RELEASE_DIR}/ -rf
 fi
+
 cp -r ${ALL_PROJECT_DIR}/build/bin/ssd_method_test ${RELEASE_DIR}/ssd_test/
 cp -r ${ALL_PROJECT_DIR}/source/solution_zoo/xstream/methods/ssd_method/test/data ${RELEASE_DIR}/ssd_test
 ## python api
