@@ -12,7 +12,10 @@
     "lmk",
     "kps",
     "age",
-	  "gender"
+    "gender",
+    "raisehand",
+    "stand",
+    "squat"
   ],
   "workflow": [
     {
@@ -81,7 +84,8 @@
         "body_bbox_list",
         "face_disappeared_track_id_list",
         "head_disappeared_track_id_list",
-        "body_disappeared_track_id_list"
+        "body_disappeared_track_id_list",
+        "kps"
       ],
       "outputs": [
         "face_final_box",
@@ -89,7 +93,7 @@
         "body_final_box",
         "disappeared_track_id"
       ],
-      "method_config_file": "merge_head_body.json"
+      "method_config_file": "merge_head_body_behavior.json"
     },
     {
         "method_type": "CNNMethod",
@@ -129,6 +133,45 @@
         "gender"
       ],
       "method_config_file": "gender_voting.json"
+    },
+    {
+      "method_type": "BehaviorMethod",
+      "unique_name": "behavior_raisehand",
+      "inputs": [
+        "body_final_box",
+        "disappeared_track_id",
+        "kps"
+      ],
+      "outputs": [
+        "raisehand"
+      ],
+      "method_config_file": "raisehand_behavior.json"
+    },
+    {
+      "method_type": "BehaviorMethod",
+      "unique_name": "behavior_stand",
+      "inputs": [
+        "body_final_box",
+        "disappeared_track_id",
+        "kps"
+      ],
+      "outputs": [
+        "stand"
+      ],
+      "method_config_file": "stand_behavior.json"
+    },
+    {
+      "method_type": "BehaviorMethod",
+      "unique_name": "behavior_squat",
+      "inputs": [
+        "body_final_box",
+        "disappeared_track_id",
+        "kps"
+      ],
+      "outputs": [
+        "squat"
+      ],
+      "method_config_file": "squat_behavior.json"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "xstream_workflow_file": "./body_solution/configs/body_detection.json",
+  "xstream_workflow_file": "./edu_body_solution/configs/body_detection.json",
   "enable_profile": 0,
   "profile_log_path": "",
   "time_monitor": 3,

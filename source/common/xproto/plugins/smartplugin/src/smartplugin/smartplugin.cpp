@@ -709,7 +709,8 @@ std::string CustomSmartMessage::Serialize() {
         }
       }
     }
-    if (output->name_ == "raise_hand" ||
+    //if (output->name_ == "raise_hand" ||
+    if (output->name_ == "raisehand" ||   //ycj
         output->name_ == "stand" ||
         output->name_ == "squat") {
       auto attributes = dynamic_cast<xstream::BaseDataVector *>(output.get());
@@ -885,7 +886,7 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
             target->set_track_id_(face_box->value.id);
             if (prefix == "hand") {
               target->set_type_("hand");
-            } else {
+             }else {
               target->set_type_("person");
             }
             smart_target[face_key] = target;
@@ -1144,6 +1145,10 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
           attrs->set_value_string_(
             std::to_string((age->value.min + age->value.max) / 2));
           LOGD << " " << age->value.min << " " << age->value.max;
+          //attrs = target->add_attributes_();  //ycj
+          // attrs->set_type_("test");  //ycj
+          //  attrs->set_value_(40);//ycj
+          //  attrs->set_value_string_(std::to_string(40));
         }
       }
     }
@@ -1271,7 +1276,8 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
       }
     }
 
-    if (output->name_ == "raise_hand" ||
+    //if (output->name_ == "raise_hand" ||
+    if (output->name_ == "raisehand" ||     //ycj
         output->name_ == "stand" ||
         output->name_ == "squat") {
       auto attributes = dynamic_cast<xstream::BaseDataVector *>(output.get());
@@ -1288,8 +1294,12 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
         if (body_box_list[i]->value.id == -1) {
           continue;
         }
+
         target_key body_key(body_box_list[i]->value.category_name,
-                            body_box_list[i]->value.id);
+                           body_box_list[i]->value.id);
+          
+        LOGI << "behavior debug---ycj--->---value.category_name:" << body_box_list[i]->value.category_name << std::endl;//ycj   
+        LOGI << "behavior debug---ycj--->---value.id:" << body_box_list[i]->value.id << std::endl;//ycj    
         if (smart_target.find(body_key) ==
               smart_target.end()) {
           LOGE << "Not found the track_id target";
@@ -1298,12 +1308,18 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
             LOGE << "-1";
             continue;
           }
+
           auto target = smart_target[body_key];
           auto attrs = target->add_attributes_();
           attrs->set_type_(output->name_);
           attrs->set_value_(attribute->value.value);
           attrs->set_score_(attribute->value.score);
+          attrs->set_value_string_( std::to_string(attribute->value.value));  //ycj should added, otherwise no display in the web
           LOGD << "value: " << attribute->value.value;
+	LOGI << "behavior debug---ycj--->---decision name_:" << output->name_ << std::endl;//ycj
+	LOGI << "behavior debug---ycj--->---decision value:" << attribute->value.value << std::endl;//ycj
+	LOGI << "behavior debug---ycj--->---decision score:" << attribute->value.score << std::endl;//ycj
+
         }
       }
     }

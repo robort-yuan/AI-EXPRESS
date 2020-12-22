@@ -6,7 +6,7 @@ function go_build_all(){
   mkdir build
   cd build
   cmake .. $*
-  make -j2
+  make -j4
   if [ $? -ne 0 ] ; then
     echo "failed to build "
     exit 1
