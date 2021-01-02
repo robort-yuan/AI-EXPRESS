@@ -14,6 +14,7 @@
 
 #include "BehaviorMethod/BehaviorEvent.h"
 #include "BehaviorMethod/RaiseHandEvent.h"
+#include "BehaviorMethod/ListingEvent.h"  //ycj
 #include "BehaviorMethod/StandEvent.h"
 #include "BehaviorMethod/SquatEvent.h"
 #include "hobotlog/hobotlog.hpp"
@@ -24,6 +25,8 @@ class BehaviorFactory {
  public:
   static BehaviorEvent* GetPredictor(Behavior behavior) {
     switch (behavior) {
+      case Behavior::LISTING:
+        return new ListingEvent();
       case Behavior::RAISE_HAND:
         return new RaiseHandEvent();
       case Behavior::STAND:

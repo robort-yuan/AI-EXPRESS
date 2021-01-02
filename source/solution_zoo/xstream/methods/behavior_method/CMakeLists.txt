@@ -9,6 +9,7 @@ include_directories(
 set(SOURCE_FILES
         src/BehaviorMethod.cpp
         src/BehaviorEvent.cpp
+        src/ListingEvent.cpp
         src/RaiseHandEvent.cpp
         src/StandEvent.cpp
         src/SquatEvent.cpp)

@@ -43,6 +43,7 @@ bool RaiseHandEvent::IsEvent(hobot::vision::Landmarks kps) {
   // 任意手臂举起即可
   bool is_raise = false;
   // right arm (Observed object left arm)
+  /*
   {
     auto a = kps.values[9].y - kps.values[5].y;
     auto b = kps.values[9].x - kps.values[5].x;
@@ -52,13 +53,28 @@ bool RaiseHandEvent::IsEvent(hobot::vision::Landmarks kps) {
         is_raise = true;
       }
     }
-  }
+  }*/
+  {
+    auto a = kps.values[9].y - kps.values[7].y;
+    auto b = kps.values[9].x - kps.values[7].x;
+    LOGI << "RaiseHandEvent debug---ycj--->---a:" << a << std::endl;//ycj
+    if(a<0){
+      auto c = kps.values[9].y - kps.values[5].y;
+      LOGI << "RaiseHandEvent debug---ycj--->---c:" << c << std::endl;//ycj
+      if ( c < 0) {
+        if (CalculateSlope(a, b)>= tan_threshold_) {
+          is_raise = true;
+        }
+      }
+    }
+  } 
   if (is_raise) return true;
 
   // left arm
-  {
+  /*{
     auto a = kps.values[10].y - kps.values[6].y;
     auto b = kps.values[10].x - kps.values[6].x;
+
     auto c = kps.values[10].y - kps.values[4].y;
 
     if (a < 0 && c < 0) {
@@ -66,8 +82,21 @@ bool RaiseHandEvent::IsEvent(hobot::vision::Landmarks kps) {
         is_raise = true;
       }
     }
+  }*/
+  {
+    auto a = kps.values[10].y - kps.values[8].y;
+    auto b = kps.values[10].x - kps.values[8].x;
+     LOGI << "RaiseHandEvent debug---ycj--->---a:" << a << std::endl;//ycj
+    if(a<0){
+      auto c = kps.values[10].y - kps.values[6].y;
+       LOGI << "RaiseHandEvent debug---ycj--->---c:" << c << std::endl;//ycj
+      if ( c < 0) {
+        if (CalculateSlope(a, b)>= tan_threshold_) {
+          is_raise = true;
+        }
+      }
+    }
   }
   return is_raise;
 }
-
 }  // namespace xstream

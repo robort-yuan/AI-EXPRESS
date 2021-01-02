@@ -709,9 +709,8 @@ std::string CustomSmartMessage::Serialize() {
         }
       }
     }
-    //if (output->name_ == "raise_hand" ||
-    if (output->name_ == "raisehand" ||   //ycj
-        output->name_ == "stand" ||
+    if (output->name_ == "raise_hand" ||
+           output->name_ == "stand" ||
         output->name_ == "squat") {
       auto attributes = dynamic_cast<xstream::BaseDataVector *>(output.get());
       LOGD << output->name_ << " size: " << attributes->datas_.size();
@@ -1276,9 +1275,8 @@ std::string CustomSmartMessage::Serialize(int ori_w, int ori_h, int dst_w,
       }
     }
 
-    //if (output->name_ == "raise_hand" ||
-    if (output->name_ == "raisehand" ||     //ycj
-        output->name_ == "stand" ||
+    if (output->name_ == "listing" ||output->name_ == "raise_hand" ||
+            output->name_ == "stand" ||
         output->name_ == "squat") {
       auto attributes = dynamic_cast<xstream::BaseDataVector *>(output.get());
       LOGD << output->name_ << " size: " << attributes->datas_.size();

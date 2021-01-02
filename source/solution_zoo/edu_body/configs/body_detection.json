@@ -12,8 +12,9 @@
     "lmk",
     "kps",
     "age",
+    "listing",    
     "gender",
-    "raisehand",
+    "raise_hand",
     "stand",
     "squat"
   ],
@@ -136,6 +137,19 @@
     },
     {
       "method_type": "BehaviorMethod",
+      "unique_name": "behavior_listing",
+      "inputs": [
+        "body_final_box",
+        "disappeared_track_id",
+        "kps"
+      ],
+      "outputs": [
+        "listing"
+      ],
+      "method_config_file": "listing_behavior.json"
+    },
+    {
+      "method_type": "BehaviorMethod",
       "unique_name": "behavior_raisehand",
       "inputs": [
         "body_final_box",
@@ -143,7 +157,7 @@
         "kps"
       ],
       "outputs": [
-        "raisehand"
+        "raise_hand"
       ],
       "method_config_file": "raisehand_behavior.json"
     },

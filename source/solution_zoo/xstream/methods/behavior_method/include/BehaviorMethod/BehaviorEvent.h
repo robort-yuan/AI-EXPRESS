@@ -25,12 +25,14 @@
 namespace xstream {
 
 enum class Behavior {
+  LISTING,       //listing  //ycj
   RAISE_HAND,  // 举手
   STAND,       // 站立
   SQUAT        // 蹲下
 };
 
 const std::map<std::string, Behavior> g_behavior_map = {
+    {"listing", Behavior::LISTING},    //YCJ
     {"raise_hand", Behavior::RAISE_HAND},
     {"stand", Behavior::STAND},
     {"squat", Behavior::SQUAT}};
